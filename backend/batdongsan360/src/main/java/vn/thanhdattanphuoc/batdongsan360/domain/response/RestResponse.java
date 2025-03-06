@@ -1,4 +1,4 @@
-package vn.thanhdattanphuoc.batdongsan360.domain;
+package vn.thanhdattanphuoc.batdongsan360.domain.response;
 
 public class RestResponse<T> {
 

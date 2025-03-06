@@ -1,10 +1,12 @@
 package vn.thanhdattanphuoc.batdongsan360.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,9 +15,11 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 import vn.thanhdattanphuoc.batdongsan360.domain.User;
 import vn.thanhdattanphuoc.batdongsan360.domain.request.LoginDTO;
+import vn.thanhdattanphuoc.batdongsan360.domain.response.ResCreateUserDTO;
 import vn.thanhdattanphuoc.batdongsan360.domain.response.ResLoginDTO;
 import vn.thanhdattanphuoc.batdongsan360.service.UserService;
 import vn.thanhdattanphuoc.batdongsan360.util.SecurityUtil;
+import vn.thanhdattanphuoc.batdongsan360.util.error.IdInvalidException;
 
 @RestController
 public class AuthController {
@@ -23,15 +27,17 @@ public class AuthController {
     final private AuthenticationManagerBuilder authenticationManagerBuilder;
     final private SecurityUtil securityService;
     final private UserService userService;
+    private final PasswordEncoder passwordEncoder;
 
     public AuthController(AuthenticationManagerBuilder authenticationManagerBuilder, SecurityUtil securityService,
-            UserService userService) {
+            UserService userService, PasswordEncoder passwordEncoder) {
         this.authenticationManagerBuilder = authenticationManagerBuilder;
         this.securityService = securityService;
         this.userService = userService;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    @PostMapping("/auth/login")
+    @PostMapping("/api/auth/login")
     public ResponseEntity<ResLoginDTO> login(@Valid @RequestBody LoginDTO loginDTO) {
 
         // Nạp input gồm username/password vào Security
@@ -43,7 +49,7 @@ public class AuthController {
 
         // create a token
         String access_token = this.securityService.createToken(authentication);
-        // SecurityContextHolder.getContext().setAuthentication(authentication);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
         ResLoginDTO res = new ResLoginDTO();
         res.setAccessToken(access_token);
@@ -59,7 +65,7 @@ public class AuthController {
         return ResponseEntity.ok().body(res);
     }
 
-    @GetMapping("/auth/account")
+    @GetMapping("/api/auth/account")
     public ResponseEntity<ResLoginDTO.UserLogin> getAccount() {
 
         String email = SecurityUtil.getCurrentUserLogin().isPresent()
@@ -77,6 +83,32 @@ public class AuthController {
         }
 
         return ResponseEntity.ok().body(userLogin);
+    }
+
+    @PostMapping("/api/auth/register")
+    public ResponseEntity<ResCreateUserDTO> register(@Valid @RequestBody User user) throws IdInvalidException {
+        boolean isEmailExist = this.userService.isEmailExist(user.getEmail());
+        if (isEmailExist) {
+            throw new IdInvalidException(
+                    "Email " + user.getEmail() + "đã tồn tại, vui lòng sử dụng email khác.");
+        }
+
+        String hashPassword = this.passwordEncoder.encode(user.getPassword());
+        user.setPassword(hashPassword);
+        User currentUserDB = this.userService.handleCreateUser(user);
+
+        ResCreateUserDTO res = new ResCreateUserDTO();
+        res.setId(currentUserDB.getId());
+        res.setName(currentUserDB.getName());
+        res.setEmail(currentUserDB.getEmail());
+        res.setRole(currentUserDB.getRole());
+        res.setGender(currentUserDB.getGender());
+        res.setPhone(currentUserDB.getPhone());
+        res.setAddress(currentUserDB.getAddress());
+        res.setCreatedAt(currentUserDB.getCreatedAt());
+        res.setCreatedBy(currentUserDB.getCreatedBy());
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(res);
     }
 
 }

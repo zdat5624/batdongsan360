@@ -1,5 +1,7 @@
 package vn.thanhdattanphuoc.batdongsan360.domain.response;
 
+import vn.thanhdattanphuoc.batdongsan360.util.constant.RoleEnum;
+
 public class ResLoginDTO {
     private String accessToken;
 
@@ -25,12 +27,12 @@ public class ResLoginDTO {
         private long id;
         private String email;
         private String name;
-        private String role;
+        private RoleEnum role;
 
         public UserLogin() {
         }
 
-        public UserLogin(long id, String email, String name, String role) {
+        public UserLogin(long id, String email, String name, RoleEnum role) {
             this.id = id;
             this.email = email;
             this.name = name;
@@ -61,11 +63,11 @@ public class ResLoginDTO {
             this.name = name;
         }
 
-        public String getRole() {
+        public RoleEnum getRole() {
             return role;
         }
 
-        public void setRole(String role) {
+        public void setRole(RoleEnum role) {
             this.role = role;
         }
 

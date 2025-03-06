@@ -28,7 +28,7 @@ public class UserController {
         this.passwordEncoder = passwordEncoder;
     }
 
-    @PostMapping("/users")
+    @PostMapping("/api/users")
     public ResponseEntity<User> createNewUser(@RequestBody User user) {
         String hashPassword = this.passwordEncoder.encode(user.getPassword());
         user.setPassword(hashPassword);
@@ -37,7 +37,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(newUser);
     }
 
-    @DeleteMapping("/users/{id}")
+    @DeleteMapping("/api/users/{id}")
     public ResponseEntity<String> deleteUserById(@PathVariable("id") long id) throws IdInvalidException {
 
         if (id >= 1500) {
@@ -49,7 +49,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body("newUser");
     }
 
-    @GetMapping("/users/{id}")
+    @GetMapping("/api/users/{id}")
     public ResponseEntity<User> getUserById(@PathVariable("id") long id) {
 
         User fetchUser = this.userService.fetchUserById(id);
@@ -57,13 +57,13 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(fetchUser);
     }
 
-    @GetMapping("/users")
+    @GetMapping("/api/users")
     public ResponseEntity<List<User>> getAllUser() {
 
         return ResponseEntity.status(HttpStatus.OK).body(this.userService.fetchAllUser());
     }
 
-    @PutMapping("/users")
+    @PutMapping("/api/users")
     public ResponseEntity<User> updateUser(@RequestBody User user) {
         User newUser = this.userService.handleUpdateUser(user);
         return ResponseEntity.status(HttpStatus.OK).body(newUser);
