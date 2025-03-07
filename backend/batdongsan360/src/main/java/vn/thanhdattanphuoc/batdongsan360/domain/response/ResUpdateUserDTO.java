@@ -6,7 +6,8 @@ import vn.thanhdattanphuoc.batdongsan360.domain.User;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.GenderEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.RoleEnum;
 
-public class ResCreateUserDTO {
+public class ResUpdateUserDTO {
+
     private long id;
     private String name;
     private String email;
@@ -14,20 +15,49 @@ public class ResCreateUserDTO {
     private GenderEnum gender;
     private String phone;
     private String address;
+    private String avatar;
     private Instant createdAt;
     private String createdBy;
+    private String updatedBy;
+    private Instant updatedAt;
 
-    public ResCreateUserDTO() {
+    public ResUpdateUserDTO(User user) {
+        this.id = user.getId();
+        this.name = user.getName();
+        this.email = user.getEmail();
+        this.role = user.getRole();
+        this.avatar = user.getAvatar();
+        this.gender = user.getGender();
+        this.phone = user.getPhone();
+        this.address = user.getAddress();
+        this.createdAt = user.getCreatedAt();
+        this.createdBy = user.getCreatedBy();
+        this.updatedAt = user.getUpdatedAt();
+        this.updatedBy = user.getUpdatedBy();
     }
 
-    public ResCreateUserDTO(User user) {
-        this.setId(user.getId());
-        this.setName(user.getName());
-        this.setEmail(user.getEmail());
-        this.setRole(user.getRole());
-        this.setPhone(user.getPhone());
-        this.setCreatedAt(user.getCreatedAt());
-        this.setCreatedBy(user.getCreatedBy());
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
+
+    public String getUpdatedBy() {
+        return updatedBy;
+    }
+
+    public void setUpdatedBy(String updatedBy) {
+        this.updatedBy = updatedBy;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     public long getId() {

@@ -3,6 +3,8 @@ package vn.thanhdattanphuoc.batdongsan360.domain;
 import java.time.Instant;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -41,7 +43,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     private GenderEnum gender;
 
-    private double balance;
+    private long balance;
 
     private String avatar;
 
@@ -56,12 +58,15 @@ public class User {
     private String updatedBy;
 
     @OneToMany(mappedBy = "user")
+    @JsonIgnore
     private List<Post> posts;
 
     @OneToMany(mappedBy = "user")
+    @JsonIgnore
     private List<Transaction> transactions;
 
     @OneToMany(mappedBy = "user")
+    @JsonIgnore
     private List<Notification> notifications;
 
     public long getId() {
@@ -110,14 +115,6 @@ public class User {
 
     public void setGender(GenderEnum gender) {
         this.gender = gender;
-    }
-
-    public double getBalance() {
-        return balance;
-    }
-
-    public void setBalance(double balance) {
-        this.balance = balance;
     }
 
     public String getAvatar() {
@@ -206,6 +203,18 @@ public class User {
                 ? SecurityUtil.getCurrentUserLogin().get()
                 : "";
 
+        if (this.createdBy.equals("anonymousUser")) {
+            this.createdBy = this.email;
+        }
+
+        if (this.createdBy.equals(null)) {
+            this.createdBy = this.email;
+        }
+
+        if (this.createdBy.equals("")) {
+            this.createdBy = this.email;
+        }
+
         this.createdAt = Instant.now();
     }
 
@@ -216,6 +225,14 @@ public class User {
                 : "";
 
         this.updatedAt = Instant.now();
+    }
+
+    public long getBalance() {
+        return balance;
+    }
+
+    public void setBalance(long balance) {
+        this.balance = balance;
     }
 
 }

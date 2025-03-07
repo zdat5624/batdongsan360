@@ -3,6 +3,8 @@ package vn.thanhdattanphuoc.batdongsan360.domain;
 import java.time.Instant;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -28,7 +30,7 @@ public class Post {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private long id;
 
     @NotBlank(message = "Tiêu đề không được để trống")
     private String title;
@@ -63,11 +65,23 @@ public class Post {
     private String createdBy;
     private String updatedBy;
 
-    public Long getId() {
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
+
+    @OneToMany(mappedBy = "post")
+    @JsonIgnore
+    private List<Image> images;
+
+    public long getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -214,17 +228,6 @@ public class Post {
     public void setImages(List<Image> images) {
         this.images = images;
     }
-
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
-
-    @ManyToOne
-    @JoinColumn(name = "category_id")
-    private Category category;
-
-    @OneToMany(mappedBy = "post")
-    private List<Image> images;
 
     @PrePersist
     public void handleBeforeCreate() {

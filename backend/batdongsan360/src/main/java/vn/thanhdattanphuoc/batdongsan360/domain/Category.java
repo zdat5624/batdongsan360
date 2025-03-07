@@ -2,6 +2,8 @@ package vn.thanhdattanphuoc.batdongsan360.domain;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -26,7 +28,13 @@ public class Category {
     private PostTypeEnum type;
 
     @OneToMany(mappedBy = "category")
+    @JsonIgnore
     private List<Post> posts;
+
+    public Category(String name, PostTypeEnum type) {
+        this.name = name;
+        this.type = type;
+    }
 
     public long getId() {
         return id;

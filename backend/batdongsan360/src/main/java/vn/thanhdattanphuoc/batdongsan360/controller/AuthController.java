@@ -15,10 +15,12 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 import vn.thanhdattanphuoc.batdongsan360.domain.User;
 import vn.thanhdattanphuoc.batdongsan360.domain.request.LoginDTO;
+import vn.thanhdattanphuoc.batdongsan360.domain.request.RegisterDTO;
 import vn.thanhdattanphuoc.batdongsan360.domain.response.ResCreateUserDTO;
 import vn.thanhdattanphuoc.batdongsan360.domain.response.ResLoginDTO;
 import vn.thanhdattanphuoc.batdongsan360.service.UserService;
 import vn.thanhdattanphuoc.batdongsan360.util.SecurityUtil;
+import vn.thanhdattanphuoc.batdongsan360.util.constant.RoleEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.error.IdInvalidException;
 
 @RestController
@@ -86,25 +88,30 @@ public class AuthController {
     }
 
     @PostMapping("/api/auth/register")
-    public ResponseEntity<ResCreateUserDTO> register(@Valid @RequestBody User user) throws IdInvalidException {
-        boolean isEmailExist = this.userService.isEmailExist(user.getEmail());
+    public ResponseEntity<ResCreateUserDTO> register(@Valid @RequestBody RegisterDTO registerDTO)
+            throws IdInvalidException {
+        boolean isEmailExist = this.userService.isEmailExist(registerDTO.getEmail());
         if (isEmailExist) {
             throw new IdInvalidException(
-                    "Email " + user.getEmail() + "đã tồn tại, vui lòng sử dụng email khác.");
+                    "Email " + registerDTO.getEmail() + " đã tồn tại, vui lòng sử dụng email khác.");
         }
 
-        String hashPassword = this.passwordEncoder.encode(user.getPassword());
-        user.setPassword(hashPassword);
-        User currentUserDB = this.userService.handleCreateUser(user);
+        User newUser = new User();
+        String hashPassword = this.passwordEncoder.encode(registerDTO.getPassword());
+        newUser.setName(registerDTO.getName());
+        newUser.setPhone(registerDTO.getPhone());
+        newUser.setEmail(registerDTO.getEmail());
+        newUser.setPassword(hashPassword);
+        newUser.setRole(RoleEnum.USER);
+        newUser.setCreatedBy(registerDTO.getEmail());
+        User currentUserDB = this.userService.handleCreateUser(newUser);
 
         ResCreateUserDTO res = new ResCreateUserDTO();
         res.setId(currentUserDB.getId());
         res.setName(currentUserDB.getName());
         res.setEmail(currentUserDB.getEmail());
         res.setRole(currentUserDB.getRole());
-        res.setGender(currentUserDB.getGender());
         res.setPhone(currentUserDB.getPhone());
-        res.setAddress(currentUserDB.getAddress());
         res.setCreatedAt(currentUserDB.getCreatedAt());
         res.setCreatedBy(currentUserDB.getCreatedBy());
 
