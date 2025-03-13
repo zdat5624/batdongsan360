@@ -1,6 +1,7 @@
 package vn.thanhdattanphuoc.batdongsan360.config;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,7 +14,15 @@ public class CorsConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000/", "http://localhost:4173/"));
+
+        // configuration.setAllowedOrigins(
+        // Arrays.asList("http://localhost:3000/",
+        // "http://localhost:4173/",
+        // "http://localhost:5173/"));
+
+        // Cho phép tất cả nguồn (origin)
+        configuration.setAllowedOriginPatterns(List.of("*"));
+
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Allowed methods
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
         configuration.setAllowCredentials(true);
