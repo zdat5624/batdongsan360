@@ -6,6 +6,8 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import vn.thanhdattanphuoc.batdongsan360.domain.User;
+import vn.thanhdattanphuoc.batdongsan360.domain.request.CreateUserDTO;
+import vn.thanhdattanphuoc.batdongsan360.domain.request.UserUpdateDTO;
 import vn.thanhdattanphuoc.batdongsan360.repository.UserRepository;
 
 @Service
@@ -15,6 +17,16 @@ public class UserService {
 
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
+    }
+
+    public User handleCreateUser(CreateUserDTO createUserDTO) {
+        User user = new User();
+        user.setName(createUserDTO.getName());
+        user.setPhone(createUserDTO.getPhone());
+        user.setEmail(createUserDTO.getEmail());
+        user.setPassword(createUserDTO.getPassword());
+        user.setRole(createUserDTO.getRole());
+        return this.userRepository.save(user);
     }
 
     public User handleCreateUser(User user) {
@@ -46,16 +58,20 @@ public class UserService {
         return this.userRepository.findAll();
     }
 
-    public User handleUpdateUser(User user) {
-        User currentUser = fetchUserById(user.getId());
+    public User handleUpdateUser(UserUpdateDTO userUpdateDTO) {
+        User currentUser = fetchUserById(userUpdateDTO.getId());
         if (currentUser != null) {
-            currentUser.setEmail(user.getEmail());
-            currentUser.setName(user.getName());
-            currentUser.setPassword(user.getPassword());
-
-            currentUser = this.userRepository.save(currentUser);
+            currentUser.setName(userUpdateDTO.getName());
+            currentUser.setEmail(userUpdateDTO.getEmail());
+            currentUser.setRole(userUpdateDTO.getRole());
+            currentUser.setGender(userUpdateDTO.getGender());
+            currentUser.setBalance(userUpdateDTO.getBalance());
+            currentUser.setAvatar(userUpdateDTO.getAvatar());
+            currentUser.setPhone(userUpdateDTO.getPhone());
+            currentUser.setAddress(userUpdateDTO.getAddress());
+            return currentUser = this.userRepository.save(currentUser);
         }
-        return currentUser;
+        return null;
     }
 
     public boolean isEmailExist(String email) {

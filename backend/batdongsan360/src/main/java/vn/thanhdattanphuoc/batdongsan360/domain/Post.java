@@ -3,7 +3,7 @@ package vn.thanhdattanphuoc.batdongsan360.domain;
 import java.time.Instant;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -20,6 +20,9 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import vn.thanhdattanphuoc.batdongsan360.domain.address.District;
+import vn.thanhdattanphuoc.batdongsan360.domain.address.Province;
+import vn.thanhdattanphuoc.batdongsan360.domain.address.Ward;
 import vn.thanhdattanphuoc.batdongsan360.util.SecurityUtil;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.PostStatusEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.PostTypeEnum;
@@ -39,15 +42,13 @@ public class Post {
     @NotBlank(message = "Mô tả không được để trống")
     private String description;
 
-    private int vip;
-
     private boolean notifyOnView;
 
     @Enumerated(EnumType.STRING)
     private PostTypeEnum type;
 
     @NotNull(message = "Giá không được để trống")
-    private double price;
+    private long price;
 
     @NotNull(message = "Diện tích không được để trống")
     private double area;
@@ -58,12 +59,26 @@ public class Post {
     private PostStatusEnum status;
 
     private Instant expireDate;
-    private boolean deletedByUser = false;
+    private boolean deletedByUser;
 
     private Instant createdAt;
     private Instant updatedAt;
     private String createdBy;
     private String updatedBy;
+
+    @ManyToOne
+    @JoinColumn(name = "province_code")
+    private Province province;
+
+    @ManyToOne
+    @JoinColumn(name = "district_code")
+    private District district;
+
+    @ManyToOne
+    @JoinColumn(name = "ward_code")
+    private Ward ward;
+
+    private String detailAddress;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -73,9 +88,45 @@ public class Post {
     @JoinColumn(name = "category_id")
     private Category category;
 
+    @ManyToOne
+    @JoinColumn(name = "vip_id")
+    private Vip vip;
+
     @OneToMany(mappedBy = "post")
-    @JsonIgnore
+    @JsonManagedReference
     private List<Image> images;
+
+    public Province getProvince() {
+        return province;
+    }
+
+    public void setProvince(Province province) {
+        this.province = province;
+    }
+
+    public District getDistrict() {
+        return district;
+    }
+
+    public void setDistrict(District district) {
+        this.district = district;
+    }
+
+    public Ward getWard() {
+        return ward;
+    }
+
+    public void setWard(Ward ward) {
+        this.ward = ward;
+    }
+
+    public String getDetailAddress() {
+        return detailAddress;
+    }
+
+    public void setDetailAddress(String detailAddress) {
+        this.detailAddress = detailAddress;
+    }
 
     public long getId() {
         return id;
@@ -101,14 +152,6 @@ public class Post {
         this.description = description;
     }
 
-    public int getVip() {
-        return vip;
-    }
-
-    public void setVip(int vip) {
-        this.vip = vip;
-    }
-
     public boolean isNotifyOnView() {
         return notifyOnView;
     }
@@ -125,11 +168,11 @@ public class Post {
         this.type = type;
     }
 
-    public double getPrice() {
+    public long getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(long price) {
         this.price = price;
     }
 
@@ -239,6 +282,14 @@ public class Post {
     public void handleBeforeUpdate() {
         this.updatedBy = SecurityUtil.getCurrentUserLogin().orElse("");
         this.updatedAt = Instant.now();
+    }
+
+    public Vip getVip() {
+        return vip;
+    }
+
+    public void setVip(Vip vip) {
+        this.vip = vip;
     }
 
 }

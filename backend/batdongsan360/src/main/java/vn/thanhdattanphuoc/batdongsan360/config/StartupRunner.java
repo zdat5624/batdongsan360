@@ -14,11 +14,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import vn.thanhdattanphuoc.batdongsan360.domain.Category;
 import vn.thanhdattanphuoc.batdongsan360.domain.User;
+import vn.thanhdattanphuoc.batdongsan360.domain.Vip;
 import vn.thanhdattanphuoc.batdongsan360.domain.address.District;
+import vn.thanhdattanphuoc.batdongsan360.domain.address.DistrictDTO;
 import vn.thanhdattanphuoc.batdongsan360.domain.address.Province;
+import vn.thanhdattanphuoc.batdongsan360.domain.address.ProvinceDTO;
 import vn.thanhdattanphuoc.batdongsan360.domain.address.Ward;
+import vn.thanhdattanphuoc.batdongsan360.domain.address.WardDTO;
 import vn.thanhdattanphuoc.batdongsan360.repository.CategoryRepository;
 import vn.thanhdattanphuoc.batdongsan360.repository.UserRepository;
+import vn.thanhdattanphuoc.batdongsan360.repository.VipRepository;
 import vn.thanhdattanphuoc.batdongsan360.repository.address.DistrictRepository;
 import vn.thanhdattanphuoc.batdongsan360.repository.address.ProvinceRepository;
 import vn.thanhdattanphuoc.batdongsan360.repository.address.WardRepository;
@@ -30,6 +35,8 @@ import vn.thanhdattanphuoc.batdongsan360.util.constant.RoleEnum;
 @Component
 public class StartupRunner implements CommandLineRunner {
 
+    private final VipRepository vipRepository;
+
     private final ProvinceRepository provinceRepository;
     private final DistrictRepository districtRepository;
     private final WardRepository wardRepository;
@@ -39,13 +46,14 @@ public class StartupRunner implements CommandLineRunner {
 
     public StartupRunner(ProvinceRepository provinceRepository, DistrictRepository districtRepository,
             WardRepository wardRepository, CategoryRepository categoryRepository, PasswordEncoder passwordEncoder,
-            UserService userService) {
+            UserService userService, VipRepository vipRepository) {
         this.provinceRepository = provinceRepository;
         this.districtRepository = districtRepository;
         this.wardRepository = wardRepository;
         this.categoryRepository = categoryRepository;
         this.passwordEncoder = passwordEncoder;
         this.userService = userService;
+        this.vipRepository = vipRepository;
     }
 
     @Override
@@ -110,31 +118,50 @@ public class StartupRunner implements CommandLineRunner {
             try {
 
                 // Đọc file JSON từ resources
+                // try (InputStream inputStream = new
+                // ClassPathResource("/data/address.json").getInputStream()) {
+                // ObjectMapper objectMapper = new ObjectMapper();
+                // List<Province> provinces = objectMapper.readValue(inputStream, new
+                // TypeReference<List<Province>>() {
+                // });
+
+                // for (Province province : provinces) {
+                // this.provinceRepository.save(province);
+
+                // if (province.getDistricts() != null) {
+                // for (District district : province.getDistricts()) {
+                // district.setProvince(province);
+                // this.districtRepository.save(district);
+
+                // if (district.getWards() != null) {
+                // for (Ward ward : district.getWards()) {
+                // ward.setDistrict(district);
+                // this.wardRepository.save(ward);
+                // }
+                // }
+                // }
+                // }
+                // }
+
+                // System.out.println(">>> INIT ADDRESS DATA TABLE provinces, districs, wards :
+                // SUCCESS");
+
+                // } catch (Exception e) {
+                // e.printStackTrace();
+                // }
+
+                ObjectMapper objectMapper = new ObjectMapper();
+
                 try (InputStream inputStream = new ClassPathResource("/data/address.json").getInputStream()) {
-                    ObjectMapper objectMapper = new ObjectMapper();
-                    List<Province> provinces = objectMapper.readValue(inputStream, new TypeReference<List<Province>>() {
-                    });
+                    List<ProvinceDTO> provinceDTOs = objectMapper.readValue(inputStream,
+                            new TypeReference<List<ProvinceDTO>>() {
+                            });
 
-                    for (Province province : provinces) {
-                        this.provinceRepository.save(province);
-
-                        if (province.getDistricts() != null) {
-                            for (District district : province.getDistricts()) {
-                                district.setProvince(province);
-                                this.districtRepository.save(district);
-
-                                if (district.getWards() != null) {
-                                    for (Ward ward : district.getWards()) {
-                                        ward.setDistrict(district);
-                                        this.wardRepository.save(ward);
-                                    }
-                                }
-                            }
-                        }
+                    for (ProvinceDTO provinceDTO : provinceDTOs) {
+                        Province province = convertToEntity(provinceDTO);
+                        provinceRepository.save(province);
                     }
-
-                    System.out.println(">>> INIT ADDRESS DATA TABLE provinces, districs, wards : SUCCESS");
-
+                    System.out.println(">>> INIT ADDRESS DATA TABLE provinces, districs, wards: SUCCESS");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -180,5 +207,63 @@ public class StartupRunner implements CommandLineRunner {
             System.out.println(">>> INIT ADDRESS DATA TABLE 'categories' : SUCCESS");
         }
 
+        if (vipRepository.count() > 0) {
+            System.out.println(">>> SKIP! INIT ADDRESS DATA TABLE vips: ALREADY HAVE DATA ... ");
+
+        } else {
+
+            ArrayList<Vip> lst = new ArrayList<Vip>();
+            lst.add(new Vip(0, "VIP 0", 0));
+            lst.add(new Vip(1, "VIP 1", 5000));
+            lst.add(new Vip(2, "VIP 2", 10000));
+            lst.add(new Vip(3, "VIP 3", 15000));
+            lst.add(new Vip(4, "VIP 4", 20000));
+
+            this.vipRepository.saveAll(lst);
+
+            System.out.println(">>> INIT ADDRESS DATA TABLE 'vips' : SUCCESS");
+        }
+
     }
+
+    public Province convertToEntity(ProvinceDTO provinceDTO) {
+        Province province = new Province();
+        province.setCode(provinceDTO.getCode());
+        province.setName(provinceDTO.getName());
+        province.setCodename(provinceDTO.getCodename());
+        province.setDivisionType(provinceDTO.getDivisionType());
+        province.setPhoneCode(provinceDTO.getPhoneCode());
+
+        if (provinceDTO.getDistricts() != null) {
+            List<District> districtEntities = new ArrayList<>();
+            for (DistrictDTO districtDTO : provinceDTO.getDistricts()) {
+                District district = new District();
+                district.setCode(districtDTO.getCode());
+                district.setName(districtDTO.getName());
+                district.setCodename(districtDTO.getCodename());
+                district.setDivisionType(districtDTO.getDivisionType());
+                district.setShortCodename(districtDTO.getShortCodename());
+                district.setProvince(province);
+
+                if (districtDTO.getWards() != null) {
+                    List<Ward> wardEntities = new ArrayList<>();
+                    for (WardDTO wardDTO : districtDTO.getWards()) {
+                        Ward ward = new Ward();
+                        ward.setCode(wardDTO.getCode());
+                        ward.setName(wardDTO.getName());
+                        ward.setCodename(wardDTO.getCodename());
+                        ward.setDivisionType(wardDTO.getDivisionType());
+                        ward.setShortCodename(wardDTO.getShortCodename());
+                        ward.setDistrict(district);
+                        wardEntities.add(ward);
+                    }
+                    district.setWards(wardEntities);
+                }
+                districtEntities.add(district);
+            }
+            province.setDistricts(districtEntities);
+        }
+        return province;
+    }
+
 }

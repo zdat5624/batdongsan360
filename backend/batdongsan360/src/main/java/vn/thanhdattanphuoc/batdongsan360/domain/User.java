@@ -35,6 +35,7 @@ public class User {
     private String email;
 
     @NotBlank(message = "Password không được để trống")
+    @JsonIgnore
     private String password;
 
     @Enumerated(EnumType.STRING)

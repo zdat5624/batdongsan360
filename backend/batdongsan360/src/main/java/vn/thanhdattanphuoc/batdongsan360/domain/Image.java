@@ -2,6 +2,8 @@ package vn.thanhdattanphuoc.batdongsan360.domain;
 
 import java.time.Instant;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -18,6 +20,7 @@ public class Image {
 
     @ManyToOne
     @JoinColumn(name = "post_id")
+    @JsonBackReference
     private Post post;
 
     public long getId() {
