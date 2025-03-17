@@ -15,9 +15,17 @@ public class Transaction {
 
     private double amount;
 
+    @Enumerated(EnumType.STRING)
     private TransStatusEnum status;
 
+    @Column(columnDefinition = "TEXT")
+    private String paymentLink;
+
     private String description;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
     private Instant createdAt;
 
@@ -47,12 +55,28 @@ public class Transaction {
         this.status = status;
     }
 
+    public String getPaymentLink() {
+        return paymentLink;
+    }
+
+    public void setPaymentLink(String paymentLink) {
+        this.paymentLink = paymentLink;
+    }
+
     public String getDescription() {
         return description;
     }
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public Instant getCreatedAt() {
@@ -70,18 +94,6 @@ public class Transaction {
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
     }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
 
     @PrePersist
     public void prePersist() {

@@ -1,0 +1,70 @@
+package vn.thanhdattanphuoc.batdongsan360.controller.payment;
+
+import org.springframework.web.bind.annotation.RestController;
+
+import com.nimbusds.jose.shaded.gson.Gson;
+import com.nimbusds.jose.shaded.gson.JsonObject;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import vn.thanhdattanphuoc.batdongsan360.domain.Transaction;
+import vn.thanhdattanphuoc.batdongsan360.domain.request.CreatePaymentDTO;
+import vn.thanhdattanphuoc.batdongsan360.util.error.IdInvalidException;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
+
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+@RestController
+public class PaymentController {
+
+    private final VNPAYService vnpayService;
+
+    public PaymentController(VNPAYService vnpayService) {
+        this.vnpayService = vnpayService;
+    }
+
+    @PostMapping("/api/payment/create")
+    public String createPayment(@RequestBody CreatePaymentDTO createPaymentDTO)
+            throws UnsupportedEncodingException, IdInvalidException {
+
+        return this.vnpayService.createVNPayLink(createPaymentDTO.getAmount());
+    }
+
+    @GetMapping("/api/payment/vnpay-payment-return")
+    public void paymentCompleted(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, IdInvalidException {
+
+        int paymentStatus = this.vnpayService.handleOrderReturn(request);
+
+        String orderInfo = request.getParameter("vnp_OrderInfo");
+        String paymentTime = request.getParameter("vnp_PayDate");
+        String transactionId = request.getParameter("vnp_TransactionNo");
+        String totalPrice = request.getParameter("vnp_Amount");
+
+        String redirectUrl = "http://localhost:5173/payment-result"
+                + "?status=" + paymentStatus
+                + "&orderInfo=" + URLEncoder.encode(orderInfo, StandardCharsets.UTF_8)
+                + "&paymentTime=" + URLEncoder.encode(paymentTime, StandardCharsets.UTF_8)
+                + "&transactionId=" + URLEncoder.encode(transactionId, StandardCharsets.UTF_8)
+                + "&totalPrice=" + URLEncoder.encode(totalPrice, StandardCharsets.UTF_8);
+
+        response.sendRedirect(redirectUrl);
+    }
+
+}

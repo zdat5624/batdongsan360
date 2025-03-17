@@ -28,12 +28,9 @@ public class VipController {
     }
 
     @PutMapping("api/vips/{id}/price")
-    public ResponseEntity<?> updateVipPrice(@PathVariable Long id, @RequestParam long newPrice) {
-        try {
-            Vip updatedVip = vipService.updateVipPrice(id, newPrice);
-            return ResponseEntity.ok(updatedVip);
-        } catch (IdInvalidException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<Vip> updateVipPrice(@PathVariable Long id, @RequestParam long newPrice)
+            throws IdInvalidException {
+        Vip updatedVip = vipService.updateVipPrice(id, newPrice);
+        return ResponseEntity.ok(updatedVip);
     }
 }

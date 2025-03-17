@@ -13,6 +13,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.PostTypeEnum;
 
 @Entity
@@ -23,8 +26,11 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @NotBlank(message = "Tên danh mục không được để trống")
+    @Size(min = 3, max = 100, message = "Tên danh mục phải từ 3 đến 100 ký tự")
     private String name;
 
+    @NotNull(message = "Loại danh mục không được để trống")
     @Enumerated(EnumType.STRING)
     private PostTypeEnum type;
 

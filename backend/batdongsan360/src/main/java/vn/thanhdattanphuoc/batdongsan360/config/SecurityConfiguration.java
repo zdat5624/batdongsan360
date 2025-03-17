@@ -52,7 +52,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(
                         authz -> authz
                                 .requestMatchers("/", "/api/auth/login", "/api/auth/account", "/api/auth/register",
-                                        "/uploads/**")
+                                        "/uploads/**", "/api/payment/vnpay-payment-return")
                                 .permitAll()
                                 .anyRequest().authenticated()
 
