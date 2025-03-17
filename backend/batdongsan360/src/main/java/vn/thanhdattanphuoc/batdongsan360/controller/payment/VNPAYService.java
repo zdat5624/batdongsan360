@@ -21,6 +21,7 @@ import com.nimbusds.jose.shaded.gson.Gson;
 import com.nimbusds.jose.shaded.gson.JsonObject;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 import vn.thanhdattanphuoc.batdongsan360.domain.Transaction;
 import vn.thanhdattanphuoc.batdongsan360.domain.User;
 import vn.thanhdattanphuoc.batdongsan360.repository.TransactionRepository;
@@ -60,16 +61,7 @@ public class VNPAYService {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new IdInvalidException("Không tìm thấy người dùng"));
 
-        // Tạo giao dịch mới
-        Transaction transaction = new Transaction();
-        transaction.setAmount(inputAmount);
-        transaction.setStatus(TransStatusEnum.PENDING);
-        transaction.setDescription("Giao dịch đang chờ thanh toán");
-        transaction.setUser(user); // Gán user nếu cần
-        transaction = transactionRepository.save(transaction); // Lưu vào database
-
-        // Dùng ID làm vnp_TxnRef
-        String vnp_TxnRef = String.valueOf(transaction.getId());
+        String vnp_TxnRef = Config.getRandomNumber(10);
 
         String vnp_IpAddr = "127.0.0.1";
         // String vnp_IpAddr = Config.getIpAddress(req);
@@ -139,8 +131,15 @@ public class VNPAYService {
         queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
         String paymentUrl = Config.vnp_PayUrl + "?" + queryUrl;
 
+        // Tạo giao dịch mới
+        Transaction transaction = new Transaction();
+        transaction.setAmount(inputAmount);
+        transaction.setStatus(TransStatusEnum.PENDING);
+        transaction.setDescription("Giao dịch đang chờ thanh toán");
+        transaction.setUser(user);
         transaction.setPaymentLink(paymentUrl);
-        transactionRepository.save(transaction);
+        transaction.setTxnId(vnp_TxnRef);
+        this.transactionRepository.save(transaction);
 
         JsonObject job = new JsonObject();
         job.addProperty("code", "00");
@@ -150,6 +149,7 @@ public class VNPAYService {
         return new Gson().toJson(job);
     }
 
+    @Transactional
     public int handleOrderReturn(HttpServletRequest request) throws IdInvalidException {
         // Begin process return from VNPAY
         Map fields = new HashMap();
@@ -185,8 +185,7 @@ public class VNPAYService {
             throw new IdInvalidException("Không tìm thấy mã giao dịch.");
         }
 
-        // Tìm giao dịch theo ID
-        Transaction transaction = transactionRepository.findById(Long.parseLong(txnId))
+        Transaction transaction = transactionRepository.findByTxnId(txnId)
                 .orElseThrow(() -> new IdInvalidException("Giao dịch không tồn tại"));
 
         String description;
@@ -255,11 +254,12 @@ public class VNPAYService {
             // Cập nhật trạng thái và mô tả
             transaction.setStatus(status);
             transaction.setDescription(description);
-            transactionRepository.save(transaction);
+            this.transactionRepository.save(transaction);
             if ("00".equals(request.getParameter("vnp_TransactionStatus"))) {
 
                 User user = transaction.getUser();
                 user.setBalance(user.getBalance() + transaction.getAmount());
+                user = this.userRepository.save(user);
                 return 1;
             } else {
                 return 0;

@@ -21,6 +21,9 @@ public class Transaction {
     @Column(columnDefinition = "TEXT")
     private String paymentLink;
 
+    @Column(unique = true)
+    private String txnId;
+
     private String description;
 
     @ManyToOne
@@ -45,6 +48,14 @@ public class Transaction {
 
     public void setAmount(long amount) {
         this.amount = amount;
+    }
+
+    public String getTxnId() {
+        return txnId;
+    }
+
+    public void setTxnId(String txnId) {
+        this.txnId = txnId;
     }
 
     public TransStatusEnum getStatus() {

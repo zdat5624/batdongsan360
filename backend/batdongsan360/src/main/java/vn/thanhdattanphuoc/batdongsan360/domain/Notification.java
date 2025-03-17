@@ -4,7 +4,6 @@ import java.time.Instant;
 
 import jakarta.persistence.*;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.NotificationType;
-import vn.thanhdattanphuoc.batdongsan360.util.constant.PostTypeEnum;
 
 @Entity
 @Table(name = "notifications")

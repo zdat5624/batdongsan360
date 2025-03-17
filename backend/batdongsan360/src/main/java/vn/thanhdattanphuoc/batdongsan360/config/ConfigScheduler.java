@@ -7,7 +7,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import jakarta.transaction.Transactional;
-import vn.thanhdattanphuoc.batdongsan360.domain.Post;
 import vn.thanhdattanphuoc.batdongsan360.repository.PostRepository;
 import vn.thanhdattanphuoc.batdongsan360.repository.TransactionRepository;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.PostStatusEnum;
