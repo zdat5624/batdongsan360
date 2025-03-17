@@ -2,12 +2,9 @@ package vn.thanhdattanphuoc.batdongsan360.controller.payment;
 
 import org.springframework.web.bind.annotation.RestController;
 
-import com.nimbusds.jose.shaded.gson.Gson;
-import com.nimbusds.jose.shaded.gson.JsonObject;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import vn.thanhdattanphuoc.batdongsan360.domain.Transaction;
+
 import vn.thanhdattanphuoc.batdongsan360.domain.request.CreatePaymentDTO;
 import vn.thanhdattanphuoc.batdongsan360.util.error.IdInvalidException;
 
@@ -15,20 +12,10 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 public class PaymentController {

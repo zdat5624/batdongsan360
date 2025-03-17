@@ -13,7 +13,7 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    private double amount;
+    private long amount;
 
     @Enumerated(EnumType.STRING)
     private TransStatusEnum status;
@@ -39,11 +39,11 @@ public class Transaction {
         this.id = id;
     }
 
-    public double getAmount() {
+    public long getAmount() {
         return amount;
     }
 
-    public void setAmount(double amount) {
+    public void setAmount(long amount) {
         this.amount = amount;
     }
 

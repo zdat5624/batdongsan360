@@ -3,6 +3,7 @@ package vn.thanhdattanphuoc.batdongsan360.service;
 import org.springframework.stereotype.Service;
 import vn.thanhdattanphuoc.batdongsan360.domain.Category;
 import vn.thanhdattanphuoc.batdongsan360.domain.Image;
+import vn.thanhdattanphuoc.batdongsan360.domain.Notification;
 import vn.thanhdattanphuoc.batdongsan360.domain.Post;
 import vn.thanhdattanphuoc.batdongsan360.domain.User;
 import vn.thanhdattanphuoc.batdongsan360.domain.Vip;
@@ -10,6 +11,7 @@ import vn.thanhdattanphuoc.batdongsan360.domain.address.District;
 import vn.thanhdattanphuoc.batdongsan360.domain.address.Province;
 import vn.thanhdattanphuoc.batdongsan360.domain.address.Ward;
 import vn.thanhdattanphuoc.batdongsan360.repository.CategoryRepository;
+import vn.thanhdattanphuoc.batdongsan360.repository.NotificationRepository;
 import vn.thanhdattanphuoc.batdongsan360.repository.PostRepository;
 import vn.thanhdattanphuoc.batdongsan360.repository.UserRepository;
 import vn.thanhdattanphuoc.batdongsan360.repository.VipRepository;
@@ -18,6 +20,7 @@ import vn.thanhdattanphuoc.batdongsan360.repository.address.ImageRepository;
 import vn.thanhdattanphuoc.batdongsan360.repository.address.ProvinceRepository;
 import vn.thanhdattanphuoc.batdongsan360.repository.address.WardRepository;
 import vn.thanhdattanphuoc.batdongsan360.util.SecurityUtil;
+import vn.thanhdattanphuoc.batdongsan360.util.constant.NotificationType;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.PostStatusEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.RoleEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.error.IdInvalidException;
@@ -38,11 +41,12 @@ public class PostService {
     private final ProvinceRepository provinceRepository;
     private final DistrictRepository districtRepository;
     private final WardRepository wardRepository;
+    private final NotificationRepository notificationRepository;
 
     public PostService(PostRepository postRepository, UserRepository userRepository,
             CategoryRepository categoryRepository, VipRepository vipRepository, ImageRepository imageRepository,
-            ProvinceRepository provinceRepository, DistrictRepository districtRepository,
-            WardRepository wardRepository) {
+            ProvinceRepository provinceRepository, DistrictRepository districtRepository, WardRepository wardRepository,
+            NotificationRepository notificationRepository) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
@@ -51,6 +55,7 @@ public class PostService {
         this.provinceRepository = provinceRepository;
         this.districtRepository = districtRepository;
         this.wardRepository = wardRepository;
+        this.notificationRepository = notificationRepository;
     }
 
     public Post createPost(Post post, int numberOfDays) throws IdInvalidException {
@@ -256,6 +261,32 @@ public class PostService {
         // Cập nhật ngày chỉnh sửa
         existingPost.setUpdatedAt(Instant.now());
         return postRepository.save(existingPost);
+    }
+
+    public Post updatePostStatus(Long postId, PostStatusEnum newStatus, String message) throws IdInvalidException {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new IdInvalidException("Không tìm thấy bài đăng"));
+
+        // Cập nhật trạng thái
+        post.setStatus(newStatus);
+        postRepository.save(post);
+
+        // Tạo thông báo cho chủ bài viết
+        User postOwner = post.getUser();
+        Notification notification = new Notification();
+        notification.setRead(false);
+        notification.setUser(postOwner);
+
+        if (newStatus.equals(PostStatusEnum.APPROVED)) {
+            notification.setType(NotificationType.POST_APPROVED);
+            notification.setMessage(message);
+        } else if (newStatus.equals(PostStatusEnum.REJECTED)) {
+            notification.setType(NotificationType.POST_REJECTED);
+            notification.setMessage(message);
+        }
+
+        this.notificationRepository.save(notification);
+        return post;
     }
 
 }

@@ -4,6 +4,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -256,6 +257,9 @@ public class VNPAYService {
             transaction.setDescription(description);
             transactionRepository.save(transaction);
             if ("00".equals(request.getParameter("vnp_TransactionStatus"))) {
+
+                User user = transaction.getUser();
+                user.setBalance(user.getBalance() + transaction.getAmount());
                 return 1;
             } else {
                 return 0;
@@ -266,4 +270,5 @@ public class VNPAYService {
         }
 
     }
+
 }
