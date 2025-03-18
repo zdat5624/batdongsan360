@@ -3,6 +3,8 @@ package vn.thanhdattanphuoc.batdongsan360.repository;
 import java.time.Instant;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -20,4 +22,8 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     int updateExpiredTransactions(Instant expiryTime);
 
     Optional<Transaction> findByTxnId(String txnId);
+
+    Page<Transaction> findAll(Pageable pageable);
+
+    Page<Transaction> findByUserId(Long userId, Pageable pageable);
 }

@@ -1,5 +1,10 @@
 package vn.thanhdattanphuoc.batdongsan360.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import vn.thanhdattanphuoc.batdongsan360.domain.Category;
 import vn.thanhdattanphuoc.batdongsan360.domain.Image;
@@ -19,9 +24,11 @@ import vn.thanhdattanphuoc.batdongsan360.repository.address.DistrictRepository;
 import vn.thanhdattanphuoc.batdongsan360.repository.address.ImageRepository;
 import vn.thanhdattanphuoc.batdongsan360.repository.address.ProvinceRepository;
 import vn.thanhdattanphuoc.batdongsan360.repository.address.WardRepository;
+import vn.thanhdattanphuoc.batdongsan360.service.specification.PostSpecification;
 import vn.thanhdattanphuoc.batdongsan360.util.SecurityUtil;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.NotificationType;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.PostStatusEnum;
+import vn.thanhdattanphuoc.batdongsan360.util.constant.PostTypeEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.RoleEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.error.IdInvalidException;
 
@@ -29,6 +36,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PostService {
@@ -177,6 +185,25 @@ public class PostService {
         postRepository.save(post);
     }
 
+    public void deletePostAdmin(Long postId) throws IdInvalidException {
+        // Lấy user hiện tại
+        String userEmail = SecurityUtil.getCurrentUserLogin()
+                .orElseThrow(() -> new IdInvalidException("Chưa đăng nhập"));
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new IdInvalidException("Không tìm thấy người dùng"));
+
+        // Tìm bài đăng
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new IdInvalidException("Không tìm thấy bài đăng"));
+
+        // Kiểm tra quyền sở hữu hoặc quyền admin
+        if (!post.getUser().getEmail().equals(userEmail) && !user.getRole().equals(RoleEnum.ADMIN)) {
+            throw new IdInvalidException("Bạn không có quyền xóa bài đăng này");
+        }
+
+        this.postRepository.delete(post);
+    }
+
     public Post updatePost(Post updatedPost) throws IdInvalidException {
         if (updatedPost.getId() == 0) {
             throw new IdInvalidException("ID của bài đăng không được để trống");
@@ -289,4 +316,49 @@ public class PostService {
         return post;
     }
 
+    public Post getPostById(Long id) throws IdInvalidException {
+
+        Post post = postRepository.findById(id).orElseThrow(
+                () -> new IdInvalidException("Có lỗi xảy ra: không tìm thấy bài đăng id: " + id + ", ..."));
+
+        if (post.isNotifyOnView() && SecurityUtil.getCurrentUserLogin().isPresent()) {
+
+            String userEmail = SecurityUtil.getCurrentUserLogin().get();
+            if (userRepository.findByEmail(userEmail).isPresent()) {
+
+                User user = userRepository.findByEmail(userEmail).get();
+                if (user.getId() != post.getUser().getId() && !user.getRole().equals(RoleEnum.ADMIN)) {
+                    Notification notification = new Notification();
+                    notification.setMessage("Người dùng [" + user.getName() + ", phone="
+                            + user.getPhone() + ", gender=" + user.getGender() + "] đã xem bài đăng " + post.getId()
+                            + " của bạn.");
+                    if (!this.notificationRepository.existsByMessage(notification.getMessage())) {
+                        notification.setUser(post.getUser());
+                        notification.setRead(false);
+                        notification.setType(NotificationType.POST_VIEWED);
+                        notificationRepository.save(notification);
+                    }
+
+                }
+
+            }
+
+        }
+
+        post.setView(post.getView() + 1);
+        this.postRepository.save(post);
+
+        return post;
+    }
+
+    public Page<Post> getFilteredPosts(String title, Long minPrice, Long maxPrice, Double minArea, Double maxArea,
+            PostStatusEnum status, Long provinceCode, Long districtCode, Long wardCode,
+            Long categoryId, PostTypeEnum type, int page, int size) {
+        Specification<Post> spec = PostSpecification.filterBy(title, minPrice, maxPrice, minArea, maxArea, status,
+                provinceCode, districtCode, wardCode, categoryId, type);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(
+                Sort.Order.desc("vip.level"),
+                Sort.Order.desc("createdAt")));
+        return postRepository.findAll(spec, pageable);
+    }
 }

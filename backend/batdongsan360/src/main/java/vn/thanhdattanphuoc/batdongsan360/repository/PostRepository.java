@@ -3,6 +3,7 @@ package vn.thanhdattanphuoc.batdongsan360.repository;
 import java.time.Instant;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,7 +12,7 @@ import jakarta.transaction.Transactional;
 import vn.thanhdattanphuoc.batdongsan360.domain.Post;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.PostStatusEnum;
 
-public interface PostRepository extends JpaRepository<Post, Long> {
+public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificationExecutor<Post> {
 
     @Modifying
     @Transactional

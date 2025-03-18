@@ -14,9 +14,14 @@ import java.util.Random;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.springframework.beans.factory.annotation.Value;
+
+import org.springframework.stereotype.Service;
+
 import jakarta.servlet.http.HttpServletRequest;
 
 public class Config {
+
     public static String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
 
     public static String vnp_ReturnUrl = "http://localhost:8080/api/payment/vnpay-payment-return";

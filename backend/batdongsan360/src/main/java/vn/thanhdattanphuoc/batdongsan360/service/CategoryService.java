@@ -3,6 +3,8 @@ package vn.thanhdattanphuoc.batdongsan360.service;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import vn.thanhdattanphuoc.batdongsan360.domain.Category;
@@ -42,6 +44,10 @@ public class CategoryService {
             return;
         }
         throw new RuntimeException("Category not found with id: " + id);
+    }
+
+    public Page<Category> getCategories(Pageable pageable) {
+        return categoryRepository.findAll(pageable);
     }
 
 }

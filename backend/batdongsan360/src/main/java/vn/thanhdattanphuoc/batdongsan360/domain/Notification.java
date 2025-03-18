@@ -2,6 +2,8 @@ package vn.thanhdattanphuoc.batdongsan360.domain;
 
 import java.time.Instant;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.NotificationType;
 
@@ -23,6 +25,7 @@ public class Notification {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
+    @JsonIgnore
     private User user;
 
     public long getId() {

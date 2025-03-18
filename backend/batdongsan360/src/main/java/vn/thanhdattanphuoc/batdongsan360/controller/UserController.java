@@ -2,11 +2,13 @@ package vn.thanhdattanphuoc.batdongsan360.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -15,9 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import vn.thanhdattanphuoc.batdongsan360.domain.User;
 import vn.thanhdattanphuoc.batdongsan360.domain.request.CreateUserDTO;
+import vn.thanhdattanphuoc.batdongsan360.domain.request.UserFilterRequest;
 import vn.thanhdattanphuoc.batdongsan360.domain.request.UserUpdateDTO;
 import vn.thanhdattanphuoc.batdongsan360.domain.response.ResCreateUserDTO;
 import vn.thanhdattanphuoc.batdongsan360.domain.response.ResUpdateUserDTO;
+import vn.thanhdattanphuoc.batdongsan360.domain.response.UserDTO;
 import vn.thanhdattanphuoc.batdongsan360.service.UserService;
 import vn.thanhdattanphuoc.batdongsan360.util.error.IdInvalidException;
 
@@ -69,11 +73,12 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(fetchUser);
     }
 
-    @GetMapping("/api/users")
-    public ResponseEntity<List<User>> getAllUser() {
+    // @GetMapping("/api/users")
+    // public ResponseEntity<List<User>> getAllUser() {
 
-        return ResponseEntity.status(HttpStatus.OK).body(this.userService.fetchAllUser());
-    }
+    // return
+    // ResponseEntity.status(HttpStatus.OK).body(this.userService.fetchAllUser());
+    // }
 
     @PutMapping("/api/users")
     public ResponseEntity<ResUpdateUserDTO> updateUser(@RequestBody UserUpdateDTO userUpdateDTO)
@@ -92,5 +97,11 @@ public class UserController {
                     "User id " + userUpdateDTO.getId() + " không tồn tại.");
         }
         return ResponseEntity.status(HttpStatus.OK).body(new ResUpdateUserDTO(newUser));
+    }
+
+    @GetMapping("/api/users")
+    public ResponseEntity<Page<UserDTO>> getUsers(@ModelAttribute UserFilterRequest filter) {
+        Page<UserDTO> users = userService.getUsers(filter);
+        return ResponseEntity.ok(users);
     }
 }

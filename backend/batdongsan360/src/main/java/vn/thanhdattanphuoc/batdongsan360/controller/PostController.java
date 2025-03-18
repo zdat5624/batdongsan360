@@ -2,20 +2,25 @@ package vn.thanhdattanphuoc.batdongsan360.controller;
 
 import jakarta.validation.Valid;
 
+import java.util.Optional;
+
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import vn.thanhdattanphuoc.batdongsan360.domain.Post;
 import vn.thanhdattanphuoc.batdongsan360.domain.request.PostRequestDTO;
 import vn.thanhdattanphuoc.batdongsan360.domain.request.UpdatePostStatusDTO;
 import vn.thanhdattanphuoc.batdongsan360.service.PostService;
-
+import vn.thanhdattanphuoc.batdongsan360.util.constant.PostStatusEnum;
+import vn.thanhdattanphuoc.batdongsan360.util.constant.PostTypeEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.error.IdInvalidException;
 
 @RestController
@@ -52,5 +57,36 @@ public class PostController {
             @Valid @RequestBody UpdatePostStatusDTO dto) throws IdInvalidException {
         Post updatedPost = postService.updatePostStatus(dto.getPostId(), dto.getStatus(), dto.getMessage());
         return ResponseEntity.ok(updatedPost);
+    }
+
+    @DeleteMapping("/api/posts/delete/{id}")
+    public ResponseEntity<Void> deletePostAdmin(@PathVariable Long id) throws IdInvalidException {
+        postService.deletePostAdmin(id);
+        return ResponseEntity.status(HttpStatus.OK).body(null);
+    }
+
+    @GetMapping("/api/posts/{id}")
+    public ResponseEntity<Post> getPostById(@PathVariable Long id) throws IdInvalidException {
+        Post post = postService.getPostById(id);
+        return ResponseEntity.status(HttpStatus.OK).body(post);
+    }
+
+    @GetMapping("/api/posts")
+    public Page<Post> getPosts(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) Long minPrice,
+            @RequestParam(required = false) Long maxPrice,
+            @RequestParam(required = false) Double minArea,
+            @RequestParam(required = false) Double maxArea,
+            @RequestParam(required = false) PostStatusEnum status,
+            @RequestParam(required = false) Long provinceCode,
+            @RequestParam(required = false) Long districtCode,
+            @RequestParam(required = false) Long wardCode,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) PostTypeEnum type,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return postService.getFilteredPosts(title, minPrice, maxPrice, minArea, maxArea, status, provinceCode,
+                districtCode, wardCode, categoryId, type, page, size);
     }
 }

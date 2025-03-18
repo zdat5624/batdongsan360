@@ -79,7 +79,7 @@ public class StartupRunner implements CommandLineRunner {
         user_2.setEmail("user@gmail.com");
         user_2.setName("Test2");
         user_2.setPassword(this.passwordEncoder.encode("123456"));
-        user_2.setRole(RoleEnum.ADMIN);
+        user_2.setRole(RoleEnum.USER);
         user_2.setGender(GenderEnum.MALE);
         user_2.setBalance(999999999);
         user_2.setPhone("0123456799");

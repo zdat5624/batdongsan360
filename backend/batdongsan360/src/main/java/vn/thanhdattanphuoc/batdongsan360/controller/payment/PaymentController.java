@@ -15,10 +15,14 @@ import java.nio.charset.StandardCharsets;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @RestController
 public class PaymentController {
+
+    @Value("${vnp.ReturnUrl.frontend}")
+    private String vnp_ReturnUrl_frontend;
 
     private final VNPAYService vnpayService;
 
@@ -44,7 +48,7 @@ public class PaymentController {
         String transactionId = request.getParameter("vnp_TransactionNo");
         String totalPrice = request.getParameter("vnp_Amount");
 
-        String redirectUrl = "http://localhost:5173/payment-result"
+        String redirectUrl = vnp_ReturnUrl_frontend
                 + "?status=" + paymentStatus
                 + "&orderInfo=" + URLEncoder.encode(orderInfo, StandardCharsets.UTF_8)
                 + "&paymentTime=" + URLEncoder.encode(paymentTime, StandardCharsets.UTF_8)
