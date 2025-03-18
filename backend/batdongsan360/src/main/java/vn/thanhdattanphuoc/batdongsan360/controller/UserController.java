@@ -1,7 +1,5 @@
 package vn.thanhdattanphuoc.batdongsan360.controller;
 
-import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,7 +34,7 @@ public class UserController {
         this.passwordEncoder = passwordEncoder;
     }
 
-    @PostMapping("/api/users")
+    @PostMapping("/api/admin/users")
     public ResponseEntity<ResCreateUserDTO> createNewUser(@RequestBody CreateUserDTO createUserDTO)
             throws IdInvalidException {
 
@@ -53,7 +51,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(new ResCreateUserDTO(newUser));
     }
 
-    @DeleteMapping("/api/users/{id}")
+    @DeleteMapping("/api/admin/users{id}")
     public ResponseEntity<Void> deleteUserById(@PathVariable("id") long id) throws IdInvalidException {
 
         if (this.userService.fetchUserById(id) == null) {
@@ -72,13 +70,6 @@ public class UserController {
 
         return ResponseEntity.status(HttpStatus.OK).body(fetchUser);
     }
-
-    // @GetMapping("/api/users")
-    // public ResponseEntity<List<User>> getAllUser() {
-
-    // return
-    // ResponseEntity.status(HttpStatus.OK).body(this.userService.fetchAllUser());
-    // }
 
     @PutMapping("/api/users")
     public ResponseEntity<ResUpdateUserDTO> updateUser(@RequestBody UserUpdateDTO userUpdateDTO)
@@ -99,7 +90,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(new ResUpdateUserDTO(newUser));
     }
 
-    @GetMapping("/api/users")
+    @GetMapping("/api/admin/users")
     public ResponseEntity<Page<UserDTO>> getUsers(@ModelAttribute UserFilterRequest filter) {
         Page<UserDTO> users = userService.getUsers(filter);
         return ResponseEntity.ok(users);

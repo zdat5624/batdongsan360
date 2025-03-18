@@ -2,8 +2,6 @@ package vn.thanhdattanphuoc.batdongsan360.controller;
 
 import jakarta.validation.Valid;
 
-import java.util.Optional;
-
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -52,14 +50,14 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
-    @PutMapping("/api/posts/status")
+    @PutMapping("/api/admin/posts/status")
     public ResponseEntity<Post> updatePostStatus(
             @Valid @RequestBody UpdatePostStatusDTO dto) throws IdInvalidException {
         Post updatedPost = postService.updatePostStatus(dto.getPostId(), dto.getStatus(), dto.getMessage());
         return ResponseEntity.ok(updatedPost);
     }
 
-    @DeleteMapping("/api/posts/delete/{id}")
+    @DeleteMapping("/api/admin/posts/delete/{id}")
     public ResponseEntity<Void> deletePostAdmin(@PathVariable Long id) throws IdInvalidException {
         postService.deletePostAdmin(id);
         return ResponseEntity.status(HttpStatus.OK).body(null);
@@ -84,9 +82,10 @@ public class PostController {
             @RequestParam(required = false) Long wardCode,
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) PostTypeEnum type,
+            @RequestParam(required = false) Long vipId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         return postService.getFilteredPosts(title, minPrice, maxPrice, minArea, maxArea, status, provinceCode,
-                districtCode, wardCode, categoryId, type, page, size);
+                districtCode, wardCode, categoryId, type, vipId, page, size);
     }
 }

@@ -6,7 +6,7 @@ import javax.crypto.spec.SecretKeySpec;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -18,8 +18,8 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
-// import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
-// import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
 import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
 import org.springframework.security.web.SecurityFilterChain;
@@ -51,9 +51,27 @@ public class SecurityConfiguration {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(
                         authz -> authz
-                                .requestMatchers("/", "/api/auth/login", "/api/auth/account", "/api/auth/register",
-                                        "/uploads/**", "/api/payment/vnpay-payment-return")
-                                .permitAll()
+                                .requestMatchers(
+                                        "/",
+                                        "/uploads/**",
+                                        "/api/auth/**",
+                                        "/api/address/**",
+
+                                        "/api/payment/vnpay-payment-return"
+
+                                ).permitAll()
+
+                                .requestMatchers(HttpMethod.GET,
+                                        "/api/posts",
+                                        "/api/posts/{id}",
+                                        "/api/vips",
+                                        "/api/categories",
+                                        "/api/notifications"
+
+                                ).permitAll()
+
+                                // .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
                                 .anyRequest().authenticated()
 
                 )
@@ -86,6 +104,7 @@ public class SecurityConfiguration {
                 getSecretKey()).macAlgorithm(SecurityUtil.JWT_ALGORITHM).build();
         return token -> {
             try {
+
                 return jwtDecoder.decode(token);
             } catch (Exception e) {
                 System.out.println(">>> JWT error: " + e.getMessage());
@@ -94,17 +113,14 @@ public class SecurityConfiguration {
         };
     }
 
-    // @Bean
-    // public JwtAuthenticationConverter jwtAuthenticationConverter() {
-    // JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new
-    // JwtGrantedAuthoritiesConverter();
-    // grantedAuthoritiesConverter.setAuthorityPrefix("");
-    // grantedAuthoritiesConverter.setAuthoritiesClaimName("");
+    @Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+        grantedAuthoritiesConverter.setAuthorityPrefix("");
+        grantedAuthoritiesConverter.setAuthoritiesClaimName("roles");
 
-    // JwtAuthenticationConverter jwtAuthenticationConverter = new
-    // JwtAuthenticationConverter();
-    // jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
-    // return jwtAuthenticationConverter;
-    // }
-
+        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
+        return jwtAuthenticationConverter;
+    }
 }

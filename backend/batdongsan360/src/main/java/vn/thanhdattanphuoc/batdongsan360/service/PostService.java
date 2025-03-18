@@ -353,11 +353,11 @@ public class PostService {
 
     public Page<Post> getFilteredPosts(String title, Long minPrice, Long maxPrice, Double minArea, Double maxArea,
             PostStatusEnum status, Long provinceCode, Long districtCode, Long wardCode,
-            Long categoryId, PostTypeEnum type, int page, int size) {
+            Long categoryId, PostTypeEnum type, Long vipId, int page, int size) {
         Specification<Post> spec = PostSpecification.filterBy(title, minPrice, maxPrice, minArea, maxArea, status,
-                provinceCode, districtCode, wardCode, categoryId, type);
+                provinceCode, districtCode, wardCode, categoryId, type, vipId);
         Pageable pageable = PageRequest.of(page, size, Sort.by(
-                Sort.Order.desc("vip.level"),
+                Sort.Order.desc("vip.vipLevel"),
                 Sort.Order.desc("createdAt")));
         return postRepository.findAll(spec, pageable);
     }

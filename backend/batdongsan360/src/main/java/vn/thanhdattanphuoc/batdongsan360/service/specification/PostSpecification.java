@@ -5,6 +5,7 @@ import org.springframework.data.jpa.domain.Specification;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
 import vn.thanhdattanphuoc.batdongsan360.domain.Post;
+import vn.thanhdattanphuoc.batdongsan360.domain.Vip;
 import vn.thanhdattanphuoc.batdongsan360.domain.address.District;
 import vn.thanhdattanphuoc.batdongsan360.domain.address.Province;
 import vn.thanhdattanphuoc.batdongsan360.domain.address.Ward;
@@ -15,7 +16,7 @@ public class PostSpecification {
     public static Specification<Post> filterBy(
             String title, Long minPrice, Long maxPrice, Double minArea, Double maxArea,
             PostStatusEnum status, Long provinceCode, Long districtCode, Long wardCode,
-            Long categoryId, PostTypeEnum type) {
+            Long categoryId, PostTypeEnum type, Long vipId) {
         return (root, query, criteriaBuilder) -> {
             Predicate predicate = criteriaBuilder.conjunction();
 
@@ -62,7 +63,10 @@ public class PostSpecification {
             if (type != null) {
                 predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("type"), type));
             }
-
+            if (vipId != null) {
+                Join<Post, Vip> vipJoin = root.join("vip");
+                predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(vipJoin.get("id"), vipId));
+            }
             return predicate;
         };
     }

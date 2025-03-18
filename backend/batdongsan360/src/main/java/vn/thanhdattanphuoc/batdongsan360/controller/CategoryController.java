@@ -25,17 +25,17 @@ public class CategoryController {
         this.categoryService = categoryService;
     }
 
-    @PostMapping("/api/categories")
+    @PostMapping("/api/admin/categories")
     public ResponseEntity<Category> createCategory(@Valid @RequestBody Category category) {
         return ResponseEntity.ok(categoryService.createCategory(category));
     }
 
-    @PutMapping("/api/categories")
+    @PutMapping("/api/admin/categories")
     public ResponseEntity<Category> updateCategory(@Valid @RequestBody Category category) {
         return ResponseEntity.ok(categoryService.updateCategory(category));
     }
 
-    @DeleteMapping("/api/categories/{id}")
+    @DeleteMapping("/api/admin/categories/{id}")
     public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
         categoryService.deleteCategory(id);
         return ResponseEntity.ok(null);

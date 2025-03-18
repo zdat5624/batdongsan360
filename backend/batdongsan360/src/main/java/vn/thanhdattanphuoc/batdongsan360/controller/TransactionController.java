@@ -18,7 +18,7 @@ public class TransactionController {
         this.transactionService = transactionService;
     }
 
-    @GetMapping("/api/payment/transactions")
+    @GetMapping("/api/admin/payment/transactions")
     public ResponseEntity<Page<Transaction>> getTransactions(
             @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<Transaction> transactions = transactionService.getTransactions(pageable);

@@ -12,7 +12,6 @@ import org.springframework.stereotype.Repository;
 
 import jakarta.transaction.Transactional;
 import vn.thanhdattanphuoc.batdongsan360.domain.Transaction;
-import java.util.List;
 
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
