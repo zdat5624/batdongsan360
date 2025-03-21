@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import vn.thanhdattanphuoc.batdongsan360.domain.request.CreatePaymentDTO;
-import vn.thanhdattanphuoc.batdongsan360.domain.response.ResCreateUserDTO;
 import vn.thanhdattanphuoc.batdongsan360.util.error.IdInvalidException;
 
 import java.io.IOException;

@@ -45,7 +45,7 @@ public class SecurityConfiguration {
     public SecurityFilterChain filterChain(
             HttpSecurity http,
             CustomAuthenticationEntryPoint customAuthenticationEntryPoint) throws Exception {
-        // .anyRequest().permitAll()
+
         http
                 .csrf(c -> c.disable())
                 .cors(Customizer.withDefaults())
@@ -60,7 +60,7 @@ public class SecurityConfiguration {
                                         "/api/payment/vnpay-payment-return"
 
                                 ).permitAll()
-
+                                .requestMatchers(HttpMethod.GET, "/api/posts/my-posts").authenticated()
                                 .requestMatchers(HttpMethod.GET,
                                         "/api/posts",
                                         "/api/posts/{id}",
@@ -71,7 +71,7 @@ public class SecurityConfiguration {
                                 ).permitAll()
 
                                 // .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                                .requestMatchers("/api/posts/my-posts").authenticated()
+
                                 .anyRequest().authenticated()
 
                 )

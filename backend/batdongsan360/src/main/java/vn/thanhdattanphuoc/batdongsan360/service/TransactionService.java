@@ -1,11 +1,10 @@
 package vn.thanhdattanphuoc.batdongsan360.service;
 
+import java.time.Instant;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import vn.thanhdattanphuoc.batdongsan360.domain.Transaction;
@@ -13,6 +12,7 @@ import vn.thanhdattanphuoc.batdongsan360.domain.User;
 import vn.thanhdattanphuoc.batdongsan360.repository.TransactionRepository;
 import vn.thanhdattanphuoc.batdongsan360.repository.UserRepository;
 import vn.thanhdattanphuoc.batdongsan360.util.SecurityUtil;
+import vn.thanhdattanphuoc.batdongsan360.util.constant.TransStatusEnum;
 
 @Service
 public class TransactionService {
@@ -24,8 +24,9 @@ public class TransactionService {
         this.userRepository = userRepository;
     }
 
-    public Page<Transaction> getTransactions(Pageable pageable) {
-        return transactionRepository.findAll(pageable);
+    public Page<Transaction> getTransactions(Pageable pageable, Long userId, TransStatusEnum status, Instant startDate,
+            Instant endDate) {
+        return transactionRepository.findTransactionsWithFilters(userId, status, startDate, endDate, pageable);
     }
 
     public Page<Transaction> getUserTransactions(Long userId, Pageable pageable) {
