@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
 import vn.thanhdattanphuoc.batdongsan360.domain.User;
 import vn.thanhdattanphuoc.batdongsan360.domain.request.CreateUserDTO;
 import vn.thanhdattanphuoc.batdongsan360.domain.request.UserFilterRequest;
@@ -35,7 +36,7 @@ public class UserController {
     }
 
     @PostMapping("/api/admin/users")
-    public ResponseEntity<ResCreateUserDTO> createNewUser(@RequestBody CreateUserDTO createUserDTO)
+    public ResponseEntity<ResCreateUserDTO> createNewUser(@Valid @RequestBody CreateUserDTO createUserDTO)
             throws IdInvalidException {
 
         boolean isEmailExist = this.userService.isEmailExist(createUserDTO.getEmail());
@@ -51,11 +52,11 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(new ResCreateUserDTO(newUser));
     }
 
-    @DeleteMapping("/api/admin/users{id}")
+    @DeleteMapping("/api/admin/users/{id}")
     public ResponseEntity<Void> deleteUserById(@PathVariable("id") long id) throws IdInvalidException {
 
         if (this.userService.fetchUserById(id) == null) {
-            throw new IdInvalidException("User id " + id + " không hợp lệ");
+            throw new IdInvalidException("Id không hợp lệ: không tìm thấy user id " + id + ", ...");
         }
 
         this.userService.handleDeleteUser(id);
@@ -64,9 +65,12 @@ public class UserController {
     }
 
     @GetMapping("/api/users/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable("id") long id) {
+    public ResponseEntity<User> getUserById(@PathVariable("id") long id) throws IdInvalidException {
 
         User fetchUser = this.userService.fetchUserById(id);
+
+        if (fetchUser == null)
+            throw new IdInvalidException("Id không hợp lệ: không tìm thấy user id " + id + ", ...");
 
         return ResponseEntity.status(HttpStatus.OK).body(fetchUser);
     }

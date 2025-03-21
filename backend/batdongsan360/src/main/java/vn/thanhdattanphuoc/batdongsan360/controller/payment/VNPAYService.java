@@ -15,19 +15,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import com.nimbusds.jose.shaded.gson.Gson;
-import com.nimbusds.jose.shaded.gson.JsonObject;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
+import vn.thanhdattanphuoc.batdongsan360.domain.Notification;
 import vn.thanhdattanphuoc.batdongsan360.domain.Transaction;
 import vn.thanhdattanphuoc.batdongsan360.domain.User;
 import vn.thanhdattanphuoc.batdongsan360.repository.TransactionRepository;
 import vn.thanhdattanphuoc.batdongsan360.repository.UserRepository;
 import vn.thanhdattanphuoc.batdongsan360.util.SecurityUtil;
+import vn.thanhdattanphuoc.batdongsan360.util.constant.NotificationType;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.TransStatusEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.error.IdInvalidException;
 
@@ -42,7 +40,7 @@ public class VNPAYService {
         this.userRepository = userRepository;
     }
 
-    public String createVNPayLink(long inputAmount) throws UnsupportedEncodingException, IdInvalidException {
+    public ResPaymentLinkDTO createVNPayLink(long inputAmount) throws UnsupportedEncodingException, IdInvalidException {
 
         String vnp_Version = "2.1.0";
         String vnp_Command = "pay";
@@ -136,18 +134,15 @@ public class VNPAYService {
         Transaction transaction = new Transaction();
         transaction.setAmount(inputAmount);
         transaction.setStatus(TransStatusEnum.PENDING);
-        transaction.setDescription("Giao dịch đang chờ thanh toán");
+        transaction.setDescription("Giao dịch nạp tiền đang chờ thanh toán");
         transaction.setUser(user);
         transaction.setPaymentLink(paymentUrl);
         transaction.setTxnId(vnp_TxnRef);
         this.transactionRepository.save(transaction);
 
-        JsonObject job = new JsonObject();
-        job.addProperty("code", "00");
-        job.addProperty("message", "success");
-        job.addProperty("data", paymentUrl);
-
-        return new Gson().toJson(job);
+        ResPaymentLinkDTO res = new ResPaymentLinkDTO();
+        res.setPaymentLink(paymentUrl);
+        return res;
     }
 
     @Transactional
@@ -195,7 +190,7 @@ public class VNPAYService {
         switch (transactionStatus) {
             case "00":
                 status = TransStatusEnum.SUCCESS;
-                description = "Giao dịch thành công";
+                description = "Giao dịch nạp tiền thành công";
                 break;
             case "07":
                 status = TransStatusEnum.FAILED;
@@ -261,6 +256,12 @@ public class VNPAYService {
                 User user = transaction.getUser();
                 user.setBalance(user.getBalance() + transaction.getAmount());
                 user = this.userRepository.save(user);
+
+                Notification notification = new Notification();
+                notification.setUser(transaction.getUser());
+                notification.setRead(false);
+                notification.setType(NotificationType.TRANSACTION);
+                notification.setMessage(description + ", tài khoản cộng " + transaction.getAmount());
                 return 1;
             } else {
                 return 0;

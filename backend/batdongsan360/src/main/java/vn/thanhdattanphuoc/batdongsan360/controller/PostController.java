@@ -3,6 +3,9 @@ package vn.thanhdattanphuoc.batdongsan360.controller;
 import jakarta.validation.Valid;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -33,7 +36,7 @@ public class PostController {
     @PostMapping("/api/posts")
     public ResponseEntity<Post> createPost(@Valid @RequestBody PostRequestDTO requestDTO) throws IdInvalidException {
         Post createdPost = postService.createPost(requestDTO.getPost(), requestDTO.getNumberOfDays());
-        return ResponseEntity.ok(createdPost);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdPost);
     }
 
     @PutMapping("/api/posts")
@@ -71,7 +74,6 @@ public class PostController {
 
     @GetMapping("/api/posts")
     public Page<Post> getPosts(
-            @RequestParam(required = false) String title,
             @RequestParam(required = false) Long minPrice,
             @RequestParam(required = false) Long maxPrice,
             @RequestParam(required = false) Double minArea,
@@ -83,9 +85,22 @@ public class PostController {
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) PostTypeEnum type,
             @RequestParam(required = false) Long vipId,
+            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) Boolean isDeleteByUser,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return postService.getFilteredPosts(title, minPrice, maxPrice, minArea, maxArea, status, provinceCode,
-                districtCode, wardCode, categoryId, type, vipId, page, size);
+        return postService.getFilteredPosts(minPrice, maxPrice, minArea, maxArea, status, provinceCode,
+                districtCode, wardCode, categoryId, type, vipId, userId, isDeleteByUser, page, size);
+    }
+
+    @GetMapping("/api/posts/my-posts")
+    public ResponseEntity<Page<Post>> getMyPosts(
+            @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+            @RequestParam(required = false) PostStatusEnum status,
+            @RequestParam(required = false) PostTypeEnum type,
+            @RequestParam(required = false) Long provinceCode) throws IdInvalidException {
+
+        Page<Post> posts = postService.getMyPosts(pageable, status, type, provinceCode);
+        return ResponseEntity.ok(posts);
     }
 }

@@ -26,6 +26,7 @@ public class ResCreateUserDTO {
         this.setEmail(user.getEmail());
         this.setRole(user.getRole());
         this.setPhone(user.getPhone());
+        this.setGender(user.getGender());
         this.setCreatedAt(user.getCreatedAt());
         this.setCreatedBy(user.getCreatedBy());
     }

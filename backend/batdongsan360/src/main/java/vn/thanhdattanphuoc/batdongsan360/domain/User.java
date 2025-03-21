@@ -216,6 +216,8 @@ public class User {
             this.createdBy = this.email;
         }
 
+        this.avatar = "avatar-default.webp";
+
         this.createdAt = Instant.now();
     }
 

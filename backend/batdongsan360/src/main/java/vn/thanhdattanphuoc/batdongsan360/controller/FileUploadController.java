@@ -38,7 +38,7 @@ public class FileUploadController {
             fileNames.add(fileName);
         }
 
-        return ResponseEntity.ok(fileNames);
+        return ResponseEntity.status(HttpStatus.CREATED).body(fileNames);
     }
 
     @PostMapping("/api/upload/img")
@@ -69,7 +69,7 @@ public class FileUploadController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.singletonMap("errors", errors));
         }
 
-        return ResponseEntity.ok(Collections.singletonMap("uploaded", fileNames));
+        return ResponseEntity.status(HttpStatus.CREATED).body(Collections.singletonMap("uploaded", fileNames));
     }
 
 }

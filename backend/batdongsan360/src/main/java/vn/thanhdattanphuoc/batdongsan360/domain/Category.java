@@ -28,7 +28,7 @@ public class Category {
     private long id;
 
     @NotBlank(message = "Tên danh mục không được để trống")
-    @Size(min = 3, max = 100, message = "Tên danh mục phải từ 3 đến 100 ký tự")
+    @Size(min = 5, max = 100, message = "Tên danh mục phải từ 5 đến 100 ký tự")
     private String name;
 
     @NotNull(message = "Loại danh mục không được để trống")

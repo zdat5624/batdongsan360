@@ -71,7 +71,7 @@ public class SecurityConfiguration {
                                 ).permitAll()
 
                                 // .requestMatchers("/api/admin/**").hasRole("ADMIN")
-
+                                .requestMatchers("/api/posts/my-posts").authenticated()
                                 .anyRequest().authenticated()
 
                 )

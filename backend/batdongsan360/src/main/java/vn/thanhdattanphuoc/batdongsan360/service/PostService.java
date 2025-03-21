@@ -10,6 +10,7 @@ import vn.thanhdattanphuoc.batdongsan360.domain.Category;
 import vn.thanhdattanphuoc.batdongsan360.domain.Image;
 import vn.thanhdattanphuoc.batdongsan360.domain.Notification;
 import vn.thanhdattanphuoc.batdongsan360.domain.Post;
+import vn.thanhdattanphuoc.batdongsan360.domain.Transaction;
 import vn.thanhdattanphuoc.batdongsan360.domain.User;
 import vn.thanhdattanphuoc.batdongsan360.domain.Vip;
 import vn.thanhdattanphuoc.batdongsan360.domain.address.District;
@@ -18,6 +19,7 @@ import vn.thanhdattanphuoc.batdongsan360.domain.address.Ward;
 import vn.thanhdattanphuoc.batdongsan360.repository.CategoryRepository;
 import vn.thanhdattanphuoc.batdongsan360.repository.NotificationRepository;
 import vn.thanhdattanphuoc.batdongsan360.repository.PostRepository;
+import vn.thanhdattanphuoc.batdongsan360.repository.TransactionRepository;
 import vn.thanhdattanphuoc.batdongsan360.repository.UserRepository;
 import vn.thanhdattanphuoc.batdongsan360.repository.VipRepository;
 import vn.thanhdattanphuoc.batdongsan360.repository.address.DistrictRepository;
@@ -26,10 +28,12 @@ import vn.thanhdattanphuoc.batdongsan360.repository.address.ProvinceRepository;
 import vn.thanhdattanphuoc.batdongsan360.repository.address.WardRepository;
 import vn.thanhdattanphuoc.batdongsan360.service.specification.PostSpecification;
 import vn.thanhdattanphuoc.batdongsan360.util.SecurityUtil;
+import vn.thanhdattanphuoc.batdongsan360.util.constant.GenderEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.NotificationType;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.PostStatusEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.PostTypeEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.RoleEnum;
+import vn.thanhdattanphuoc.batdongsan360.util.constant.TransStatusEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.error.IdInvalidException;
 
 import java.time.Instant;
@@ -50,11 +54,12 @@ public class PostService {
     private final DistrictRepository districtRepository;
     private final WardRepository wardRepository;
     private final NotificationRepository notificationRepository;
+    private final TransactionRepository transactionRepository;
 
     public PostService(PostRepository postRepository, UserRepository userRepository,
             CategoryRepository categoryRepository, VipRepository vipRepository, ImageRepository imageRepository,
             ProvinceRepository provinceRepository, DistrictRepository districtRepository, WardRepository wardRepository,
-            NotificationRepository notificationRepository) {
+            NotificationRepository notificationRepository, TransactionRepository transactionRepository) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
@@ -64,6 +69,7 @@ public class PostService {
         this.districtRepository = districtRepository;
         this.wardRepository = wardRepository;
         this.notificationRepository = notificationRepository;
+        this.transactionRepository = transactionRepository;
     }
 
     public Post createPost(Post post, int numberOfDays) throws IdInvalidException {
@@ -150,6 +156,14 @@ public class PostService {
         // Lưu bài đăng
         post = postRepository.save(post);
 
+        // Luu transaction
+        Transaction transaction = new Transaction();
+        transaction.setAmount(-totalCost);
+        transaction.setDescription("Thanh toán phí đăng tin " + post.getId() + " thành công");
+        transaction.setStatus(TransStatusEnum.SUCCESS);
+        transaction.setUser(user);
+        this.transactionRepository.save(transaction);
+
         // Xử lý ảnh
         List<Image> images = new ArrayList<>();
         int orderIndex = 0;
@@ -200,6 +214,12 @@ public class PostService {
         if (!post.getUser().getEmail().equals(userEmail) && !user.getRole().equals(RoleEnum.ADMIN)) {
             throw new IdInvalidException("Bạn không có quyền xóa bài đăng này");
         }
+        Notification notification = new Notification();
+        notification.setUser(post.getUser());
+        notification.setRead(false);
+        notification.setMessage("Bài đăng " + post.getId() + "của bạn đã bị quản trị viên xóa vĩnh viễn");
+        notification.setType(NotificationType.POST);
+        notificationRepository.save(notification);
 
         this.postRepository.delete(post);
     }
@@ -272,8 +292,9 @@ public class PostService {
             existingPost.setNotifyOnView(updatedPost.isNotifyOnView());
         }
 
-        // Cập nhật danh sách hình ảnh
         if (updatedPost.getImages() != null && !updatedPost.getImages().isEmpty()) {
+            existingPost.getImages().clear();
+
             List<Image> newImages = new ArrayList<>();
             int orderIndex = 0;
             for (Image img : updatedPost.getImages()) {
@@ -282,7 +303,7 @@ public class PostService {
                 newImages.add(img);
             }
             imageRepository.saveAll(newImages);
-            existingPost.setImages(newImages);
+            existingPost.getImages().addAll(newImages);
         }
 
         // Cập nhật ngày chỉnh sửa
@@ -305,10 +326,10 @@ public class PostService {
         notification.setUser(postOwner);
 
         if (newStatus.equals(PostStatusEnum.APPROVED)) {
-            notification.setType(NotificationType.POST_APPROVED);
+            notification.setType(NotificationType.POST);
             notification.setMessage(message);
         } else if (newStatus.equals(PostStatusEnum.REJECTED)) {
-            notification.setType(NotificationType.POST_REJECTED);
+            notification.setType(NotificationType.POST);
             notification.setMessage(message);
         }
 
@@ -329,13 +350,22 @@ public class PostService {
                 User user = userRepository.findByEmail(userEmail).get();
                 if (user.getId() != post.getUser().getId() && !user.getRole().equals(RoleEnum.ADMIN)) {
                     Notification notification = new Notification();
-                    notification.setMessage("Người dùng [" + user.getName() + ", phone="
-                            + user.getPhone() + ", gender=" + user.getGender() + "] đã xem bài đăng " + post.getId()
-                            + " của bạn.");
+                    if (user.getGender().equals(GenderEnum.FEMALE) || user.getGender().equals(GenderEnum.MALE)
+                            || user.getGender().equals(GenderEnum.OTHER)) {
+
+                        notification.setMessage("Người dùng [" + user.getName() + ", phone="
+                                + user.getPhone() + ", gender=" + user.getGender() + "] đã xem bài đăng " + post.getId()
+                                + " của bạn.");
+                    } else {
+                        notification.setMessage("Người dùng [" + user.getName() + ", phone="
+                                + user.getPhone() + "] đã xem bài đăng " + post.getId()
+                                + " của bạn.");
+                    }
+
                     if (!this.notificationRepository.existsByMessage(notification.getMessage())) {
                         notification.setUser(post.getUser());
                         notification.setRead(false);
-                        notification.setType(NotificationType.POST_VIEWED);
+                        notification.setType(NotificationType.POST);
                         notificationRepository.save(notification);
                     }
 
@@ -351,14 +381,27 @@ public class PostService {
         return post;
     }
 
-    public Page<Post> getFilteredPosts(String title, Long minPrice, Long maxPrice, Double minArea, Double maxArea,
+    public Page<Post> getFilteredPosts(Long minPrice, Long maxPrice, Double minArea, Double maxArea,
             PostStatusEnum status, Long provinceCode, Long districtCode, Long wardCode,
-            Long categoryId, PostTypeEnum type, Long vipId, int page, int size) {
-        Specification<Post> spec = PostSpecification.filterBy(title, minPrice, maxPrice, minArea, maxArea, status,
-                provinceCode, districtCode, wardCode, categoryId, type, vipId);
+            Long categoryId, PostTypeEnum type, Long vipId, Long userId, Boolean isDeleteByUser, int page, int size) {
+
+        Specification<Post> spec = PostSpecification.filterBy(minPrice, maxPrice, minArea, maxArea, status,
+                provinceCode, districtCode, wardCode, categoryId, type, vipId, userId, isDeleteByUser);
+
         Pageable pageable = PageRequest.of(page, size, Sort.by(
                 Sort.Order.desc("vip.vipLevel"),
                 Sort.Order.desc("createdAt")));
         return postRepository.findAll(spec, pageable);
+    }
+
+    public Page<Post> getMyPosts(Pageable pageable, PostStatusEnum status, PostTypeEnum type,
+            Long provinceCode) throws IdInvalidException {
+        String userEmail = SecurityUtil.getCurrentUserLogin()
+                .orElseThrow(() -> new IdInvalidException("Chưa đăng nhập"));
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new IdInvalidException("Không tìm thấy người dùng"));
+
+        return postRepository.findMyPosts(user.getEmail(), status, type, provinceCode,
+                pageable);
     }
 }

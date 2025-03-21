@@ -1,7 +1,6 @@
 package vn.thanhdattanphuoc.batdongsan360.config;
 
 import java.time.Instant;
-import java.util.List;
 
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;

@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import vn.thanhdattanphuoc.batdongsan360.domain.request.CreatePaymentDTO;
+import vn.thanhdattanphuoc.batdongsan360.domain.response.ResCreateUserDTO;
 import vn.thanhdattanphuoc.batdongsan360.util.error.IdInvalidException;
 
 import java.io.IOException;
@@ -16,6 +17,8 @@ import java.nio.charset.StandardCharsets;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @RestController
@@ -31,10 +34,11 @@ public class PaymentController {
     }
 
     @PostMapping("/api/payment/create")
-    public String createPayment(@RequestBody CreatePaymentDTO createPaymentDTO)
+    public ResponseEntity<ResPaymentLinkDTO> createPayment(@RequestBody CreatePaymentDTO createPaymentDTO)
             throws UnsupportedEncodingException, IdInvalidException {
 
-        return this.vnpayService.createVNPayLink(createPaymentDTO.getAmount());
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(this.vnpayService.createVNPayLink(createPaymentDTO.getAmount()));
     }
 
     @GetMapping("/api/payment/vnpay-payment-return")

@@ -34,7 +34,7 @@ public class CategoryService {
             updatedCategory.setType(category.getType());
             return categoryRepository.save(updatedCategory);
         }
-        throw new RuntimeException("Category not found with id: " + category.getId());
+        throw new RuntimeException("Không tìm thấy category với id: " + category.getId());
     }
 
     public void deleteCategory(Long id) {
@@ -43,7 +43,7 @@ public class CategoryService {
             categoryRepository.deleteById(id);
             return;
         }
-        throw new RuntimeException("Category not found with id: " + id);
+        throw new RuntimeException("Không tìm thấy category với id: " + id);
     }
 
     public Page<Category> getCategories(Pageable pageable) {

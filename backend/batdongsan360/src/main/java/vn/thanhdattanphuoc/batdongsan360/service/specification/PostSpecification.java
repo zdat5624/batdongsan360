@@ -5,6 +5,7 @@ import org.springframework.data.jpa.domain.Specification;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
 import vn.thanhdattanphuoc.batdongsan360.domain.Post;
+import vn.thanhdattanphuoc.batdongsan360.domain.User;
 import vn.thanhdattanphuoc.batdongsan360.domain.Vip;
 import vn.thanhdattanphuoc.batdongsan360.domain.address.District;
 import vn.thanhdattanphuoc.batdongsan360.domain.address.Province;
@@ -14,15 +15,12 @@ import vn.thanhdattanphuoc.batdongsan360.util.constant.PostTypeEnum;
 
 public class PostSpecification {
     public static Specification<Post> filterBy(
-            String title, Long minPrice, Long maxPrice, Double minArea, Double maxArea,
+            Long minPrice, Long maxPrice, Double minArea, Double maxArea,
             PostStatusEnum status, Long provinceCode, Long districtCode, Long wardCode,
-            Long categoryId, PostTypeEnum type, Long vipId) {
+            Long categoryId, PostTypeEnum type, Long vipId, Long userId, Boolean deletedByUser) {
         return (root, query, criteriaBuilder) -> {
             Predicate predicate = criteriaBuilder.conjunction();
 
-            if (title != null && !title.isEmpty()) {
-                predicate = criteriaBuilder.and(predicate, criteriaBuilder.like(root.get("title"), "%" + title + "%"));
-            }
             if (minPrice != null) {
                 predicate = criteriaBuilder.and(predicate,
                         criteriaBuilder.greaterThanOrEqualTo(root.get("price"), minPrice));
@@ -66,6 +64,15 @@ public class PostSpecification {
             if (vipId != null) {
                 Join<Post, Vip> vipJoin = root.join("vip");
                 predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(vipJoin.get("id"), vipId));
+            }
+            if (deletedByUser != null) {
+                predicate = criteriaBuilder.and(predicate,
+                        criteriaBuilder.equal(root.get("deletedByUser"), deletedByUser));
+            }
+
+            if (userId != null) {
+                Join<Post, User> userJoin = root.join("user");
+                predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(userJoin.get("id"), userId));
             }
             return predicate;
         };
