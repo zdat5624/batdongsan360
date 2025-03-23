@@ -259,10 +259,10 @@ public class StartupRunner implements CommandLineRunner {
                     post.setWard(selectedWard);
                 }
             }
-            String detailAddress = "Số " + (i % 100) + ", Đường " + i;
+            String detailAddress = null;
 
             // Tạo chuỗi địa chỉ đầy đủ
-            String fullAddress = detailAddress + (selectedWard != null ? ", " + selectedWard.getName() : "") +
+            String fullAddress = (selectedWard != null ? selectedWard.getName() : "") +
                     (selectedDistrict != null ? ", " + selectedDistrict.getName() : "") +
                     ", " + selectedProvince.getName();
 

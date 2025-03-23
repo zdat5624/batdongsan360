@@ -72,8 +72,7 @@ public class Post {
     @JoinColumn(name = "ward_code")
     private Ward ward;
 
-    @NotBlank(message = "Địa chỉ chi tiết không được để trống")
-    @Size(max = 500, message = "Địa chỉ chi tiết không được quá 500 ký tự")
+    @Size(max = 255, message = "Địa chỉ chi tiết không được quá 255 ký tự")
     private String detailAddress;
 
     @ManyToOne
