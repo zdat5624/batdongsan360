@@ -72,7 +72,7 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.OK).body(post);
     }
 
-    @GetMapping("/api/posts")
+    @GetMapping("/api/admin/posts")
     public Page<Post> getPosts(
             @RequestParam(required = false) Long minPrice,
             @RequestParam(required = false) Long maxPrice,
@@ -91,6 +91,25 @@ public class PostController {
             @RequestParam(defaultValue = "10") int size) {
         return postService.getFilteredPosts(minPrice, maxPrice, minArea, maxArea, status, provinceCode,
                 districtCode, wardCode, categoryId, type, vipId, userId, isDeleteByUser, page, size);
+    }
+
+    @GetMapping("/api/posts")
+    public Page<Post> getReviewOrApprovedPosts(
+            @RequestParam(required = false) Long minPrice,
+            @RequestParam(required = false) Long maxPrice,
+            @RequestParam(required = false) Double minArea,
+            @RequestParam(required = false) Double maxArea,
+            @RequestParam(required = false) Long provinceCode,
+            @RequestParam(required = false) Long districtCode,
+            @RequestParam(required = false) Long wardCode,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = true) PostTypeEnum type,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        return postService.getFilteredReviewOrApprovedPosts(
+                minPrice, maxPrice, minArea, maxArea, provinceCode, districtCode, wardCode, categoryId,
+                type, page, size);
     }
 
     @GetMapping("/api/posts/my-posts")

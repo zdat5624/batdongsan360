@@ -393,6 +393,24 @@ public class PostService {
         return postRepository.findAll(spec, pageable);
     }
 
+    public Page<Post> getFilteredReviewOrApprovedPosts(
+            Long minPrice, Long maxPrice, Double minArea, Double maxArea,
+            Long provinceCode, Long districtCode, Long wardCode, Long categoryId,
+            PostTypeEnum type, int page, int size) {
+
+        Specification<Post> spec = PostSpecification.filterBy(
+                minPrice, maxPrice, minArea, maxArea, provinceCode, districtCode, wardCode, categoryId,
+                type);
+
+        spec = spec.and((root, query, criteriaBuilder) -> root.get("status").in(PostStatusEnum.REVIEW_LATER,
+                PostStatusEnum.APPROVED));
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(
+                Sort.Order.desc("vip.vipLevel"),
+                Sort.Order.desc("createdAt")));
+        return postRepository.findAll(spec, pageable);
+    }
+
     public Page<Post> getMyPosts(Pageable pageable, PostStatusEnum status, PostTypeEnum type,
             Long provinceCode) throws IdInvalidException {
         String userEmail = SecurityUtil.getCurrentUserLogin()
