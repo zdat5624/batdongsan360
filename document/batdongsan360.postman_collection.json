@@ -719,12 +719,22 @@
 					"response": []
 				},
 				{
-					"name": "get post paging filter",
+					"name": "[admin]get post paging filter",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbkBnbWFpbC5jb20iLCJhdXRoZW50aWNhdGlvbl9vZl91c2VyIjp7InByaW5jaXBhbCI6eyJwYXNzd29yZCI6bnVsbCwidXNlcm5hbWUiOiJhZG1pbkBnbWFpbC5jb20iLCJhdXRob3JpdGllcyI6W3sicm9sZSI6IkFETUlOIn1dLCJhY2NvdW50Tm9uRXhwaXJlZCI6dHJ1ZSwiYWNjb3VudE5vbkxvY2tlZCI6dHJ1ZSwiY3JlZGVudGlhbHNOb25FeHBpcmVkIjp0cnVlLCJlbmFibGVkIjp0cnVlfSwiY3JlZGVudGlhbHMiOm51bGwsImF1dGhvcml0aWVzIjpbeyJyb2xlIjoiQURNSU4ifV0sImRldGFpbHMiOm51bGwsImF1dGhlbnRpY2F0ZWQiOnRydWV9LCJleHAiOjE4Mjg4NzkzNjYsImlhdCI6MTc0MjQ3OTM2Niwicm9sZXMiOlsiQURNSU4iXX0.a7PLPpk2w0f7ihKc66WtqytMEGgD7rTvlLHxI-h1WWJ4sRLvq3O6uwCisuevqEvvxd6bnfqZs8-YAp12-8-R8Q",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/api/posts?minPrice=0&maxPrice=50000000000000000&minArea=0&maxArea=1000000000&status=PENDING&page=0&size=10\n",
+							"raw": "http://localhost:8080/api/admin/posts?minPrice=0&maxPrice=50000000000000000&minArea=0&maxArea=1000000000&status=PENDING&page=0&size=10\n",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -732,6 +742,7 @@
 							"port": "8080",
 							"path": [
 								"api",
+								"admin",
 								"posts"
 							],
 							"query": [
@@ -865,6 +876,80 @@
 									"key": "provinceCode",
 									"value": "1",
 									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get post paging filter",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/posts?maxPrice=50000000000000000&type=SALE&page=0&size=10\n",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"posts"
+							],
+							"query": [
+								{
+									"key": "minPrice",
+									"value": "0",
+									"disabled": true
+								},
+								{
+									"key": "maxPrice",
+									"value": "50000000000000000"
+								},
+								{
+									"key": "minArea",
+									"value": "0",
+									"disabled": true
+								},
+								{
+									"key": "maxArea",
+									"value": "1000000000",
+									"disabled": true
+								},
+								{
+									"key": "provinceCode",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "districtCode",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "wardCode",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "categoryId",
+									"value": "4",
+									"disabled": true
+								},
+								{
+									"key": "type",
+									"value": "SALE",
+									"description": "SALE/RENT (bắt buộc)"
+								},
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10\n"
 								}
 							]
 						}
