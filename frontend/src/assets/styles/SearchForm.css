@@ -1,0 +1,129 @@
+/* SearchForm.css */
+.search-form-container {
+    background-color: #fff; /* Nền trắng */
+    border: 1px solid #e0e0e0; /* Viền xám nhạt */
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: none; /* Bỏ bóng */
+  }
+  
+  .search-input {
+    background-color: #fff !important; /* Nền trắng */
+    border: 1px solid #e0e0e0 !important; /* Viền xám nhạt */
+    border-radius: 5px !important;
+    color: #000 !important; /* Chữ màu đen */
+    padding: 10px 15px !important;
+    font-size: 16px !important;
+  }
+  
+  .search-input::placeholder {
+    color: #6c757d !important; /* Màu placeholder xám */
+  }
+  
+  .search-input:focus {
+    background-color: #fff !important;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3) !important; /* Hiệu ứng focus */
+    color: #000 !important;
+    border-color: #007bff !important;
+  }
+  
+  .custom-dropdown-toggle {
+    background-color: #fff !important; /* Nền trắng */
+    border: 1px solid #e0e0e0 !important; /* Viền xám nhạt */
+    border-radius: 5px !important;
+    color: #000 !important; /* Chữ màu đen */
+    padding: 10px 15px !important;
+    font-size: 16px !important;
+  }
+  
+  .custom-dropdown-toggle:hover,
+  .custom-dropdown-toggle:focus {
+    background-color: #f8f9fa !important; /* Nền xám nhạt khi hover */
+    color: #000 !important;
+    border-color: #007bff !important;
+  }
+  
+  .custom-dropdown {
+    background-color: #fff !important; /* Nền trắng */
+    border: 1px solid #e0e0e0 !important; /* Viền xám nhạt */
+    border-radius: 5px !important;
+    padding: 10px !important;
+    box-shadow: none !important; /* Bỏ bóng */
+  }
+  
+  .custom-dropdown .dropdown-item {
+    color: #000 !important; /* Chữ màu đen */
+    transition: background-color 0.3s ease !important;
+  }
+  
+  .custom-dropdown .dropdown-item:hover {
+    background-color: #f8f9fa !important; /* Nền xám nhạt khi hover */
+  }
+  
+  /* Tùy chỉnh thanh cuộn */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px; /* Chiều rộng thanh cuộn */
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #fff; /* Nền trắng của track */
+    border-radius: 10px; /* Bo tròn góc track */
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #ced4da; /* Màu xám nhạt của thumb */
+    border-radius: 10px; /* Bo tròn góc thumb */
+    transition: background 0.3s ease; /* Hiệu ứng mượt mà */
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #adb5bd; /* Màu xám đậm hơn khi hover */
+  }
+  
+  .custom-search-button {
+    background-color: #007bff !important; /* Màu xanh dương */
+    border-color: #007bff !important;
+    border-radius: 5px !important;
+    padding: 10px 20px !important;
+    font-size: 16px !important;
+    transition: all 0.3s ease !important;
+  }
+  
+  .custom-search-button:hover {
+    background-color: #0056b3 !important; /* Màu xanh dương đậm khi hover */
+    border-color: #0056b3 !important;
+  }
+  
+  .reset-button {
+    border-radius: 5px !important;
+    padding: 8px 15px !important;
+    font-size: 14px !important;
+    color: #6c757d !important; /* Màu xám */
+    border-color: #6c757d !important;
+  }
+  
+  .reset-button:hover {
+    background-color: #f8f9fa !important;
+    color: #6c757d !important;
+  }
+  
+  .apply-button {
+    border-radius: 5px !important;
+    padding: 8px 15px !important;
+    font-size: 14px !important;
+    background-color: #007bff !important; /* Màu xanh dương */
+    border-color: #007bff !important;
+  }
+  
+  .apply-button:hover {
+    background-color: #0056b3 !important; /* Màu xanh dương đậm khi hover */
+    border-color: #0056b3 !important;
+  }
+  
+  .form-check-label {
+    margin-left: 10px;
+  }
+  
+  .option-spacing {
+    margin-bottom: 15px !important; /* Tăng khoảng cách giữa các option */
+  }

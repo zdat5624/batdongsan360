@@ -1,0 +1,17 @@
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    padding: 10px;
+    position: relative;
+  z-index: 10; /* Đảm bảo card không nằm trên form */
+  background-color: rgb(193, 204, 204);
+}
+  
+.card:hover {
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.5); /* Tạo vệt đen mở */
+}
+.card-img-top {
+    width: 100%; /* Đảm bảo ảnh lấp đầy khung chứa */
+    height: 200px; /* Đặt chiều cao cố định */
+    object-fit: cover; /* Cắt ảnh để lấp đầy khung mà không bị méo */
+    border-radius: 8px; /* Bo tròn nhẹ góc ảnh (tùy chỉnh) */
+}

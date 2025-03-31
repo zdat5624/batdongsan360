@@ -1,0 +1,163 @@
+/* Overlay nền mờ */
+.register-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+/* Container chính của form */
+.register-container {
+  background: #ffffff;
+  border-radius: 15px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 450px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Logo */
+.register-logo {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2c3e50 100%);
+  padding: 1rem; /* Giảm padding từ 1.5rem xuống 1rem */
+  text-align: center;
+}
+
+.logo-img {
+  height: 50px; /* Giảm kích thước logo từ 60px xuống 50px */
+  filter: brightness(0) invert(1);
+}
+
+/* Form đăng ký */
+.register-form {
+  padding: 1.5rem; /* Giảm padding từ 2rem xuống 1.5rem */
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Nút đóng */
+.btn-close-custom {
+  position: absolute;
+  top: 0.75rem; /* Giảm từ 1rem xuống 0.75rem */
+  right: 0.75rem;
+  background: none;
+  border: none;
+  font-size: 1.25rem; /* Giảm từ 1.5rem xuống 1.25rem */
+  color: #666;
+  transition: color 0.3s ease;
+}
+
+.btn-close-custom:hover {
+  color: #000;
+}
+
+/* Tiêu đề */
+.register-form h2 {
+  font-size: 1.5rem; /* Giảm từ 1.8rem xuống 1.5rem */
+  font-weight: 600;
+  color: #1a1a1a;
+  text-align: center;
+  margin-bottom: 1rem; /* Giảm từ 1.5rem xuống 1rem */
+}
+
+/* Thông báo lỗi */
+.error-message {
+  color: #dc3545;
+  font-size: 0.85rem; /* Giảm từ 0.9rem xuống 0.85rem */
+  text-align: center;
+  margin-bottom: 0.75rem; /* Giảm từ 1rem xuống 0.75rem */
+  background: rgba(220, 53, 69, 0.1);
+  padding: 0.4rem; /* Giảm từ 0.5rem xuống 0.4rem */
+  border-radius: 5px;
+}
+
+/* Thông báo thành công */
+.success-message {
+  color: #28a745;
+  font-size: 0.85rem; /* Giảm từ 0.9rem xuống 0.85rem */
+  text-align: center;
+  margin-bottom: 0.75rem; /* Giảm từ 1rem xuống 0.75rem */
+  background: rgba(40, 167, 69, 0.1);
+  padding: 0.4rem; /* Giảm từ 0.5rem xuống 0.4rem */
+  border-radius: 5px;
+}
+
+/* Nhóm input */
+.form-group {
+  margin-bottom: 1rem; /* Giảm từ 1.5rem xuống 1rem */
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.9rem; /* Giảm từ 0.95rem xuống 0.9rem */
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 0.3rem; /* Giảm từ 0.5rem xuống 0.3rem */
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.6rem 0.8rem; /* Giảm từ 0.75rem 1rem xuống 0.6rem 0.8rem */
+  font-size: 0.95rem; /* Giảm từ 1rem xuống 0.95rem */
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #00ddeb;
+  box-shadow: 0 0 5px rgba(0, 221, 235, 0.3);
+}
+
+/* Nút đăng ký */
+.register-button {
+  width: 100%;
+  padding: 0.6rem; /* Giảm từ 0.75rem xuống 0.6rem */
+  font-size: 0.95rem; /* Giảm từ 1rem xuống 0.95rem */
+  font-weight: 500;
+  color: #ffffff;
+  background: #00ddeb;
+  border: none;
+  border-radius: 8px;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.register-button:hover {
+  background: #00b7c2;
+  transform: scale(1.02);
+}
+
+/* Responsive cho mobile */
+@media (max-width: 576px) {
+  .register-container {
+    max-width: 90%;
+  }
+
+  .register-form {
+    padding: 1rem; /* Giảm từ 1.5rem xuống 1rem */
+  }
+
+  .register-form h2 {
+    font-size: 1.3rem; /* Giảm từ 1.5rem xuống 1.3rem */
+  }
+
+  .form-input,
+  .register-button {
+    font-size: 0.85rem; /* Giảm từ 0.9rem xuống 0.85rem */
+    padding: 0.5rem 0.7rem; /* Giảm từ 0.6rem xuống 0.5rem */
+  }
+
+  .error-message,
+  .success-message {
+    font-size: 0.8rem; /* Giảm từ 0.85rem xuống 0.8rem */
+    padding: 0.3rem; /* Giảm từ 0.4rem xuống 0.3rem */
+  }
+}

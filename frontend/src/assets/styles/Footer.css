@@ -1,0 +1,62 @@
+.footer {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2c3e50 100%); /* Gradient nền */
+  font-family: 'Poppins', sans-serif; /* Font hiện đại */
+}
+
+/* Tùy chỉnh các tiêu đề */
+.footer h6 {
+  color: #00ddeb; /* Màu xanh cyan nổi bật */
+  font-size: 1.1rem; /* Giảm kích thước chữ */
+  letter-spacing: 1px;
+}
+
+/* Tùy chỉnh đoạn văn trong footer */
+.footer p {
+  color: #d1d1d1; /* Màu xám nhạt cho độ tương phản */
+  font-size: 0.9rem; /* Giảm kích thước chữ */
+  transition: color 0.3s ease;
+}
+
+.footer p:hover {
+  color: #ffffff; /* Trắng khi hover */
+}
+
+/* Tùy chỉnh liên kết trong cột Thông tin */
+.footer-link {
+  color: #d1d1d1;
+  text-decoration: none;
+  font-size: 0.9rem; /* Giảm kích thước chữ */
+  transition: color 0.3s ease;
+}
+
+.footer-link:hover {
+  color: #00ddeb; /* Màu xanh cyan khi hover */
+}
+
+/* Tùy chỉnh footer-bottom */
+.footer-bottom {
+  background: #0f1419; /* Màu tối hơn cho footer-bottom */
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.footer-bottom p {
+  color: #b0b0b0;
+  font-size: 0.85rem; /* Giảm kích thước chữ */
+}
+
+/* Responsive cho mobile */
+@media (max-width: 767px) {
+  .footer h6 {
+    font-size: 1rem;
+  }
+
+  .footer p,
+  .footer-link {
+    font-size: 0.85rem;
+  }
+
+  .footer-bottom p {
+    font-size: 0.8rem;
+  }
+}
