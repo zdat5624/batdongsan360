@@ -33,4 +33,10 @@ public class VipController {
         Vip updatedVip = vipService.updateVipPrice(id, newPrice);
         return ResponseEntity.ok(updatedVip);
     }
+
+    @GetMapping("api/vips/test")
+    public ResponseEntity<List<Vip>> getAllVipss() {
+        List<Vip> vips = vipService.getAllVips();
+        return ResponseEntity.ok(vips);
+    }
 }

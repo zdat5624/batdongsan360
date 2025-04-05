@@ -51,6 +51,11 @@ public class SecurityConfiguration {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(
                         authz -> authz
+
+                                .requestMatchers("/api/vips/test").hasRole("ADMIN")
+
+                                .requestMatchers(HttpMethod.GET, "/api/posts/my-posts").authenticated()
+
                                 .requestMatchers(
                                         "/",
                                         "/uploads/**",
@@ -60,7 +65,7 @@ public class SecurityConfiguration {
                                         "/api/payment/vnpay-payment-return"
 
                                 ).permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/posts/my-posts").authenticated()
+
                                 .requestMatchers(HttpMethod.GET,
                                         "/api/posts",
                                         "/api/posts/{id}",
@@ -69,8 +74,6 @@ public class SecurityConfiguration {
                                         "/api/notifications"
 
                                 ).permitAll()
-
-                                // .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
                                 .anyRequest().authenticated()
 
@@ -104,7 +107,7 @@ public class SecurityConfiguration {
                 getSecretKey()).macAlgorithm(SecurityUtil.JWT_ALGORITHM).build();
         return token -> {
             try {
-
+                System.out.println("jwt decode:" + jwtDecoder.decode(token));
                 return jwtDecoder.decode(token);
             } catch (Exception e) {
                 System.out.println(">>> JWT error: " + e.getMessage());
@@ -116,7 +119,7 @@ public class SecurityConfiguration {
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
-        grantedAuthoritiesConverter.setAuthorityPrefix("");
+        grantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
         grantedAuthoritiesConverter.setAuthoritiesClaimName("roles");
 
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
