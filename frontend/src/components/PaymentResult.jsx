@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Container, Card, Button, Row, Col, Alert } from "react-bootstrap";

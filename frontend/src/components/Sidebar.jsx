@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
 import React from "react";
 import { NavLink } from "react-router-dom";
@@ -40,6 +41,7 @@ const Sidebar = ({ user, handleLogout }) => {
       font-weight: bold !important;
       color: #007bff !important;
       background-color: #dee2e6 !important;
+      
     }
   `;
 

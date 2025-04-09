@@ -2,15 +2,15 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Dropdown, Form } from "react-bootstrap";
+import { Dropdown, Form, Modal, Button } from "react-bootstrap";
 import { FaCheck } from "react-icons/fa";
 import apiServices from "../services/apiServices";
 
-// Thêm CSS tùy chỉnh để đảm bảo màu nền
+// CSS tùy chỉnh
 const pageStyles = `
   body {
-    background-color: rgb(240, 248, 255); /* Màu nền xanh nhạt cho toàn bộ trang */
-    padding-top: 50px; 
+    background-color: rgb(240, 248, 255);
+    padding-top: 50px;
   }
 `;
 
@@ -69,67 +69,53 @@ const PostAd = () => {
   const [loading, setLoading] = useState(false);
   const [priceInWords, setPriceInWords] = useState("");
   const [error, setError] = useState(null);
-  const [successMessage, setSuccessMessage] = useState(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  // Lấy danh sách tỉnh/thành phố khi component được mount
+  // Fetch dữ liệu ban đầu
   useEffect(() => {
     const fetchProvinces = async () => {
       try {
         const response = await apiServices.get("/api/address/provinces");
-        if (response.data.statusCode === 200) {
-          setProvinces(response.data.data);
-        } else {
-          throw new Error(response.data.message || "Không thể lấy danh sách tỉnh/thành phố.");
-        }
+        if (response.data.statusCode === 200) setProvinces(response.data.data);
+        else throw new Error("Không thể lấy danh sách tỉnh/thành phố.");
       } catch (err) {
-        setError(err.message || "Không thể lấy danh sách tỉnh/thành phố. Vui lòng thử lại sau.");
+        setError(err.message);
       }
     };
     fetchProvinces();
   }, []);
 
-  // Lấy danh sách gói VIP khi component được mount
   useEffect(() => {
     const fetchVips = async () => {
       try {
         const response = await apiServices.get("/api/vips");
-        if (response.data.statusCode === 200) {
-          setVips(response.data.data);
-        } else {
-          throw new Error(response.data.message || "Không thể lấy danh sách gói VIP.");
-        }
+        if (response.data.statusCode === 200) setVips(response.data.data);
+        else throw new Error("Không thể lấy danh sách gói VIP.");
       } catch (err) {
-        setError(err.message || "Không thể lấy danh sách gói VIP. Vui lòng thử lại sau.");
+        setError(err.message);
       }
     };
     fetchVips();
   }, []);
 
-  // Lấy danh sách danh mục khi component được mount
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const response = await apiServices.get("/api/categories?page=0&size=30&sort=id,asc");
-        if (response.data.statusCode === 200) {
-          setCategories(response.data.data.content);
-        } else {
-          throw new Error(response.data.message || "Không thể lấy danh sách danh mục.");
-        }
+        if (response.data.statusCode === 200) setCategories(response.data.data.content);
+        else throw new Error("Không thể lấy danh sách danh mục.");
       } catch (err) {
-        setError(err.message || "Không thể lấy danh sách danh mục. Vui lòng thử lại sau.");
+        setError(err.message);
       }
     };
     fetchCategories();
   }, []);
 
-  // Lọc danh mục theo listingType
   useEffect(() => {
-    const filtered = categories.filter((cat) => cat.type === listingType);
-    setFilteredCategories(filtered);
+    setFilteredCategories(categories.filter((cat) => cat.type === listingType));
     setCategory("");
   }, [listingType, categories]);
 
-  // Lấy danh sách quận/huyện khi tỉnh/thành phố thay đổi
   useEffect(() => {
     if (selectedProvince) {
       const fetchDistricts = async () => {
@@ -140,11 +126,9 @@ const PostAd = () => {
             setSelectedDistrict("");
             setWards([]);
             setSelectedWard("");
-          } else {
-            throw new Error(response.data.message || "Không thể lấy danh sách quận/huyện.");
-          }
+          } else throw new Error("Không thể lấy danh sách quận/huyện.");
         } catch (err) {
-          setError(err.message || "Không thể lấy danh sách quận/huyện. Vui lòng thử lại sau.");
+          setError(err.message);
         }
       };
       fetchDistricts();
@@ -156,7 +140,6 @@ const PostAd = () => {
     }
   }, [selectedProvince]);
 
-  // Lấy danh sách phường/xã khi quận/huyện thay đổi
   useEffect(() => {
     if (selectedDistrict) {
       const fetchWards = async () => {
@@ -165,11 +148,9 @@ const PostAd = () => {
           if (response.data.statusCode === 200) {
             setWards(response.data.data);
             setSelectedWard("");
-          } else {
-            throw new Error(response.data.message || "Không thể lấy danh sách phường/xã.");
-          }
+          } else throw new Error("Không thể lấy danh sách phường/xã.");
         } catch (err) {
-          setError(err.message || "Không thể lấy danh sách phường/xã. Vui lòng thử lại sau.");
+          setError(err.message);
         }
       };
       fetchWards();
@@ -179,32 +160,29 @@ const PostAd = () => {
     }
   }, [selectedDistrict]);
 
-  // Xử lý khi người dùng chọn file hình ảnh
+  // Xử lý hình ảnh
   const handleImageChange = (e) => {
     const selectedFiles = Array.from(e.target.files);
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    const maxImages = 16; // Giới hạn tối đa 16 hình ảnh (dựa trên API, ví dụ post ID 44989 có 16 hình)
-    const validFiles = [];
-    const previews = [];
+    const maxSize = 5 * 1024 * 1024;
+    const maxImages = 16;
 
     if (selectedFiles.length > maxImages) {
-      setError(`Bạn chỉ có thể chọn tối đa ${maxImages} hình ảnh.`);
+      setError(`Chỉ có thể chọn tối đa ${maxImages} hình ảnh.`);
       return;
     }
 
+    const validFiles = [];
+    const previews = [];
+
     for (let file of selectedFiles) {
-      // Kiểm tra định dạng file
       if (!file.type.startsWith("image/")) {
-        setError(`File ${file.name} không phải là hình ảnh. Vui lòng chọn file hình ảnh (jpg, png, v.v.).`);
+        setError(`File ${file.name} không phải hình ảnh.`);
         continue;
       }
-
-      // Kiểm tra kích thước file
       if (file.size > maxSize) {
-        setError(`File ${file.name} vượt quá kích thước cho phép (5MB). Vui lòng chọn file nhỏ hơn.`);
+        setError(`File ${file.name} vượt quá 5MB.`);
         continue;
       }
-
       validFiles.push(file);
       previews.push(URL.createObjectURL(file));
     }
@@ -213,148 +191,97 @@ const PostAd = () => {
     setImagePreviews(previews);
   };
 
-  // Xử lý upload hình ảnh
   const handleImageUpload = async (files) => {
-    if (files.length === 0) {
-      throw new Error("Vui lòng chọn ít nhất một hình ảnh để upload.");
-    }
+    if (files.length === 0) throw new Error("Vui lòng chọn ít nhất một hình ảnh.");
 
     const formData = new FormData();
-    files.forEach((file, index) => {
-      formData.append("files", file); // Thay "files" bằng key mà API yêu cầu nếu cần
-    });
+    files.forEach((file) => formData.append("files", file));
 
     try {
       const token = localStorage.getItem("accessToken");
-      if (!token) {
-        throw new Error("Bạn chưa đăng nhập. Vui lòng đăng nhập để đăng tin.");
-      }
+      if (!token) throw new Error("Vui lòng đăng nhập để đăng tin.");
 
       const response = await apiServices.post("/api/upload/img", formData);
-
       if (response.data.statusCode === 201) {
-        setSuccessMessage("Upload hình ảnh thành công!");
-        const uploadedUrls = response.data.data.uploaded.map((url, index) => ({
-          url,
-          orderIndex: index, // Thêm orderIndex giống cấu trúc API
-        }));
-        return uploadedUrls;
+        return response.data.data.uploaded.map((url, index) => ({ url, orderIndex: index }));
       } else {
-        throw new Error(response.data.message || "Không thể upload hình ảnh. Vui lòng thử lại.");
+        throw new Error(response.data.message || "Không thể upload hình ảnh.");
       }
     } catch (err) {
-      console.error("Lỗi khi upload hình ảnh:", err.response?.data || err.message);
-      throw new Error(err.response?.data?.message || err.message || "Lỗi khi upload hình ảnh. Vui lòng kiểm tra file hoặc thử lại.");
+      throw new Error(err.response?.data?.message || err.message);
     }
   };
 
+  // Xử lý submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    setSuccessMessage(null);
 
     try {
       const token = localStorage.getItem("accessToken");
-      if (!token) {
-        throw new Error("Bạn chưa đăng nhập. Vui lòng đăng nhập để đăng tin.");
-      }
+      if (!token) throw new Error("Vui lòng đăng nhập để đăng tin.");
 
-      // Upload hình ảnh
       const uploadedImageUrls = await handleImageUpload(images);
-      if (uploadedImageUrls.length === 0) {
-        throw new Error("Không có hình ảnh nào được upload thành công. Vui lòng kiểm tra file hình ảnh.");
-      }
+      if (!uploadedImageUrls.length) throw new Error("Không có hình ảnh nào được upload.");
 
-      // Kiểm tra các trường bắt buộc trước khi gửi
-      if (!title) {
-        throw new Error("Vui lòng nhập tiêu đề!");
-      }
-      if (!description) {
-        throw new Error("Vui lòng nhập mô tả!");
-      }
-      if (!price) {
-        throw new Error("Vui lòng nhập giá!");
-      }
-      if (!area) {
-        throw new Error("Vui lòng nhập diện tích!");
-      }
-      if (!category) {
-        throw new Error("Vui lòng chọn danh mục!");
-      }
-      if (!vipPackage) {
-        throw new Error("Vui lòng chọn gói VIP!");
-      }
-      if (!selectedProvince || !selectedDistrict || !selectedWard) {
-        throw new Error("Vui lòng chọn đầy đủ địa chỉ (Tỉnh/Thành phố, Quận/Huyện, Phường/Xã)!");
-      }
-      if (!street || !houseNumber) {
-        throw new Error("Vui lòng nhập số nhà và đường/phố!");
-      }
+      if (!title) throw new Error("Vui lòng nhập tiêu đề!");
+      if (!description) throw new Error("Vui lòng nhập mô tả!");
+      if (!price) throw new Error("Vui lòng nhập giá!");
+      if (!area) throw new Error("Vui lòng nhập diện tích!");
+      if (!category) throw new Error("Vui lòng chọn danh mục!");
+      if (!vipPackage) throw new Error("Vui lòng chọn gói VIP!");
+      if (!selectedProvince || !selectedDistrict || !selectedWard) throw new Error("Vui lòng chọn đầy đủ địa chỉ!");
+      if (!street || !houseNumber) throw new Error("Vui lòng nhập số nhà và đường/phố!");
 
       const selectedCategory = filteredCategories.find((cat) => cat.id === parseInt(category));
-      const selectedVipId = parseInt(vipPackage);
-      const selectedProvinceCode = parseInt(selectedProvince);
-      const selectedDistrictCode = parseInt(selectedDistrict);
-      const selectedWardCode = parseInt(selectedWard);
-
-      // Kiểm tra giá trị NaN
-      if (isNaN(selectedVipId)) {
-        throw new Error("Gói VIP không hợp lệ!");
-      }
-      if (isNaN(selectedProvinceCode) || isNaN(selectedDistrictCode) || isNaN(selectedWardCode)) {
-        throw new Error("Địa chỉ không hợp lệ!");
-      }
       const parsedPrice = parseInt(price.replace(/\D/g, ""), 10);
-      if (isNaN(parsedPrice)) {
-        throw new Error("Giá không hợp lệ!");
-      }
       const parsedArea = parseFloat(area);
-      if (isNaN(parsedArea)) {
-        throw new Error("Diện tích không hợp lệ!");
-      }
 
-      const selectedWardName = wards.find((w) => w.code === selectedWardCode)?.name || "";
+      if (isNaN(parsedPrice)) throw new Error("Giá không hợp lệ!");
+      if (isNaN(parsedArea)) throw new Error("Diện tích không hợp lệ!");
+
+      const selectedWardName = wards.find((w) => w.code === parseInt(selectedWard))?.name || "";
       const detailAddress = `${houseNumber}, ${street}, ${selectedWardName}`;
 
-      // Tạo payload theo cấu trúc của API
       const payload = {
         post: {
           title,
           description,
-          notifyOnView: true, // Mặc định là true giống API
+          notifyOnView: true,
           type: listingType,
           price: parsedPrice,
           area: parsedArea,
           category: { id: selectedCategory.id },
-          vip: { id: selectedVipId },
-          province: { code: selectedProvinceCode },
-          district: { code: selectedDistrictCode },
-          ward: { code: selectedWardCode },
-          detailAddress,
+          vip: { id: parseInt(vipPackage) },
           images: uploadedImageUrls,
-          status: "PENDING", // Mặc định trạng thái là PENDING giống API
-          deletedByUser: false, // Mặc định là false giống API
+          province: { code: parseInt(selectedProvince) },
+          district: { code: parseInt(selectedDistrict) },
+          ward: { code: parseInt(selectedWard) },
+          detailAddress,
+          status: "PENDING",
+          deletedByUser: false,
         },
         numberOfDays: parseInt(numberOfDays),
       };
 
-      // Log payload để kiểm tra
-      console.log("Payload gửi lên API /api/posts:", payload);
-
       const response = await apiServices.post("/api/posts", payload);
       if (response.data.statusCode === 201) {
-        alert("Tin đã được đăng thành công và đang chờ duyệt!");
-        navigate(listingType === "SALE" ? "/sell" : "/rent");
+        setShowSuccessModal(true); // Hiển thị modal thành công
       } else {
         throw new Error(response.data.message || "Lỗi khi đăng tin.");
       }
     } catch (err) {
-      console.error("Lỗi khi đăng tin:", err.response?.data || err.message);
       setError(err.message || "Không thể đăng tin. Vui lòng thử lại sau.");
     } finally {
       setLoading(false);
     }
+  };
+
+  // Đóng modal và chuyển hướng
+  const handleCloseModal = () => {
+    setShowSuccessModal(false);
+    navigate(listingType === "SALE" ? "/sell" : "/rent");
   };
 
   const handlePriceChange = (e) => {
@@ -366,36 +293,21 @@ const PostAd = () => {
 
   const getVipBackgroundColor = (vipLevel) => {
     switch (vipLevel) {
-      case 0:
-        return "#e9ecef";
-      case 1:
-        return "#d4edda";
-      case 2:
-        return "#fff3cd";
-      case 3:
-        return "#ffe5d9";
-      case 4:
-        return "#f8d7da";
-      default:
-        return "#e9ecef";
+      case 0: return "#e9ecef";
+      case 1: return "#d4edda";
+      case 2: return "#fff3cd";
+      case 3: return "#ffe5d9";
+      case 4: return "#f8d7da";
+      default: return "#e9ecef";
     }
   };
 
   return (
     <div className="py-5" style={{ backgroundColor: "rgb(240, 248, 255)", minHeight: "100vh" }}>
       <style>{pageStyles}</style>
-
       <div className="container">
         <h2 className="text-center mb-4 fw-bold text-primary">Đăng Tin Bất Động Sản</h2>
-        <div
-          className="card p-4 shadow"
-          style={{
-            border: "none",
-            borderRadius: "15px",
-            maxWidth: "800px",
-            margin: "0 auto",
-          }}
-        >
+        <div className="card p-4 shadow" style={{ border: "none", borderRadius: "15px", maxWidth: "800px", margin: "0 auto" }}>
           {loading ? (
             <div className="text-center py-5">
               <div className="spinner-border text-primary" role="status">
@@ -406,129 +318,63 @@ const PostAd = () => {
           ) : (
             <form onSubmit={handleSubmit}>
               {error && <div className="alert alert-danger">{error}</div>}
-              {successMessage && <div className="alert alert-success">{successMessage}</div>}
 
               <div className="row g-4">
                 <div className="col-md-6">
                   <label className="form-label fw-bold">Loại tin đăng:</label>
-                  <select
-                    className="form-select"
-                    value={listingType}
-                    onChange={(e) => setListingType(e.target.value)}
-                    required
-                  >
+                  <select className="form-select" value={listingType} onChange={(e) => setListingType(e.target.value)} required>
                     <option value="SALE">Bán</option>
                     <option value="RENT">Cho thuê</option>
                   </select>
                 </div>
                 <div className="col-md-6">
                   <label className="form-label fw-bold">Tiêu đề:</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Nhập tiêu đề"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    required
-                  />
+                  <input type="text" className="form-control" placeholder="Nhập tiêu đề" value={title} onChange={(e) => setTitle(e.target.value)} required />
                 </div>
               </div>
 
               <div className="mb-4 mt-4">
                 <label className="form-label fw-bold">Mô tả:</label>
-                <textarea
-                  className="form-control"
-                  rows="4"
-                  placeholder="Nhập mô tả chi tiết"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  required
-                />
+                <textarea className="form-control" rows="4" placeholder="Nhập mô tả chi tiết" value={description} onChange={(e) => setDescription(e.target.value)} required />
               </div>
 
               <div className="row g-4">
                 <div className="col-md-6">
                   <label className="form-label fw-bold">Giá (VNĐ):</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Nhập giá"
-                    value={price}
-                    onChange={handlePriceChange}
-                    required
-                  />
+                  <input type="text" className="form-control" placeholder="Nhập giá" value={price} onChange={handlePriceChange} required />
                   {priceInWords && <p className="mt-1 text-primary">{priceInWords}</p>}
                 </div>
                 <div className="col-md-6">
                   <label className="form-label fw-bold">Diện tích (m²):</label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    placeholder="Nhập diện tích"
-                    value={area}
-                    onChange={(e) => setArea(e.target.value)}
-                    required
-                    min="0"
-                    step="0.1"
-                  />
+                  <input type="number" className="form-control" placeholder="Nhập diện tích" value={area} onChange={(e) => setArea(e.target.value)} required min="0" step="0.1" />
                 </div>
               </div>
 
               <div className="row g-4 mt-2">
                 <div className="col-md-6">
                   <label className="form-label fw-bold">Danh mục:</label>
-                  <select
-                    className="form-select"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    required
-                  >
+                  <select className="form-select" value={category} onChange={(e) => setCategory(e.target.value)} required>
                     <option value="">-- Chọn danh mục --</option>
                     {filteredCategories.map((cat) => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </option>
+                      <option key={cat.id} value={cat.id}>{cat.name}</option>
                     ))}
                   </select>
                 </div>
                 <div className="col-md-6">
                   <label className="form-label fw-bold">Gói VIP:</label>
                   <Dropdown>
-                    <Dropdown.Toggle
-                      variant="outline-secondary"
-                      id="dropdown-vip"
-                      className="w-100 text-start"
-                      style={{ backgroundColor: "#f8f9fa", borderColor: "#ced4da" }}
-                    >
-                      {vipPackage
-                        ? vips.find((vip) => vip.id === parseInt(vipPackage))?.name || "-- Chọn gói VIP --"
-                        : "-- Chọn gói VIP --"}
+                    <Dropdown.Toggle variant="outline-secondary" id="dropdown-vip" className="w-100 text-start" style={{ backgroundColor: "#f8f9fa", borderColor: "#ced4da" }}>
+                      {vipPackage ? vips.find((vip) => vip.id === parseInt(vipPackage))?.name || "-- Chọn gói VIP --" : "-- Chọn gói VIP --"}
                     </Dropdown.Toggle>
                     <Dropdown.Menu className="w-100">
                       {vips.map((vip) => (
                         <Dropdown.Item
                           key={vip.id}
                           onClick={() => setVipPackage(vip.id.toString())}
-                          style={{
-                            backgroundColor: getVipBackgroundColor(vip.vipLevel),
-                            borderBottom: "1px solid #dee2e6",
-                            padding: "10px 15px",
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                          }}
+                          style={{ backgroundColor: getVipBackgroundColor(vip.vipLevel), borderBottom: "1px solid #dee2e6", padding: "10px 15px", display: "flex", justifyContent: "space-between", alignItems: "center" }}
                         >
-                          <span>
-                            {vip.name} (Giá: {vip.pricePerDay.toLocaleString("vi-VN")} VNĐ/ngày)
-                          </span>
-                          {vipPackage === vip.id.toString() && (
-                            <span
-                              className="badge bg-success text-white rounded-pill px-2 py-1"
-                              style={{ fontSize: "0.8rem" }}
-                            >
-                              <FaCheck className="me-1" /> Active
-                            </span>
-                          )}
+                          <span>{vip.name} (Giá: {vip.pricePerDay.toLocaleString("vi-VN")} VNĐ/ngày)</span>
+                          {vipPackage === vip.id.toString() && <span className="badge bg-success text-white rounded-pill px-2 py-1"><FaCheck className="me-1" /> Active</span>}
                         </Dropdown.Item>
                       ))}
                     </Dropdown.Menu>
@@ -538,48 +384,26 @@ const PostAd = () => {
 
               <div className="mt-4">
                 <label className="form-label fw-bold">Số ngày hiển thị:</label>
-                <input
-                  type="number"
-                  className="form-control"
-                  value={numberOfDays}
-                  onChange={(e) => setNumberOfDays(e.target.value)}
-                  min="1"
-                  required
-                />
+                <input type="number" className="form-control" value={numberOfDays} onChange={(e) => setNumberOfDays(e.target.value)} min="1" required />
               </div>
 
               <h5 className="mt-4 fw-bold text-primary">Địa chỉ</h5>
               <div className="row g-4">
                 <div className="col-md-6">
                   <label className="form-label fw-bold">Tỉnh/Thành phố:</label>
-                  <select
-                    className="form-select"
-                    value={selectedProvince}
-                    onChange={(e) => setSelectedProvince(e.target.value)}
-                    required
-                  >
+                  <select className="form-select" value={selectedProvince} onChange={(e) => setSelectedProvince(e.target.value)} required>
                     <option value="">-- Chọn --</option>
                     {provinces.map((p) => (
-                      <option key={p.code} value={p.code}>
-                        {p.name}
-                      </option>
+                      <option key={p.code} value={p.code}>{p.name}</option>
                     ))}
                   </select>
                 </div>
                 <div className="col-md-6">
                   <label className="form-label fw-bold">Quận/Huyện:</label>
-                  <select
-                    className="form-select"
-                    value={selectedDistrict}
-                    onChange={(e) => setSelectedDistrict(e.target.value)}
-                    required
-                    disabled={!selectedProvince}
-                  >
+                  <select className="form-select" value={selectedDistrict} onChange={(e) => setSelectedDistrict(e.target.value)} required disabled={!selectedProvince}>
                     <option value="">-- Chọn --</option>
                     {districts.map((d) => (
-                      <option key={d.code} value={d.code}>
-                        {d.name}
-                      </option>
+                      <option key={d.code} value={d.code}>{d.name}</option>
                     ))}
                   </select>
                 </div>
@@ -588,88 +412,59 @@ const PostAd = () => {
               <div className="row g-4 mt-2">
                 <div className="col-md-6">
                   <label className="form-label fw-bold">Phường/Xã:</label>
-                  <select
-                    className="form-select"
-                    value={selectedWard}
-                    onChange={(e) => setSelectedWard(e.target.value)}
-                    required
-                    disabled={!selectedDistrict}
-                  >
+                  <select className="form-select" value={selectedWard} onChange={(e) => setSelectedWard(e.target.value)} required disabled={!selectedDistrict}>
                     <option value="">-- Chọn --</option>
                     {wards.map((w) => (
-                      <option key={w.code} value={w.code}>
-                        {w.name}
-                      </option>
+                      <option key={w.code} value={w.code}>{w.name}</option>
                     ))}
                   </select>
                 </div>
                 <div className="col-md-6">
                   <label className="form-label fw-bold">Đường/Phố:</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Nhập Đường/Phố"
-                    value={street}
-                    onChange={(e) => setStreet(e.target.value)}
-                    required
-                  />
+                  <input type="text" className="form-control" placeholder="Nhập Đường/Phố" value={street} onChange={(e) => setStreet(e.target.value)} required />
                 </div>
               </div>
 
               <div className="mt-4">
                 <label className="form-label fw-bold">Số nhà:</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Nhập số nhà"
-                  value={houseNumber}
-                  onChange={(e) => setHouseNumber(e.target.value)}
-                  required
-                />
+                <input type="text" className="form-control" placeholder="Nhập số nhà" value={houseNumber} onChange={(e) => setHouseNumber(e.target.value)} required />
               </div>
 
               <div className="mt-4">
                 <label className="form-label fw-bold">Hình ảnh (tối đa 16 hình):</label>
-                <input
-                  type="file"
-                  className="form-control"
-                  accept="image/*"
-                  multiple
-                  onChange={handleImageChange}
-                  required
-                />
+                <input type="file" className="form-control" accept="image/*" multiple onChange={handleImageChange} required />
                 {imagePreviews.length > 0 && (
                   <div className="mt-2 d-flex flex-wrap gap-2">
                     {imagePreviews.map((preview, index) => (
-                      <img
-                        key={index}
-                        src={preview}
-                        alt={`Preview ${index}`}
-                        style={{
-                          width: "100px",
-                          height: "100px",
-                          objectFit: "cover",
-                          borderRadius: "5px",
-                          border: "1px solid #dee2e6",
-                        }}
-                      />
+                      <img key={index} src={preview} alt={`Preview ${index}`} style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "5px", border: "1px solid #dee2e6" }} />
                     ))}
                   </div>
                 )}
               </div>
 
               <div className="text-center mt-5">
-                <button
-                  type="submit"
-                  className="btn btn-success"
-                  style={{ borderRadius: "25px", padding: "10px 25px", fontWeight: "bold" }}
-                >
+                <button type="submit" className="btn btn-success" style={{ borderRadius: "25px", padding: "10px 25px", fontWeight: "bold" }}>
                   Đăng Tin
                 </button>
               </div>
             </form>
           )}
         </div>
+
+        {/* Modal thông báo thành công */}
+        <Modal show={showSuccessModal} onHide={handleCloseModal} centered>
+          <Modal.Header closeButton>
+            <Modal.Title>Đăng Tin Thành Công</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <p className="text-center">Tin của bạn đã được đăng thành công và đang chờ duyệt!</p>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="success" onClick={handleCloseModal}>
+              OK
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </div>
   );
