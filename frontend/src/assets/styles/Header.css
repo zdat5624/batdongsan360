@@ -1,0 +1,233 @@
+.header {
+  background-color: #1a252f !important;
+  border-bottom: 1px solid #34495e;
+}
+
+.nav-link-custom {
+  color: #ecf0f1 !important;
+  font-size: 1.1rem;
+  font-weight: 500;
+  padding: 10px 20px !important;
+  transition: color 0.3s ease;
+}
+
+.nav-link-custom:hover {
+  color: #007bff !important;
+}
+
+.btn-custom {
+  border-radius: 20px;
+  padding: 8px 20px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-login {
+  border-color: #ecf0f1 !important;
+  color: #ecf0f1 !important;
+}
+
+.btn-login:hover {
+  background-color: #34495e !important;
+  border-color: #34495e !important;
+}
+
+.btn-register {
+  background-color: #007bff !important;
+  border-color: #007bff !important;
+}
+
+.btn-register:hover {
+  background-color: #0056b3 !important;
+  border-color: #0056b3 !important;
+}
+
+.btn-post-ad {
+  background-color: #ffc107 !important;
+  border-color: #ffc107 !important;
+  color: #1a252f !important;
+}
+
+.btn-post-ad:hover {
+  background-color: #e0a800 !important;
+  border-color: #e0a800 !important;
+}
+
+.dropdown-toggle-custom {
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+.dropdown-toggle-custom::after {
+  display: none !important;
+}
+
+.dropdown-menu-custom {
+  background-color: #fff !important;
+  border: none !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.dropdown-menu-custom.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.dropdown-menu-custom .dropdown-item {
+  padding: 10px 15px;
+  font-size: 0.95rem;
+  color: #333 !important;
+  transition: background-color 0.3s ease;
+}
+
+.dropdown-menu-custom .dropdown-item:hover {
+  background-color: #f0f8ff !important;
+  color: #007bff !important;
+}
+
+.dropdown-menu-custom .dropdown-header {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #007bff;
+  padding: 10px 15px;
+}
+
+.user-dropdown {
+  min-width: 250px !important;
+}
+
+.notification-dropdown {
+  min-width: 350px !important;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.notification-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.notification-item {
+  padding: 12px 15px !important;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.notification-unread {
+  background-color: #e6f3ff !important;
+  font-weight: 500;
+}
+
+.notification-icon {
+  font-size: 1.2rem;
+}
+
+.notification-view-all {
+  color: #007bff !important;
+  font-weight: 500;
+}
+
+.notification-view-all:hover {
+  background-color: #f0f8ff !important;
+  color: #0056b3 !important;
+}
+
+.logout-confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1050;
+}
+
+.logout-confirm-container {
+  background: #fff;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+.logout-confirm-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background: #007bff;
+  color: #fff;
+}
+
+.logout-confirm-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.btn-close-custom {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.logout-confirm-body {
+  padding: 20px;
+  text-align: center;
+}
+
+.logout-confirm-body p {
+  margin: 0 0 20px;
+  font-size: 1rem;
+  color: #333;
+}
+
+.logout-confirm-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.logout-confirm-buttons button {
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-cancel {
+  background-color: #6c757d;
+  color: #fff;
+}
+
+.btn-cancel:hover {
+  background-color: #5a6268;
+}
+
+.btn-confirm {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+.btn-confirm:hover {
+  background-color: #c82333;
+}

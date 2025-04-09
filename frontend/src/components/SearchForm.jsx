@@ -1,0 +1,240 @@
+import React, { useState, useEffect } from "react";
+import { Dropdown, Form, Button, Container, Row, Col } from "react-bootstrap";
+import apiServices from "../services/apiServices";
+import "../assets/styles/SearchForm.css";
+
+const SearchForm = ({ onSearch, hideTransactionType }) => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [propertyTypes, setPropertyTypes] = useState({});
+  const [categories, setCategories] = useState([]);
+  const [priceRange, setPriceRange] = useState([null, null]);
+  const [areaRange, setAreaRange] = useState([null, null]);
+
+  const isSellPage = window.location.pathname.includes("/sell");
+  const isRentPage = window.location.pathname.includes("/rent");
+  const isHomePage = !isSellPage && !isRentPage;
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const types = isHomePage ? ["SALE", "RENT"] : [isSellPage ? "SALE" : "RENT"];
+        const categoriesData = [];
+        for (const type of types) {
+          const response = await apiServices.get(`/api/categories?page=0&size=30&sort=id,asc&type=${type}`);
+          if (response.data.statusCode === 200) {
+            categoriesData.push(...response.data.data.content);
+          }
+        }
+        setCategories(categoriesData);
+        const initialPropertyTypes = {};
+        categoriesData.forEach((category) => {
+          initialPropertyTypes[category.id] = false;
+        });
+        setPropertyTypes(initialPropertyTypes);
+      } catch (err) {
+        console.error("Lỗi khi lấy danh sách categories:", err);
+      }
+    };
+    fetchCategories();
+  }, [isSellPage, isRentPage, isHomePage]);
+
+  const handlePropertyTypeChange = (e) => {
+    const { name, checked } = e.target;
+    setPropertyTypes((prev) => ({ ...prev, [name]: checked }));
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const selectedCategoryIds = Object.keys(propertyTypes)
+      .filter((key) => propertyTypes[key])
+      .map((key) => parseInt(key, 10));
+    const searchData = {
+      searchQuery: searchQuery.trim(),
+      categoryIds: selectedCategoryIds.length > 0 ? selectedCategoryIds : [],
+      price: { min: priceRange[0], max: priceRange[1] },
+      area: { min: areaRange[0], max: areaRange[1] },
+    };
+    onSearch(searchData);
+  };
+
+  const handleReset = () => {
+    setSearchQuery("");
+    setPriceRange([null, null]);
+    setAreaRange([null, null]);
+    const resetPropertyTypes = { ...propertyTypes };
+    Object.keys(resetPropertyTypes).forEach((key) => {
+      resetPropertyTypes[key] = false;
+    });
+    setPropertyTypes(resetPropertyTypes);
+    onSearch({});
+  };
+
+  const allPriceOptions = {
+    sell: [
+      { label: "Tất cả mức giá", min: null, max: null },
+      { label: "Dưới 500 triệu", min: 0, max: 500000000 },
+      { label: "500 - 800 triệu", min: 500000000, max: 800000000 },
+      { label: "800 triệu - 1 tỷ", min: 800000000, max: 1000000000 },
+      { label: "1 - 2 tỷ", min: 1000000000, max: 2000000000 },
+      { label: "2 - 3 tỷ", min: 2000000000, max: 3000000000 },
+      { label: "3 - 5 tỷ", min: 3000000000, max: 5000000000 },
+      { label: "5 - 7 tỷ", min: 5000000000, max: 7000000000 },
+      { label: "7 - 10 tỷ", min: 7000000000, max: 10000000000 },
+      { label: "10 - 20 tỷ", min: 10000000000, max: 20000000000 },
+      { label: "20 - 30 tỷ", min: 20000000000, max: 30000000000 },
+      { label: "30 - 40 tỷ", min: 30000000000, max: 40000000000 },
+      { label: "40 - 60 tỷ", min: 40000000000, max: 60000000000 },
+      { label: "Trên 60 tỷ", min: 60000000000, max: null },
+    ],
+    rent: [
+      { label: "Tất cả mức giá", min: null, max: null },
+      { label: "Dưới 1 triệu", min: 0, max: 1000000 },
+      { label: "1 - 3 triệu", min: 1000000, max: 3000000 },
+      { label: "3 - 5 triệu", min: 3000000, max: 5000000 },
+      { label: "5 - 10 triệu", min: 5000000, max: 10000000 },
+      { label: "10 - 40 triệu", min: 10000000, max: 40000000 },
+      { label: "40 - 70 triệu", min: 40000000, max: 70000000 },
+      { label: "70 - 100 triệu", min: 70000000, max: 100000000 },
+      { label: "Trên 100 triệu", min: 100000000, max: null },
+    ],
+  };
+
+  const priceOptions = isSellPage
+    ? allPriceOptions.sell
+    : isRentPage
+    ? allPriceOptions.rent
+    : [...allPriceOptions.sell, ...allPriceOptions.rent];
+
+  const areaOptions = [
+    { label: "Tất cả diện tích", min: null, max: null },
+    { label: "Dưới 30 m²", min: 0, max: 30 },
+    { label: "30 - 50 m²", min: 30, max: 50 },
+    { label: "50 - 80 m²", min: 50, max: 80 },
+    { label: "80 - 100 m²", min: 80, max: 100 },
+    { label: "100 - 150 m²", min: 100, max: 150 },
+    { label: "150 - 200 m²", min: 150, max: 200 },
+    { label: "200 - 250 m²", min: 200, max: 250 },
+    { label: "250 - 300 m²", min: 250, max: 300 },
+    { label: "300 - 500 m²", min: 300, max: 500 },
+    { label: "Trên 500 m²", min: 500, max: null },
+  ];
+
+  const filteredCategories = categories.filter((category) => {
+    if (isSellPage) return category.type === "SALE";
+    if (isRentPage) return category.type === "RENT";
+    return true;
+  });
+
+  return (
+    <Container className="search-form-container">
+      <Form onSubmit={handleSearch}>
+        <Row className="g-2 align-items-center">
+          <Col xs={12} md={3}>
+            <Form.Control
+              type="text"
+              placeholder="Tìm kiếm..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-input"
+            />
+          </Col>
+          <Col xs={12} md={3}>
+            <Dropdown>
+              <Dropdown.Toggle variant="outline-secondary" className="w-100 custom-dropdown-toggle">
+                Loại nhà đất
+              </Dropdown.Toggle>
+              <Dropdown.Menu className="custom-dropdown">
+                {filteredCategories.length > 0 ? (
+                  filteredCategories.map((category) => (
+                    <Form.Check
+                      key={category.id}
+                      type="checkbox"
+                      label={category.name}
+                      name={category.id.toString()}
+                      checked={propertyTypes[category.id] || false}
+                      onChange={handlePropertyTypeChange}
+                      className="px-2 py-1"
+                    />
+                  ))
+                ) : (
+                  <Dropdown.Item>Không có loại nhà đất nào phù hợp.</Dropdown.Item>
+                )}
+                <div className="d-flex justify-content-end p-2 button-container">
+                  <Button variant="outline-secondary" onClick={handleReset} size="sm" className="me-2">
+                    Đặt lại
+                  </Button>
+                  <Button variant="primary" onClick={handleSearch} size="sm">
+                    Áp dụng
+                  </Button>
+                </div>
+              </Dropdown.Menu>
+            </Dropdown>
+          </Col>
+          <Col xs={12} md={3}>
+            <Dropdown>
+              <Dropdown.Toggle variant="outline-secondary" className="w-100 custom-dropdown-toggle">
+                Mức giá
+              </Dropdown.Toggle>
+              <Dropdown.Menu className="custom-dropdown">
+                {priceOptions.map((option, index) => (
+                  <Form.Check
+                    key={index}
+                    type="radio"
+                    label={option.label}
+                    name="priceOption"
+                    onChange={() => setPriceRange([option.min, option.max])}
+                    checked={priceRange[0] === option.min && priceRange[1] === option.max}
+                    className="px-2 py-1"
+                  />
+                ))}
+                <div className="d-flex justify-content-end p-2 button-container">
+                  <Button variant="outline-secondary" onClick={handleReset} size="sm" className="me-2">
+                    Đặt lại
+                  </Button>
+                  <Button variant="primary" onClick={handleSearch} size="sm">
+                    Áp dụng
+                  </Button>
+                </div>
+              </Dropdown.Menu>
+            </Dropdown>
+          </Col>
+          <Col xs={12} md={3}>
+            <Dropdown>
+              <Dropdown.Toggle variant="outline-secondary" className="w-100 custom-dropdown-toggle">
+                Diện tích
+              </Dropdown.Toggle>
+              <Dropdown.Menu className="custom-dropdown">
+                {areaOptions.map((option, index) => (
+                  <Form.Check
+                    key={index}
+                    type="radio"
+                    label={option.label}
+                    name="areaOption"
+                    onChange={() => setAreaRange([option.min, option.max])}
+                    checked={areaRange[0] === option.min && areaRange[1] === option.max}
+                    className="px-2 py-1"
+                  />
+                ))}
+                <div className="d-flex justify-content-end p-2 button-container">
+                  <Button variant="outline-secondary" onClick={handleReset} size="sm" className="me-2">
+                    Đặt lại
+                  </Button>
+                  <Button variant="primary" onClick={handleSearch} size="sm">
+                    Áp dụng
+                  </Button>
+                </div>
+              </Dropdown.Menu>
+            </Dropdown>
+          </Col>
+        </Row>
+        <div className="d-flex justify-content-start mt-2">
+          <Button variant="primary" type="submit" size="sm" className="custom-search-button">
+            Tìm kiếm
+          </Button>
+        </div>
+      </Form>
+    </Container>
+  );
+};
+
+export default SearchForm;

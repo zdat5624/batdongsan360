@@ -1,0 +1,27 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    background-color: #f0f8ff;
+  }
+ 
+  #root {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Đảm bảo tối thiểu chiều cao là 100% màn hình */
+  }
+  
+  .main-content {
+    flex: 1; /* Chiếm toàn bộ không gian còn lại để đẩy footer xuống */
+  }
+  
+  footer {
+    background-color: #2E1A09;
+    color: white;
+    padding: 10px 0;
+    text-align: center;
+    width: 100%;
+  }
+  

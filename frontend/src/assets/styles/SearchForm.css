@@ -1,0 +1,131 @@
+.search-form-container {
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 15px;
+  margin-top: 80px; /* Khoảng cách với header */
+  box-shadow: none;
+}
+
+.search-input {
+  background-color: #fff !important;
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 4px !important;
+  color: #000 !important;
+  padding: 6px 10px !important;
+  font-size: 14px !important;
+  height: 36px;
+}
+
+.search-input::placeholder {
+  color: #6c757d !important;
+}
+
+.search-input:focus {
+  background-color: #fff !important;
+  box-shadow: 0 0 4px rgba(0, 123, 255, 0.3) !important;
+  color: #000 !important;
+  border-color: #007bff !important;
+}
+
+.custom-dropdown-toggle {
+  background-color: #fff !important;
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 4px !important;
+  color: #000 !important;
+  padding: 6px 10px !important;
+  font-size: 14px !important;
+  height: 36px;
+}
+
+.custom-dropdown-toggle:hover,
+.custom-dropdown-toggle:focus {
+  background-color: #f8f9fa !important;
+  color: #000 !important;
+  border-color: #007bff !important;
+}
+
+.custom-dropdown {
+  background-color: #fff !important;
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 4px !important;
+  padding: 5px 20px !important; /* Tăng padding bên phải để tránh thanh cuộn */
+  max-height: 250px;
+  overflow-y: auto;
+  box-shadow: none !important;
+  width: 100% !important;
+  min-width: 100% !important;
+}
+
+.custom-dropdown .form-check-label {
+  font-size: 13px;
+  margin-left: 8px;
+}
+
+.custom-form-check {
+  padding-right: 50px !important; /* Tăng padding bên phải để tránh thanh cuộn */
+  margin-bottom: 10px !important; /* Đảm bảo khoảng cách giữa các option */
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #fff;
+  border-radius: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #ced4da;
+  border-radius: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #adb5bd;
+}
+
+.custom-search-button {
+  background-color: #007bff !important;
+  border-color: #007bff !important;
+  border-radius: 4px !important;
+  padding: 6px 15px !important;
+  font-size: 14px !important;
+}
+
+.custom-search-button:hover {
+  background-color: #0056b3 !important;
+  border-color: #0056b3 !important;
+}
+
+.reset-button {
+  border-radius: 4px !important;
+  padding: 5px 10px !important;
+  font-size: 12px !important;
+  color: #6c757d !important;
+  border-color: #6c757d !important;
+}
+
+.reset-button:hover {
+  background-color: #f8f9fa !important;
+  color: #6c757d !important;
+}
+
+.apply-button {
+  border-radius: 4px !important;
+  padding: 5px 10px !important;
+  font-size: 12px !important;
+  background-color: #007bff !important;
+  border-color: #007bff !important;
+}
+
+.apply-button:hover {
+  background-color: #0056b3 !important;
+  border-color: #0056b3 !important;
+}
+
+.button-container {
+  padding-right: 15px !important;
+  margin-top: 8px;
+  border-top: 1px solid #e0e0e0;
+}
