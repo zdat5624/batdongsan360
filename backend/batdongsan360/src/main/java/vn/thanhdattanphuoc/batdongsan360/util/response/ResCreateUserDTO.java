@@ -1,23 +1,43 @@
-package vn.thanhdattanphuoc.batdongsan360.domain.request;
+package vn.thanhdattanphuoc.batdongsan360.util.response;
 
 import java.time.Instant;
 
+import vn.thanhdattanphuoc.batdongsan360.domain.User;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.GenderEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.RoleEnum;
 
-public class UserFilterRequest {
+public class ResCreateUserDTO {
+    private long id;
     private String name;
     private String email;
     private RoleEnum role;
     private GenderEnum gender;
     private String phone;
-    private Long minBalance;
-    private Long maxBalance;
     private String address;
-    private Instant createdFrom;
-    private Instant createdTo;
-    private Integer page = 0;
-    private Integer size = 10;
+    private Instant createdAt;
+    private String createdBy;
+
+    public ResCreateUserDTO() {
+    }
+
+    public ResCreateUserDTO(User user) {
+        this.setId(user.getId());
+        this.setName(user.getName());
+        this.setEmail(user.getEmail());
+        this.setRole(user.getRole());
+        this.setPhone(user.getPhone());
+        this.setGender(user.getGender());
+        this.setCreatedAt(user.getCreatedAt());
+        this.setCreatedBy(user.getCreatedBy());
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;
@@ -59,14 +79,6 @@ public class UserFilterRequest {
         this.phone = phone;
     }
 
-    public Long getMinBalance() {
-        return minBalance;
-    }
-
-    public void setMinBalance(Long minBalance) {
-        this.minBalance = minBalance;
-    }
-
     public String getAddress() {
         return address;
     }
@@ -75,44 +87,20 @@ public class UserFilterRequest {
         this.address = address;
     }
 
-    public Instant getCreatedFrom() {
-        return createdFrom;
+    public Instant getCreatedAt() {
+        return createdAt;
     }
 
-    public void setCreatedFrom(Instant createdFrom) {
-        this.createdFrom = createdFrom;
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
     }
 
-    public Instant getCreatedTo() {
-        return createdTo;
+    public String getCreatedBy() {
+        return createdBy;
     }
 
-    public void setCreatedTo(Instant createdTo) {
-        this.createdTo = createdTo;
-    }
-
-    public Integer getPage() {
-        return page;
-    }
-
-    public void setPage(Integer page) {
-        this.page = page;
-    }
-
-    public Integer getSize() {
-        return size;
-    }
-
-    public void setSize(Integer size) {
-        this.size = size;
-    }
-
-    public Long getMaxBalance() {
-        return maxBalance;
-    }
-
-    public void setMaxBalance(Long maxBalance) {
-        this.maxBalance = maxBalance;
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
     }
 
 }

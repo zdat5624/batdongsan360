@@ -7,9 +7,6 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-import vn.thanhdattanphuoc.batdongsan360.domain.address.District;
-import vn.thanhdattanphuoc.batdongsan360.domain.address.Province;
-import vn.thanhdattanphuoc.batdongsan360.domain.address.Ward;
 import vn.thanhdattanphuoc.batdongsan360.util.SecurityUtil;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.PostStatusEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.PostTypeEnum;
@@ -73,6 +70,7 @@ public class Post {
     private Ward ward;
 
     @Size(max = 255, message = "Địa chỉ chi tiết không được quá 255 ký tự")
+    @NotNull
     private String detailAddress;
 
     @ManyToOne

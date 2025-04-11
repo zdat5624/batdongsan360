@@ -1,4 +1,4 @@
-package vn.thanhdattanphuoc.batdongsan360.domain.address;
+package vn.thanhdattanphuoc.batdongsan360.domain;
 
 import java.util.List;
 
@@ -9,15 +9,12 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import vn.thanhdattanphuoc.batdongsan360.domain.Post;
 
 @Entity
-@Table(name = "districts")
-public class District {
+@Table(name = "provinces")
+public class Province {
 
     @Id
     private long code;
@@ -27,22 +24,17 @@ public class District {
     private String codename;
     @JsonProperty("division_type")
     private String divisionType;
-    @JsonProperty("short_codename")
+    @JsonProperty("phone_code")
     @JsonIgnore
-    private String shortCodename;
+    private int phoneCode;
 
-    @OneToMany(mappedBy = "district")
+    @OneToMany(mappedBy = "province")
     @JsonIgnore
     private List<Post> post;
 
-    @ManyToOne
-    @JoinColumn(name = "province_code")
+    @OneToMany(mappedBy = "province", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonIgnore
-    private Province province;
-
-    @OneToMany(mappedBy = "district", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JsonIgnore
-    private List<Ward> wards;
+    private List<District> districts;
 
     public long getCode() {
         return code;
@@ -64,14 +56,6 @@ public class District {
         return codename;
     }
 
-    public List<Post> getPost() {
-        return post;
-    }
-
-    public void setPost(List<Post> post) {
-        this.post = post;
-    }
-
     public void setCodename(String codename) {
         this.codename = codename;
     }
@@ -84,28 +68,28 @@ public class District {
         this.divisionType = divisionType;
     }
 
-    public String getShortCodename() {
-        return shortCodename;
+    public int getPhoneCode() {
+        return phoneCode;
     }
 
-    public void setShortCodename(String shortCodename) {
-        this.shortCodename = shortCodename;
+    public void setPhoneCode(int phoneCode) {
+        this.phoneCode = phoneCode;
     }
 
-    public Province getProvince() {
-        return province;
+    public List<District> getDistricts() {
+        return districts;
     }
 
-    public void setProvince(Province province) {
-        this.province = province;
+    public void setDistricts(List<District> districts) {
+        this.districts = districts;
     }
 
-    public List<Ward> getWards() {
-        return wards;
+    public List<Post> getPost() {
+        return post;
     }
 
-    public void setWards(List<Ward> wards) {
-        this.wards = wards;
+    public void setPost(List<Post> post) {
+        this.post = post;
     }
 
 }

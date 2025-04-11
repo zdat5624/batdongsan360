@@ -1,36 +1,63 @@
-package vn.thanhdattanphuoc.batdongsan360.domain.request;
+package vn.thanhdattanphuoc.batdongsan360.util.response;
+
+import java.time.Instant;
 
 import vn.thanhdattanphuoc.batdongsan360.domain.User;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.GenderEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.RoleEnum;
 
-public class UserUpdateDTO {
+public class ResUpdateUserDTO {
 
     private long id;
     private String name;
     private String email;
     private RoleEnum role;
     private GenderEnum gender;
-    private long balance;
-    private String avatar;
     private String phone;
     private String address;
+    private String avatar;
+    private Instant createdAt;
+    private String createdBy;
+    private String updatedBy;
+    private Instant updatedAt;
 
-    // Constructors
-    public UserUpdateDTO() {
-    }
-
-    public UserUpdateDTO(User user) {
+    public ResUpdateUserDTO(User user) {
         this.id = user.getId();
         this.name = user.getName();
         this.email = user.getEmail();
         this.role = user.getRole();
-        this.gender = user.getGender();
-        this.balance = user.getBalance();
         this.avatar = user.getAvatar();
+        this.gender = user.getGender();
         this.phone = user.getPhone();
         this.address = user.getAddress();
+        this.createdAt = user.getCreatedAt();
+        this.createdBy = user.getCreatedBy();
+        this.updatedAt = user.getUpdatedAt();
+        this.updatedBy = user.getUpdatedBy();
+    }
 
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
+
+    public String getUpdatedBy() {
+        return updatedBy;
+    }
+
+    public void setUpdatedBy(String updatedBy) {
+        this.updatedBy = updatedBy;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     public long getId() {
@@ -73,22 +100,6 @@ public class UserUpdateDTO {
         this.gender = gender;
     }
 
-    public long getBalance() {
-        return balance;
-    }
-
-    public void setBalance(long balance) {
-        this.balance = balance;
-    }
-
-    public String getAvatar() {
-        return avatar;
-    }
-
-    public void setAvatar(String avatar) {
-        this.avatar = avatar;
-    }
-
     public String getPhone() {
         return phone;
     }
@@ -103,6 +114,22 @@ public class UserUpdateDTO {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
     }
 
 }

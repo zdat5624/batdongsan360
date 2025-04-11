@@ -1,20 +1,15 @@
-package vn.thanhdattanphuoc.batdongsan360.domain.address;
-
-import java.util.List;
+package vn.thanhdattanphuoc.batdongsan360.util.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class ProvinceDTO {
-
+public class WardDTO {
     private long code;
     private String name;
     private String codename;
     @JsonProperty("division_type")
     private String divisionType;
-    @JsonProperty("phone_code")
-    private int phoneCode;
-
-    private List<DistrictDTO> districts;
+    @JsonProperty("short_codename")
+    private String shortCodename;
 
     public long getCode() {
         return code;
@@ -48,20 +43,12 @@ public class ProvinceDTO {
         this.divisionType = divisionType;
     }
 
-    public int getPhoneCode() {
-        return phoneCode;
+    public String getShortCodename() {
+        return shortCodename;
     }
 
-    public void setPhoneCode(int phoneCode) {
-        this.phoneCode = phoneCode;
-    }
-
-    public List<DistrictDTO> getDistricts() {
-        return districts;
-    }
-
-    public void setDistricts(List<DistrictDTO> districts) {
-        this.districts = districts;
+    public void setShortCodename(String shortCodename) {
+        this.shortCodename = shortCodename;
     }
 
 }

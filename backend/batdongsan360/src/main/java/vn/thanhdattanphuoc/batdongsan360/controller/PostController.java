@@ -17,12 +17,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import vn.thanhdattanphuoc.batdongsan360.domain.Post;
-import vn.thanhdattanphuoc.batdongsan360.domain.request.PostRequestDTO;
-import vn.thanhdattanphuoc.batdongsan360.domain.request.UpdatePostStatusDTO;
 import vn.thanhdattanphuoc.batdongsan360.service.PostService;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.PostStatusEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.PostTypeEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.error.IdInvalidException;
+import vn.thanhdattanphuoc.batdongsan360.util.request.PostRequestDTO;
+import vn.thanhdattanphuoc.batdongsan360.util.request.UpdatePostStatusDTO;
 
 @RestController
 public class PostController {

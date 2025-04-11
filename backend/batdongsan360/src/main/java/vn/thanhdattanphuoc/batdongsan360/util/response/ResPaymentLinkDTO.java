@@ -1,4 +1,4 @@
-package vn.thanhdattanphuoc.batdongsan360.controller.payment;
+package vn.thanhdattanphuoc.batdongsan360.util.response;
 
 public class ResPaymentLinkDTO {
     private String paymentLink;

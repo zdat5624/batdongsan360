@@ -16,18 +16,15 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import vn.thanhdattanphuoc.batdongsan360.domain.Category;
+import vn.thanhdattanphuoc.batdongsan360.domain.District;
 import vn.thanhdattanphuoc.batdongsan360.domain.Image;
 import vn.thanhdattanphuoc.batdongsan360.domain.Notification;
 import vn.thanhdattanphuoc.batdongsan360.domain.Post;
+import vn.thanhdattanphuoc.batdongsan360.domain.Province;
 import vn.thanhdattanphuoc.batdongsan360.domain.Transaction;
 import vn.thanhdattanphuoc.batdongsan360.domain.User;
 import vn.thanhdattanphuoc.batdongsan360.domain.Vip;
-import vn.thanhdattanphuoc.batdongsan360.domain.address.District;
-import vn.thanhdattanphuoc.batdongsan360.domain.address.DistrictDTO;
-import vn.thanhdattanphuoc.batdongsan360.domain.address.Province;
-import vn.thanhdattanphuoc.batdongsan360.domain.address.ProvinceDTO;
-import vn.thanhdattanphuoc.batdongsan360.domain.address.Ward;
-import vn.thanhdattanphuoc.batdongsan360.domain.address.WardDTO;
+import vn.thanhdattanphuoc.batdongsan360.domain.Ward;
 import vn.thanhdattanphuoc.batdongsan360.repository.*;
 import vn.thanhdattanphuoc.batdongsan360.repository.address.DistrictRepository;
 import vn.thanhdattanphuoc.batdongsan360.repository.address.ProvinceRepository;
@@ -39,6 +36,9 @@ import vn.thanhdattanphuoc.batdongsan360.util.constant.PostStatusEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.PostTypeEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.RoleEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.TransStatusEnum;
+import vn.thanhdattanphuoc.batdongsan360.util.request.DistrictDTO;
+import vn.thanhdattanphuoc.batdongsan360.util.request.ProvinceDTO;
+import vn.thanhdattanphuoc.batdongsan360.util.request.WardDTO;
 
 @Component
 public class StartupRunner implements CommandLineRunner {
@@ -235,7 +235,7 @@ public class StartupRunner implements CommandLineRunner {
 
         List<Post> posts = new ArrayList<>();
 
-        for (int i = 1; i <= 45000; i++) {
+        for (int i = 1; i <= 10000; i++) {
             Post post = new Post();
             Category selectedCategory = categories.get(random.nextInt(categories.size()));
             Vip selectedVip = vips.get(random.nextInt(vips.size()));
@@ -259,10 +259,10 @@ public class StartupRunner implements CommandLineRunner {
                     post.setWard(selectedWard);
                 }
             }
-            String detailAddress = null;
+            String detailAddress = "";
 
             // Tạo chuỗi địa chỉ đầy đủ
-            String fullAddress = (selectedWard != null ? selectedWard.getName() : "") +
+            String fullAddress = detailAddress + (selectedWard != null ? selectedWard.getName() : "") +
                     (selectedDistrict != null ? ", " + selectedDistrict.getName() : "") +
                     ", " + selectedProvince.getName();
 
@@ -635,6 +635,8 @@ public class StartupRunner implements CommandLineRunner {
                 images.add(image);
             }
             post.setImages(images);
+
+            post.setView(10500 - i);
 
             posts.add(post);
         }

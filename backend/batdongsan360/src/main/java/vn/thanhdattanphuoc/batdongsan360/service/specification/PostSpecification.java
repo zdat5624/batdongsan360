@@ -4,12 +4,12 @@ import org.springframework.data.jpa.domain.Specification;
 
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
+import vn.thanhdattanphuoc.batdongsan360.domain.District;
 import vn.thanhdattanphuoc.batdongsan360.domain.Post;
+import vn.thanhdattanphuoc.batdongsan360.domain.Province;
 import vn.thanhdattanphuoc.batdongsan360.domain.User;
 import vn.thanhdattanphuoc.batdongsan360.domain.Vip;
-import vn.thanhdattanphuoc.batdongsan360.domain.address.District;
-import vn.thanhdattanphuoc.batdongsan360.domain.address.Province;
-import vn.thanhdattanphuoc.batdongsan360.domain.address.Ward;
+import vn.thanhdattanphuoc.batdongsan360.domain.Ward;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.PostStatusEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.PostTypeEnum;
 

@@ -1,4 +1,4 @@
-package vn.thanhdattanphuoc.batdongsan360.controller.payment;
+package vn.thanhdattanphuoc.batdongsan360.service;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
+import vn.thanhdattanphuoc.batdongsan360.config.ConfigVNPAY;
 import vn.thanhdattanphuoc.batdongsan360.domain.Notification;
 import vn.thanhdattanphuoc.batdongsan360.domain.Transaction;
 import vn.thanhdattanphuoc.batdongsan360.domain.User;
@@ -28,6 +29,7 @@ import vn.thanhdattanphuoc.batdongsan360.util.SecurityUtil;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.NotificationType;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.TransStatusEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.error.IdInvalidException;
+import vn.thanhdattanphuoc.batdongsan360.util.response.ResPaymentLinkDTO;
 
 @Service
 public class VNPAYService {
@@ -60,12 +62,12 @@ public class VNPAYService {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new IdInvalidException("Không tìm thấy người dùng"));
 
-        String vnp_TxnRef = Config.getRandomNumber(10);
+        String vnp_TxnRef = ConfigVNPAY.getRandomNumber(10);
 
         String vnp_IpAddr = "127.0.0.1";
         // String vnp_IpAddr = Config.getIpAddress(req);
 
-        String vnp_TmnCode = Config.vnp_TmnCode;
+        String vnp_TmnCode = ConfigVNPAY.vnp_TmnCode;
 
         Map<String, String> vnp_Params = new HashMap<>();
         vnp_Params.put("vnp_Version", vnp_Version);
@@ -90,7 +92,7 @@ public class VNPAYService {
         // } else {
         // vnp_Params.put("vnp_Locale", "vn");
         // }
-        vnp_Params.put("vnp_ReturnUrl", Config.vnp_ReturnUrl);
+        vnp_Params.put("vnp_ReturnUrl", ConfigVNPAY.vnp_ReturnUrl);
         vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
 
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
@@ -126,9 +128,9 @@ public class VNPAYService {
             }
         }
         String queryUrl = query.toString();
-        String vnp_SecureHash = Config.hmacSHA512(Config.secretKey, hashData.toString());
+        String vnp_SecureHash = ConfigVNPAY.hmacSHA512(ConfigVNPAY.secretKey, hashData.toString());
         queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
-        String paymentUrl = Config.vnp_PayUrl + "?" + queryUrl;
+        String paymentUrl = ConfigVNPAY.vnp_PayUrl + "?" + queryUrl;
 
         // Tạo giao dịch mới
         Transaction transaction = new Transaction();
@@ -172,7 +174,7 @@ public class VNPAYService {
         if (fields.containsKey("vnp_SecureHash")) {
             fields.remove("vnp_SecureHash");
         }
-        String signValue = Config.hashAllFields(fields);
+        String signValue = ConfigVNPAY.hashAllFields(fields);
 
         String txnId = request.getParameter("vnp_TxnRef");
         String transactionStatus = request.getParameter("vnp_TransactionStatus");

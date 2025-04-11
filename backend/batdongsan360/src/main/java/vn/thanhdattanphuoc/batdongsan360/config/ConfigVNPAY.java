@@ -1,4 +1,4 @@
-package vn.thanhdattanphuoc.batdongsan360.controller.payment;
+package vn.thanhdattanphuoc.batdongsan360.config;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
@@ -16,7 +16,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-public class Config {
+public class ConfigVNPAY {
 
     public static String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
 

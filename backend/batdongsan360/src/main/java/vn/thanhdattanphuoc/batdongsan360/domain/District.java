@@ -1,21 +1,22 @@
-package vn.thanhdattanphuoc.batdongsan360.domain.address;
+package vn.thanhdattanphuoc.batdongsan360.domain;
 
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import vn.thanhdattanphuoc.batdongsan360.domain.Post;
 
 @Entity
-@Table(name = "wards")
-public class Ward {
+@Table(name = "districts")
+public class District {
 
     @Id
     private long code;
@@ -29,25 +30,21 @@ public class Ward {
     @JsonIgnore
     private String shortCodename;
 
-    @OneToMany(mappedBy = "ward")
+    @OneToMany(mappedBy = "district")
     @JsonIgnore
     private List<Post> post;
 
     @ManyToOne
-    @JoinColumn(name = "district_code")
+    @JoinColumn(name = "province_code")
     @JsonIgnore
-    private District district;
+    private Province province;
+
+    @OneToMany(mappedBy = "district", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Ward> wards;
 
     public long getCode() {
         return code;
-    }
-
-    public List<Post> getPost() {
-        return post;
-    }
-
-    public void setPost(List<Post> post) {
-        this.post = post;
     }
 
     public void setCode(long code) {
@@ -64,6 +61,14 @@ public class Ward {
 
     public String getCodename() {
         return codename;
+    }
+
+    public List<Post> getPost() {
+        return post;
+    }
+
+    public void setPost(List<Post> post) {
+        this.post = post;
     }
 
     public void setCodename(String codename) {
@@ -86,12 +91,20 @@ public class Ward {
         this.shortCodename = shortCodename;
     }
 
-    public District getDistrict() {
-        return district;
+    public Province getProvince() {
+        return province;
     }
 
-    public void setDistrict(District district) {
-        this.district = district;
+    public void setProvince(Province province) {
+        this.province = province;
+    }
+
+    public List<Ward> getWards() {
+        return wards;
+    }
+
+    public void setWards(List<Ward> wards) {
+        this.wards = wards;
     }
 
 }

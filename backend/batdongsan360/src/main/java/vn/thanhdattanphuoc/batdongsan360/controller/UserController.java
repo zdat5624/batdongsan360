@@ -15,14 +15,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import vn.thanhdattanphuoc.batdongsan360.domain.User;
-import vn.thanhdattanphuoc.batdongsan360.domain.request.CreateUserDTO;
-import vn.thanhdattanphuoc.batdongsan360.domain.request.UserFilterRequest;
-import vn.thanhdattanphuoc.batdongsan360.domain.request.UserUpdateDTO;
-import vn.thanhdattanphuoc.batdongsan360.domain.response.ResCreateUserDTO;
-import vn.thanhdattanphuoc.batdongsan360.domain.response.ResUpdateUserDTO;
-import vn.thanhdattanphuoc.batdongsan360.domain.response.UserDTO;
 import vn.thanhdattanphuoc.batdongsan360.service.UserService;
 import vn.thanhdattanphuoc.batdongsan360.util.error.IdInvalidException;
+import vn.thanhdattanphuoc.batdongsan360.util.request.CreateUserDTO;
+import vn.thanhdattanphuoc.batdongsan360.util.request.UserFilterRequest;
+import vn.thanhdattanphuoc.batdongsan360.util.request.UserUpdateDTO;
+import vn.thanhdattanphuoc.batdongsan360.util.response.ResCreateUserDTO;
+import vn.thanhdattanphuoc.batdongsan360.util.response.ResUpdateUserDTO;
+import vn.thanhdattanphuoc.batdongsan360.util.response.UserDTO;
 
 @RestController
 public class UserController {
