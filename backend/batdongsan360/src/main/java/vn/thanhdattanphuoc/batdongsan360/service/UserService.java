@@ -9,12 +9,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import vn.thanhdattanphuoc.batdongsan360.domain.User;
-import vn.thanhdattanphuoc.batdongsan360.domain.request.CreateUserDTO;
-import vn.thanhdattanphuoc.batdongsan360.domain.request.UserFilterRequest;
-import vn.thanhdattanphuoc.batdongsan360.domain.request.UserUpdateDTO;
-import vn.thanhdattanphuoc.batdongsan360.domain.response.UserDTO;
 import vn.thanhdattanphuoc.batdongsan360.repository.UserRepository;
 import vn.thanhdattanphuoc.batdongsan360.service.specification.UserSpecification;
+import vn.thanhdattanphuoc.batdongsan360.util.request.CreateUserDTO;
+import vn.thanhdattanphuoc.batdongsan360.util.request.UserFilterRequest;
+import vn.thanhdattanphuoc.batdongsan360.util.request.UserUpdateDTO;
+import vn.thanhdattanphuoc.batdongsan360.util.response.UserDTO;
 
 @Service
 public class UserService {

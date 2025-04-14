@@ -7,7 +7,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import jakarta.persistence.criteria.Predicate;
 import vn.thanhdattanphuoc.batdongsan360.domain.User;
-import vn.thanhdattanphuoc.batdongsan360.domain.request.UserFilterRequest;
+import vn.thanhdattanphuoc.batdongsan360.util.request.UserFilterRequest;
 
 public class UserSpecification {
 

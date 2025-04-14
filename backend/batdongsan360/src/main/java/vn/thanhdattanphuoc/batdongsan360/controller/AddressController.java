@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import org.springframework.web.bind.annotation.RestController;
 
-import vn.thanhdattanphuoc.batdongsan360.domain.address.District;
-import vn.thanhdattanphuoc.batdongsan360.domain.address.Province;
-import vn.thanhdattanphuoc.batdongsan360.domain.address.Ward;
+import vn.thanhdattanphuoc.batdongsan360.domain.District;
+import vn.thanhdattanphuoc.batdongsan360.domain.Province;
+import vn.thanhdattanphuoc.batdongsan360.domain.Ward;
 import vn.thanhdattanphuoc.batdongsan360.service.AddressService;
 
 @RestController

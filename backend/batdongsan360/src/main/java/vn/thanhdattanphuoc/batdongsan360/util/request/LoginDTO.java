@@ -1,4 +1,4 @@
-package vn.thanhdattanphuoc.batdongsan360.domain.request;
+package vn.thanhdattanphuoc.batdongsan360.util.request;
 
 import jakarta.validation.constraints.NotBlank;
 

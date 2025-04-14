@@ -1,8 +1,10 @@
-package vn.thanhdattanphuoc.batdongsan360.domain.address;
+package vn.thanhdattanphuoc.batdongsan360.util.request;
+
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class WardDTO {
+public class DistrictDTO {
     private long code;
     private String name;
     private String codename;
@@ -10,6 +12,7 @@ public class WardDTO {
     private String divisionType;
     @JsonProperty("short_codename")
     private String shortCodename;
+    private List<WardDTO> wards;
 
     public long getCode() {
         return code;
@@ -49,6 +52,14 @@ public class WardDTO {
 
     public void setShortCodename(String shortCodename) {
         this.shortCodename = shortCodename;
+    }
+
+    public List<WardDTO> getWards() {
+        return wards;
+    }
+
+    public void setWards(List<WardDTO> wards) {
+        this.wards = wards;
     }
 
 }

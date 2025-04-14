@@ -1,12 +1,13 @@
-package vn.thanhdattanphuoc.batdongsan360.controller.payment;
+package vn.thanhdattanphuoc.batdongsan360.controller;
 
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import vn.thanhdattanphuoc.batdongsan360.domain.request.CreatePaymentDTO;
+import vn.thanhdattanphuoc.batdongsan360.service.VNPAYService;
 import vn.thanhdattanphuoc.batdongsan360.util.error.IdInvalidException;
+import vn.thanhdattanphuoc.batdongsan360.util.request.CreatePaymentDTO;
+import vn.thanhdattanphuoc.batdongsan360.util.response.ResPaymentLinkDTO;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;

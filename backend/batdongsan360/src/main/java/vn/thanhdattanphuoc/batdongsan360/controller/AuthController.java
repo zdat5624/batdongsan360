@@ -14,14 +14,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import vn.thanhdattanphuoc.batdongsan360.domain.User;
-import vn.thanhdattanphuoc.batdongsan360.domain.request.LoginDTO;
-import vn.thanhdattanphuoc.batdongsan360.domain.request.RegisterDTO;
-import vn.thanhdattanphuoc.batdongsan360.domain.response.ResCreateUserDTO;
-import vn.thanhdattanphuoc.batdongsan360.domain.response.ResLoginDTO;
 import vn.thanhdattanphuoc.batdongsan360.service.UserService;
 import vn.thanhdattanphuoc.batdongsan360.util.SecurityUtil;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.RoleEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.error.IdInvalidException;
+import vn.thanhdattanphuoc.batdongsan360.util.request.LoginDTO;
+import vn.thanhdattanphuoc.batdongsan360.util.request.RegisterDTO;
+import vn.thanhdattanphuoc.batdongsan360.util.response.ResCreateUserDTO;
+import vn.thanhdattanphuoc.batdongsan360.util.response.ResLoginDTO;
 
 @RestController
 public class AuthController {

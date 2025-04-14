@@ -1,4 +1,4 @@
-package vn.thanhdattanphuoc.batdongsan360.domain.request;
+package vn.thanhdattanphuoc.batdongsan360.util.request;
 
 public class CreatePaymentDTO {
     private long amount;

@@ -4,9 +4,9 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import vn.thanhdattanphuoc.batdongsan360.domain.address.District;
-import vn.thanhdattanphuoc.batdongsan360.domain.address.Province;
-import vn.thanhdattanphuoc.batdongsan360.domain.address.Ward;
+import vn.thanhdattanphuoc.batdongsan360.domain.District;
+import vn.thanhdattanphuoc.batdongsan360.domain.Province;
+import vn.thanhdattanphuoc.batdongsan360.domain.Ward;
 import vn.thanhdattanphuoc.batdongsan360.repository.address.DistrictRepository;
 import vn.thanhdattanphuoc.batdongsan360.repository.address.ProvinceRepository;
 import vn.thanhdattanphuoc.batdongsan360.repository.address.WardRepository;
