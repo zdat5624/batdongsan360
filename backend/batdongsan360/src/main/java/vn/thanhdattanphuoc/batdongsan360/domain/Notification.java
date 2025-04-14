@@ -2,8 +2,10 @@ package vn.thanhdattanphuoc.batdongsan360.domain;
 
 import java.time.Instant;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
-import vn.thanhdattanphuoc.batdongsan360.util.constant.PostTypeEnum;
+import vn.thanhdattanphuoc.batdongsan360.util.constant.NotificationType;
 
 @Entity
 @Table(name = "notifications")
@@ -16,13 +18,14 @@ public class Notification {
     private String message;
 
     @Enumerated(EnumType.STRING)
-    private PostTypeEnum type;
+    private NotificationType type;
 
     private boolean isRead;
     private Instant createdAt;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
+    @JsonIgnore
     private User user;
 
     public long getId() {
@@ -39,14 +42,6 @@ public class Notification {
 
     public void setMessage(String message) {
         this.message = message;
-    }
-
-    public PostTypeEnum getType() {
-        return type;
-    }
-
-    public void setType(PostTypeEnum type) {
-        this.type = type;
     }
 
     public boolean isRead() {
@@ -76,5 +71,13 @@ public class Notification {
     @PrePersist
     public void handleBeforeCreate() {
         this.createdAt = Instant.now();
+    }
+
+    public NotificationType getType() {
+        return type;
+    }
+
+    public void setType(NotificationType type) {
+        this.type = type;
     }
 }

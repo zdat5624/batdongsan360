@@ -16,10 +16,10 @@ import {
 import { useNavigate } from "react-router-dom";
 import { FaSearch, FaInfoCircle, FaTrash, FaLock, FaExclamationTriangle } from "react-icons/fa";
 import { motion } from "framer-motion";
+import Sidebar from "../components/Sidebar"; // Import Sidebar
 import apiServices from "../services/apiServices";
-import Sidebar from "../components/Sidebar";
-import Footer from "../components/Footer";
 
+// CSS tùy chỉnh
 const customStyles = `
   .layout {
     display: flex;
@@ -32,12 +32,9 @@ const customStyles = `
   }
   .main-content {
     flex: 1;
-    padding-top: 100px;
-    padding-bottom: 150px;
+    padding-top: 70px;
+    padding-bottom: 50px;
     background: rgb(240, 248, 255);
-  }
-  .custom-container {
-    padding: 20px;
   }
   .admin-table {
     background-color: #fff;
@@ -159,6 +156,9 @@ const customStyles = `
     align-items: center;
     gap: 10px;
   }
+  .sidebar {
+    display: block !important;
+  }
 `;
 
 const AdminUsers = ({ user, handleLogout }) => {
@@ -175,6 +175,7 @@ const AdminUsers = ({ user, handleLogout }) => {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [detailUser, setDetailUser] = useState(null);
 
+  // State cho form xác nhận
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
   const [confirmMessage, setConfirmMessage] = useState("");
@@ -201,7 +202,7 @@ const AdminUsers = ({ user, handleLogout }) => {
             id: user.id,
             name: user.name,
             email: user.email,
-            role: user.role, // Không chuyển thành chữ thường
+            role: user.role.toLowerCase(),
             joinedDate: user.createdAt.split("T")[0],
             status: user.status || (user.balance > 0 ? "Active" : "Inactive"),
             gender: user.gender,
@@ -306,7 +307,7 @@ const AdminUsers = ({ user, handleLogout }) => {
       <div className="content-wrapper">
         <Sidebar user={user} handleLogout={handleLogout} />
         <div className="main-content">
-          <Container className="custom-container">
+          <Container>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -315,6 +316,7 @@ const AdminUsers = ({ user, handleLogout }) => {
               <h2 className="mb-4 text-primary fw-bold">Quản lý Người dùng</h2>
               {error && <Alert variant="danger">{error}</Alert>}
 
+              {/* Thanh tìm kiếm */}
               <div className="d-flex justify-content-between mb-4">
                 <InputGroup style={{ maxWidth: "300px" }}>
                   <InputGroup.Text style={{ background: "#fff", borderRadius: "20px 0 0 20px" }}>
@@ -334,6 +336,7 @@ const AdminUsers = ({ user, handleLogout }) => {
                 </InputGroup>
               </div>
 
+              {/* Modal xác nhận */}
               <Modal
                 show={showConfirm}
                 onHide={() => setShowConfirm(false)}
@@ -364,6 +367,7 @@ const AdminUsers = ({ user, handleLogout }) => {
                 </Modal.Footer>
               </Modal>
 
+              {/* Modal chi tiết người dùng */}
               <Modal show={showDetailModal} onHide={() => setShowDetailModal(false)} centered>
                 <Modal.Header closeButton>
                   <Modal.Title>Chi tiết Người dùng</Modal.Title>
@@ -511,6 +515,7 @@ const AdminUsers = ({ user, handleLogout }) => {
                 </tbody>
               </Table>
 
+              {/* Phân trang */}
               <div className="pagination-container mt-3">
                 <Pagination>
                   <Pagination.First onClick={() => paginate(1)} disabled={currentPage === 1} />
@@ -575,7 +580,10 @@ const AdminUsers = ({ user, handleLogout }) => {
                   />
                 </Pagination>
 
-                <Form onSubmit={handlePageInputSubmit} className="pagination-form">
+                <Form
+                  onSubmit={handlePageInputSubmit}
+                  className="pagination-form"
+                >
                   <Form.Control
                     type="number"
                     value={pageInput}
@@ -598,7 +606,6 @@ const AdminUsers = ({ user, handleLogout }) => {
           </Container>
         </div>
       </div>
-      <Footer />
     </div>
   );
 };

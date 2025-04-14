@@ -1,12 +1,26 @@
 /* eslint-disable react/prop-types */
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
-import { Container, Card, Button, Row, Col, Nav, Form, Image, InputGroup, Alert } from "react-bootstrap";
-import { useLocation } from "react-router-dom";
+import { Container, Card, Button, Row, Col, Nav, Form, Image, InputGroup, Modal } from "react-bootstrap";
+import Sidebar from "../components/Sidebar"; // Import Sidebar
 import apiServices from "../services/apiServices";
-import Sidebar from "../components/Sidebar";
-import Footer from "../components/Footer";
 
 const customStyles = `
+  .layout {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+  }
+  .content-wrapper {
+    display: flex;
+    flex: 1;
+  }
+  .main-content {
+    flex: 1;
+    padding-top: 70px;
+    padding-bottom: 50px;
+    background-color: #f0f8ff;
+  }
   .profile-card {
     max-width: 1000px;
     margin: 0 auto;
@@ -50,30 +64,20 @@ const customStyles = `
     font-weight: bold;
     font-size: 1.1rem;
   }
-  .layout {
-    display: flex;
-    min-height: 100vh;
-    flex-direction: column;
-  }
-  .main-content {
-    flex: 1;
-    padding-top: 70px;
-    padding-bottom: 150px;
+  .sidebar {
+    display: block !important;
   }
 `;
 
-const UserProfile = ({ user, setUser, handleShowLogoutConfirm }) => {
+const UserProfile = ({ user, setUser, handleLogout }) => {
   const [avatar, setAvatar] = useState("");
-  const [newAvatarFile, setNewAvatarFile] = useState(null);
-  const [newAvatarPreview, setNewAvatarPreview] = useState("");
-  const [showSaveAvatarButton, setShowSaveAvatarButton] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [successMessage, setSuccessMessage] = useState(null);
-  const location = useLocation();
+  const [avatarChanged, setAvatarChanged] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false); // State cho Modal thông báo
 
   const userId = localStorage.getItem("userId");
 
@@ -88,8 +92,10 @@ const UserProfile = ({ user, setUser, handleShowLogoutConfirm }) => {
       setLoading(true);
       setError(null);
       const response = await apiServices.get(`/api/users/${userId}`);
+      console.log("API Response /api/users:", response.data); // Log để kiểm tra dữ liệu trả về
       if (response.data.statusCode === 200) {
         const userData = response.data.data;
+        console.log("User Data with Balance:", userData); // Log để kiểm tra balance
         setUser(userData);
         setEditedUser(userData);
         setAvatar(userData.avatar || "");
@@ -120,10 +126,6 @@ const UserProfile = ({ user, setUser, handleShowLogoutConfirm }) => {
     }
   }, [user]);
 
-  const shouldShowSidebar = ["/profile", "/payment", "/post-history", "/admin/users", "/admin/payments", "/admin/vips", "/admin/posts"].some((path) =>
-    location.pathname.startsWith(path)
-  );
-
   if (loading) {
     return (
       <Container className="mt-5 text-center">
@@ -151,51 +153,66 @@ const UserProfile = ({ user, setUser, handleShowLogoutConfirm }) => {
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setNewAvatarFile(file);
-      setNewAvatarPreview(URL.createObjectURL(file));
-      setShowSaveAvatarButton(true);
+      setAvatar(URL.createObjectURL(file));
+      setEditedUser((prevUser) => ({ ...prevUser, avatarFile: file }));
+      setAvatarChanged(true);
     }
   };
 
+  const uploadAvatar = async (file) => {
+    const formData = new FormData();
+    formData.append("avatar", file);
+    const response = await apiServices.post(`/api/users/upload-avatar`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data.data.avatarUrl;
+  };
+
   const handleSaveAvatar = async () => {
-    if (!newAvatarFile) {
-      setError("Không có ảnh nào được chọn để tải lên.");
+    if (!userId) {
+      setError("Không tìm thấy ID người dùng. Vui lòng đăng nhập lại.");
       return;
     }
 
     try {
-      const formData = new FormData();
-      formData.append("avatar", newAvatarFile);
+      let avatarUrl = editedUser.avatar;
+      if (editedUser.avatarFile) {
+        avatarUrl = await uploadAvatar(editedUser.avatarFile);
+      }
 
-      const response = await apiServices.put(`/api/users/${userId}/avatar`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const updatedUserData = {
+        id: parseInt(userId),
+        name: editedUser.name || "",
+        email: editedUser.email || "",
+        role: editedUser.role || "USER",
+        gender: editedUser.gender || "",
+        avatar: avatarUrl,
+        phone: editedUser.phone || "",
+        address: editedUser.address || "",
+        // Không gửi balance để tránh ghi đè
+      };
+
+      console.log("Dữ liệu gửi lên API (Save Avatar):", updatedUserData);
+
+      const response = await apiServices.put(`/api/users`, updatedUserData);
+      console.log("Phản hồi từ API (Save Avatar):", response.data);
 
       if (response.data.statusCode === 200) {
-        const avatarUrl = response.data.data.avatarUrl || response.data.data.avatar;
-        setAvatar(avatarUrl);
-        setEditedUser((prevUser) => ({ ...prevUser, avatar: avatarUrl }));
-        setNewAvatarFile(null);
-        setNewAvatarPreview("");
-        setShowSaveAvatarButton(false);
-        setSuccessMessage("Ảnh đại diện đã được cập nhật thành công!");
+        const updatedUser = response.data.data;
+        console.log("Dữ liệu sau khi cập nhật (Save Avatar):", updatedUser);
+        setUser(updatedUser);
+        setEditedUser(updatedUser);
+        setAvatar(updatedUser.avatar || "");
+        setAvatarChanged(false);
+        // Hiển thị thông báo thành công và reload trang
+        setShowSuccessModal(true);
       } else {
-        throw new Error(response.data.message || "Không thể tải ảnh lên.");
+        throw new Error(response.data.message || "Không thể cập nhật ảnh đại diện.");
       }
     } catch (err) {
-      console.error("Lỗi khi tải ảnh lên:", err.response || err);
-      setError(
-        err.response?.data?.message ||
-        err.message ||
-        "Không thể tải ảnh lên. Vui lòng kiểm tra phương thức hoặc endpoint API."
-      );
+      console.error("Lỗi khi cập nhật ảnh đại diện:", err);
+      setError(err.response?.data?.message || err.message || "Không thể cập nhật ảnh đại diện. Vui lòng thử lại sau.");
     }
-  };
-
-  const handleCancelAvatarChange = () => {
-    setNewAvatarFile(null);
-    setNewAvatarPreview("");
-    setShowSaveAvatarButton(false);
   };
 
   const handleEditClick = () => setIsEditing(true);
@@ -207,34 +224,47 @@ const UserProfile = ({ user, setUser, handleShowLogoutConfirm }) => {
     }
 
     try {
+      if (!editedUser.email) {
+        throw new Error("Email không được để trống.");
+      }
+      if (!editedUser.phone) {
+        throw new Error("Số điện thoại không được để trống.");
+      }
+
       const updatedUserData = {
-        id: userId,
-        name: editedUser.name,
+        id: parseInt(userId),
+        name: editedUser.name || "",
         email: editedUser.email,
+        role: editedUser.role || "USER",
+        gender: editedUser.gender || "",
+        avatar: editedUser.avatar || "",
         phone: editedUser.phone,
-        address: editedUser.address,
-        gender: editedUser.gender,
-        role: editedUser.role,
-        avatar: editedUser.avatar,
-        balance: editedUser.balance || 0,
+        address: editedUser.address || "",
+        // Không gửi balance để tránh ghi đè
       };
 
+      console.log("Before Save - user:", user);
+      console.log("Before Save - editedUser:", editedUser);
+      console.log("Dữ liệu gửi lên API:", updatedUserData);
+
       const response = await apiServices.put(`/api/users`, updatedUserData);
+      console.log("Phản hồi từ API:", response.data);
+
       if (response.data.statusCode === 200) {
-        // Gọi lại fetchUserById để lấy dữ liệu mới nhất
-        await fetchUserById();
+        const updatedUser = response.data.data;
+        console.log("Dữ liệu sau khi cập nhật:", updatedUser);
+        setUser(updatedUser);
+        setEditedUser(updatedUser);
+        setAvatar(updatedUser.avatar || "");
         setIsEditing(false);
-        setSuccessMessage("Thông tin người dùng đã được cập nhật thành công!");
+        // Hiển thị thông báo thành công và reload trang
+        setShowSuccessModal(true);
       } else {
         throw new Error(response.data.message || "Không thể cập nhật thông tin người dùng.");
       }
     } catch (err) {
-      console.error("Lỗi khi cập nhật thông tin:", err.response || err);
-      setError(
-        err.response?.data?.message ||
-        err.message ||
-        "Không thể cập nhật thông tin người dùng. Vui lòng thử lại sau."
-      );
+      console.error("Lỗi khi cập nhật thông tin:", err);
+      setError(err.response?.data?.message || err.message || "Không thể cập nhật thông tin người dùng. Vui lòng thử lại sau.");
     }
   };
 
@@ -242,6 +272,7 @@ const UserProfile = ({ user, setUser, handleShowLogoutConfirm }) => {
     setEditedUser(user);
     setAvatar(user.avatar || "");
     setIsEditing(false);
+    setAvatarChanged(false);
   };
 
   const handleChange = (e) => {
@@ -263,15 +294,19 @@ const UserProfile = ({ user, setUser, handleShowLogoutConfirm }) => {
     return balance.toLocaleString("vi-VN") + " VNĐ";
   };
 
+  // Hàm reload trang sau khi đóng Modal
+  const handleCloseSuccessModal = () => {
+    setShowSuccessModal(false);
+    window.location.reload(); // Reload trang
+  };
+
   return (
     <div className="layout">
       <style>{customStyles}</style>
-      <div style={{ display: "flex", flex: 1 }}>
-        {shouldShowSidebar && <Sidebar user={user} handleShowLogoutConfirm={handleShowLogoutConfirm} />}
-        <div className="main-content" style={{ backgroundColor: "#f0f8ff", flex: 1 }}>
+      <div className="content-wrapper">
+        <Sidebar user={user} handleLogout={handleLogout} />
+        <div className="main-content">
           <Container>
-            {error && <Alert variant="danger" className="rounded-pill text-center">{error}</Alert>}
-            {successMessage && <Alert variant="success" className="rounded-pill text-center">{successMessage}</Alert>}
             <Card className="profile-card p-4">
               <Nav variant="tabs" activeKey={activeTab} onSelect={(k) => setActiveTab(k)} className="mb-5">
                 <Nav.Item>
@@ -286,13 +321,13 @@ const UserProfile = ({ user, setUser, handleShowLogoutConfirm }) => {
                       <Col>
                         <div className="avatar-wrapper">
                           <Image
-                            src={newAvatarPreview || avatar || "https://via.placeholder.com/200"}
+                            src={avatar || "https://via.placeholder.com/200"}
                             alt="Avatar"
                             roundedCircle
                             className="avatar-img"
                             style={{ width: "200px", height: "200px", objectFit: "cover" }}
                           />
-                          <div className="mt-4">
+                          <div className="mt-4 d-flex justify-content-center gap-2">
                             <input
                               type="file"
                               accept="image/*"
@@ -309,25 +344,15 @@ const UserProfile = ({ user, setUser, handleShowLogoutConfirm }) => {
                             >
                               Đổi Ảnh Đại Diện
                             </Button>
-                            {showSaveAvatarButton && (
-                              <div className="mt-2">
-                                <Button
-                                  variant="success"
-                                  size="sm"
-                                  className="btn-custom me-2"
-                                  onClick={handleSaveAvatar}
-                                >
-                                  Lưu Ảnh
-                                </Button>
-                                <Button
-                                  variant="outline-secondary"
-                                  size="sm"
-                                  className="btn-custom"
-                                  onClick={handleCancelAvatarChange}
-                                >
-                                  Hủy
-                                </Button>
-                              </div>
+                            {avatarChanged && (
+                              <Button
+                                variant="success"
+                                size="sm"
+                                className="btn-custom"
+                                onClick={handleSaveAvatar}
+                              >
+                                Lưu Ảnh
+                              </Button>
                             )}
                           </div>
                         </div>
@@ -478,38 +503,6 @@ const UserProfile = ({ user, setUser, handleShowLogoutConfirm }) => {
                             />
                           </InputGroup>
                         </Form.Group>
-
-                        <Form.Group controlId="createdBy" className="mb-4">
-                          <Form.Label className="fw-bold">Người Tạo</Form.Label>
-                          <InputGroup>
-                            <InputGroup.Text>
-                              <i className="bi bi-person-plus"></i>
-                            </InputGroup.Text>
-                            <Form.Control
-                              type="text"
-                              name="createdBy"
-                              value={editedUser.createdBy || ""}
-                              disabled
-                              className="rounded-end"
-                            />
-                          </InputGroup>
-                        </Form.Group>
-
-                        <Form.Group controlId="updatedBy" className="mb-4">
-                          <Form.Label className="fw-bold">Người Cập Nhật</Form.Label>
-                          <InputGroup>
-                            <InputGroup.Text>
-                              <i className="bi bi-person-check"></i>
-                            </InputGroup.Text>
-                            <Form.Control
-                              type="text"
-                              name="updatedBy"
-                              value={editedUser.updatedBy || ""}
-                              disabled
-                              className="rounded-end"
-                            />
-                          </InputGroup>
-                        </Form.Group>
                       </Col>
                     </Row>
 
@@ -536,7 +529,21 @@ const UserProfile = ({ user, setUser, handleShowLogoutConfirm }) => {
           </Container>
         </div>
       </div>
-      <Footer />
+
+      {/* Modal thông báo chỉnh sửa thành công */}
+      <Modal show={showSuccessModal} onHide={handleCloseSuccessModal} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Thông báo</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p className="text-success text-center">Chỉnh sửa thành công!</p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="primary" onClick={handleCloseSuccessModal}>
+            Đóng
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };

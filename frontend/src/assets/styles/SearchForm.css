@@ -1,3 +1,4 @@
+
 .search-form-container {
   background-color: #fff;
   border: 1px solid #e0e0e0;
@@ -128,4 +129,45 @@
   padding-right: 15px !important;
   margin-top: 8px;
   border-top: 1px solid #e0e0e0;
+}
+/* SearchForm.css */
+
+/* Style cho dropdown gợi ý */
+.position-absolute {
+  z-index: 1000;
+}
+
+.hover-bg-light:hover {
+  background-color: #f8f9fa;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* Các style hiện có */
+.search-form-container {
+  padding: 20px 0;
+}
+
+.search-input {
+  border-radius: 8px;
+}
+
+.custom-dropdown-toggle {
+  border-radius: 8px;
+}
+
+.custom-dropdown {
+  max-height: 300px;
+  overflow-y: auto;
+  border-radius: 8px;
+}
+
+.button-container {
+  border-top: 1px solid #dee2e6;
+}
+
+.custom-search-button {
+  border-radius: 8px;
 }

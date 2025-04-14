@@ -22,11 +22,11 @@ const getTimeAgo = (createdAt) => {
 
   const now = new Date();
   const postDate = new Date(createdAt);
-  const diffInMs = now - postDate; // Khoảng cách thời gian tính bằng mili giây
+  const diffInMs = now - postDate;
 
-  const diffInMinutes = Math.floor(diffInMs / (1000 * 60)); // Chuyển sang phút
-  const diffInHours = Math.floor(diffInMinutes / 60); // Chuyển sang giờ
-  const diffInDays = Math.floor(diffInHours / 24); // Chuyển sang ngày
+  const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  const diffInDays = Math.floor(diffInHours / 24);
 
   if (diffInMinutes < 60) {
     return `Đã đăng ${diffInMinutes} phút trước`;
@@ -42,7 +42,7 @@ const customStyles = `
   .sell-page-container {
     background-color: #f0f8ff;
     min-height: 100vh;
-    padding-top: 100px; /* Thêm padding-top để tránh bị đè bởi header */
+    padding-top: 100px;
   }
   .hover-card {
     position: relative;
@@ -56,7 +56,7 @@ const customStyles = `
     display: flex;
     flex-direction: row;
     height: 300px;
-    max-width: 1000px; 
+    max-width: 1000px;
     margin: 0 auto;
   }
   .hover-card:hover {
@@ -174,7 +174,7 @@ const customStyles = `
   }
   .card-info {
     display: flex;
-    flex-direction: column; /* Chuyển sang dạng cột để thông tin nằm dọc */
+    flex-direction: column;
     gap: 8px;
     font-size: 0.9rem;
     color: #555;
@@ -252,7 +252,7 @@ const customStyles = `
     margin-top: 0.5rem;
   }
   .post-date {
-    color: #28a745; /* Màu xanh lá để nổi bật */
+    color: #28a745;
     font-weight: 500;
   }
 `;
@@ -261,6 +261,7 @@ const SellPage = ({ setLoading: setParentLoading }) => {
   const [loading, setLoading] = useState(false);
   const [isShowingLoading, setIsShowingLoading] = useState(false);
   const [pageDataCache, setPageDataCache] = useState({});
+  const [allProjects, setAllProjects] = useState([]);
   const [filteredProjects, setFilteredProjects] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -318,10 +319,11 @@ const SellPage = ({ setLoading: setParentLoading }) => {
     }
   };
 
-  const fetchPosts = async (page = 0) => {
-    if (pageDataCache[page] && JSON.stringify(searchFilters) === JSON.stringify(pageDataCache[page].filters)) {
-      console.log(`Lấy dữ liệu từ cache cho trang ${page}:`, pageDataCache[page]);
-      setFilteredProjects(pageDataCache[page].data);
+  const fetchPosts = async (page = 0, filters) => {
+    const cacheKey = `${page}_${JSON.stringify(filters)}`;
+    if (pageDataCache[cacheKey]) {
+      console.log(`Lấy dữ liệu từ cache cho trang ${page} với bộ lọc:`, pageDataCache[cacheKey]);
+      setAllProjects(pageDataCache[cacheKey].data);
       setLoading(false);
       setParentLoading(false);
       return;
@@ -331,8 +333,8 @@ const SellPage = ({ setLoading: setParentLoading }) => {
       setLoading(true);
       setParentLoading(true);
 
-      const minPrice = searchFilters?.price?.min ?? 0;
-      const maxPrice = searchFilters?.price?.max ?? 50000000000000000;
+      const minPrice = filters?.price?.min ?? 0;
+      const maxPrice = filters?.price?.max ?? 50000000000000000;
 
       const queryParams = new URLSearchParams({
         page,
@@ -357,69 +359,70 @@ const SellPage = ({ setLoading: setParentLoading }) => {
           console.warn("API trả về danh sách bài đăng rỗng. Kiểm tra xem có bài đăng nào với type: 'SALE' và status: 'APPROVED' không.");
         }
 
-        const formattedProjects = posts.map((post) => {
-          const price = parseFloat(post.price);
-          if (isNaN(price)) {
-            console.warn(`Giá không hợp lệ cho bài đăng ID ${post.id}: ${post.price}`);
-            return null;
-          }
-
-          const area = parseFloat(post.area);
-          if (isNaN(area)) {
-            console.warn(`Diện tích không hợp lệ cho bài đăng ID ${post.id}: ${post.area}`);
-            return null;
-          }
-
-          const fullPhone = post.user?.phone || "0123456789";
-          const hiddenPhone = fullPhone.slice(0, 4) + "******";
-
-          let vipLevel = 0;
-          let vipName = "Không có gói VIP";
-
-          if (post.vip) {
-            if (post.vip.vipLevel !== undefined) {
-              vipLevel = post.vip.vipLevel;
-              vipName = post.vip.name || `VIP ${vipLevel}`;
-            } else if (post.vip.id && vipLevels[post.vip.id] !== undefined) {
-              vipLevel = vipLevels[post.vip.id];
-              vipName = post.vip.name || `VIP ${vipLevel}`;
-            } else if (post.vip.name) {
-              const vipLevelMatch = post.vip.name.match(/VIP\s*(\d+)/i);
-              vipLevel = vipLevelMatch ? parseInt(vipLevelMatch[1], 10) : 0;
-              vipName = post.vip.name;
+        const formattedProjects = posts
+          .map((post) => {
+            const price = parseFloat(post.price);
+            if (isNaN(price)) {
+              console.warn(`Giá không hợp lệ cho bài đăng ID ${post.id}: ${post.price}`);
+              return null;
             }
-          }
 
-          console.log(`Cấp độ VIP cho bài đăng ID ${post.id}: ${vipLevel}, Tên gói: ${vipName}`);
+            const area = parseFloat(post.area);
+            if (isNaN(area)) {
+              console.warn(`Diện tích không hợp lệ cho bài đăng ID ${post.id}: ${post.area}`);
+              return null;
+            }
 
-          // Tính thời gian đã đăng
-          const timeAgo = getTimeAgo(post.createdAt);
+            const fullPhone = post.user?.phone || "0123456789";
+            const hiddenPhone = fullPhone.slice(0, 4) + "******";
 
-          return {
-            id: post.id,
-            title: post.title,
-            desc: post.description || "Không có mô tả",
-            img: post.images && post.images.length > 0 ? `http://localhost:8080/uploads/${post.images[0].url}` : "https://placehold.co/300x300",
-            price: formatPrice(price),
-            area: `${area}m²`,
-            location: `${post.detailAddress}, ${post.ward.name}, ${post.district.name}, ${post.province.name}`,
-            vipPackage: vipName,
-            vipLevel: vipLevel,
-            categoryId: post.category?.id || null,
-            phone: fullPhone,
-            hiddenPhone: hiddenPhone,
-            timeAgo, // Thêm thời gian đã đăng
-          };
-        }).filter(project => project !== null);
+            let vipLevel = 0;
+            let vipName = "Không có gói VIP";
+
+            if (post.vip) {
+              if (post.vip.vipLevel !== undefined) {
+                vipLevel = post.vip.vipLevel;
+                vipName = post.vip.name || `VIP ${vipLevel}`;
+              } else if (post.vip.id && vipLevels[post.vip.id] !== undefined) {
+                vipLevel = vipLevels[post.vip.id];
+                vipName = post.vip.name || `VIP ${vipLevel}`;
+              } else if (post.vip.name) {
+                const vipLevelMatch = post.vip.name.match(/VIP\s*(\d+)/i);
+                vipLevel = vipLevelMatch ? parseInt(vipLevelMatch[1], 10) : 0;
+                vipName = post.vip.name;
+              }
+            }
+
+            console.log(`Cấp độ VIP cho bài đăng ID ${post.id}: ${vipLevel}, Tên gói: ${vipName}`);
+
+            const timeAgo = getTimeAgo(post.createdAt);
+
+            return {
+              id: post.id,
+              title: post.title,
+              desc: post.description || "Không có mô tả",
+              img: post.images && post.images.length > 0 ? `http://localhost:8080/uploads/${post.images[0].url}` : "https://placehold.co/300x300",
+              price: formatPrice(price),
+              area: `${area}m²`,
+              location: `${post.detailAddress}, ${post.ward.name}, ${post.district.name}, ${post.province.name}`,
+              vipPackage: vipName,
+              vipLevel: vipLevel,
+              categoryId: post.category?.id || null,
+              phone: fullPhone,
+              hiddenPhone: hiddenPhone,
+              timeAgo,
+            };
+          })
+          .filter((project) => project !== null);
 
         console.log("Dữ liệu sau khi định dạng (SellPage):", formattedProjects);
 
         setPageDataCache((prevCache) => ({
           ...prevCache,
-          [page]: { data: formattedProjects, filters: searchFilters },
+          [cacheKey]: { data: formattedProjects, filters },
         }));
 
-        applyFilters(formattedProjects, searchFilters);
+        setAllProjects(formattedProjects);
         setTotalPages(response.data.data.totalPages);
         setLoading(false);
         setParentLoading(false);
@@ -428,6 +431,7 @@ const SellPage = ({ setLoading: setParentLoading }) => {
       }
     } catch (err) {
       console.error("Lỗi khi lấy danh sách bài đăng (SellPage):", err.response?.data || err.message);
+      setAllProjects([]);
       setFilteredProjects([]);
       setTotalPages(1);
       setLoading(false);
@@ -438,7 +442,8 @@ const SellPage = ({ setLoading: setParentLoading }) => {
 
   const applyFilters = (projectsToFilter, filters) => {
     const { searchQuery, categoryIds, area } = filters || {};
-    const query = searchQuery ? searchQuery.toLowerCase().trim() : "";
+    // Chuẩn hóa query: loại bỏ khoảng trắng thừa và chuyển về lowercase
+    const query = searchQuery ? searchQuery.toLowerCase().trim().replace(/\s+/g, " ") : "";
 
     console.log("Filters received in applyFilters (SellPage):", filters);
     console.log("Danh sách dự án trước khi lọc (SellPage):", projectsToFilter);
@@ -457,10 +462,14 @@ const SellPage = ({ setLoading: setParentLoading }) => {
         return false;
       }
 
+      // Chuẩn hóa title và desc: loại bỏ khoảng trắng thừa và chuyển về lowercase
+      const normalizedTitle = project.title ? project.title.toLowerCase().trim().replace(/\s+/g, " ") : "";
+      const normalizedDesc = project.desc ? project.desc.toLowerCase().trim().replace(/\s+/g, " ") : "";
+
       const matchesQuery =
         !query ||
-        project.title.toLowerCase().includes(query) ||
-        project.desc.toLowerCase().includes(query);
+        normalizedTitle.includes(query) ||
+        normalizedDesc.includes(query);
 
       const matchesCategory =
         !categoryIds ||
@@ -475,6 +484,9 @@ const SellPage = ({ setLoading: setParentLoading }) => {
         (maxArea == null || projectArea <= maxArea);
 
       console.log("Dự án (SellPage):", project);
+      console.log("Normalized Title:", normalizedTitle);
+      console.log("Normalized Desc:", normalizedDesc);
+      console.log("Query:", query);
       console.log("projectArea:", projectArea);
       console.log("minArea:", minArea, "maxArea:", maxArea);
       console.log("matchesQuery:", matchesQuery);
@@ -515,12 +527,14 @@ const SellPage = ({ setLoading: setParentLoading }) => {
 
       window.scrollTo(0, initialScrollPosition);
 
-      if (pageDataCache[initialPage - 1]) {
-        setFilteredProjects(pageDataCache[initialPage - 1].data);
+      const cacheKey = `${initialPage - 1}_${JSON.stringify(initialFilters)}`;
+      if (pageDataCache[cacheKey]) {
+        setAllProjects(pageDataCache[cacheKey].data);
+        applyFilters(pageDataCache[cacheKey].data, initialFilters);
         setLoading(false);
         setParentLoading(false);
       } else {
-        fetchPosts(initialPage - 1);
+        fetchPosts(initialPage - 1, initialFilters);
       }
     } else {
       setIsShowingLoading(true);
@@ -528,7 +542,7 @@ const SellPage = ({ setLoading: setParentLoading }) => {
         setIsShowingLoading(false);
       }, 2000);
 
-      fetchPosts(initialPage - 1);
+      fetchPosts(initialPage - 1, {});
     }
 
     const handleBeforeUnload = () => {
@@ -549,12 +563,18 @@ const SellPage = ({ setLoading: setParentLoading }) => {
   }, []);
 
   useEffect(() => {
+    if (allProjects.length > 0) {
+      applyFilters(allProjects, searchFilters);
+    }
+  }, [searchFilters, allProjects]);
+
+  useEffect(() => {
     setIsShowingLoading(true);
     setTimeout(() => {
       setIsShowingLoading(false);
     }, 2000);
 
-    fetchPosts(currentPage - 1);
+    fetchPosts(currentPage - 1, searchFilters);
   }, [currentPage, vipLevels]);
 
   const handleSearch = (searchData) => {
@@ -569,7 +589,7 @@ const SellPage = ({ setLoading: setParentLoading }) => {
       setIsShowingLoading(false);
     }, 2000);
 
-    fetchPosts(0);
+    fetchPosts(0, searchData);
 
     const state = {
       currentPage: 1,
@@ -590,7 +610,7 @@ const SellPage = ({ setLoading: setParentLoading }) => {
       } else {
         return {
           ...prev,
-          [projectId]: filteredProjects.find(p => p.id === projectId)?.phone,
+          [projectId]: filteredProjects.find((p) => p.id === projectId)?.phone,
         };
       }
     });
@@ -646,7 +666,11 @@ const SellPage = ({ setLoading: setParentLoading }) => {
       <Container>
         <Row className="mb-4">
           <Col>
-            <SearchForm onSearch={handleSearch} hideTransactionType={true} />
+            <SearchForm
+              onSearch={handleSearch}
+              hideTransactionType={true}
+              projects={allProjects} // Truyền danh sách bài đăng cho SearchForm
+            />
           </Col>
         </Row>
 
@@ -660,10 +684,7 @@ const SellPage = ({ setLoading: setParentLoading }) => {
         </Row>
 
         {isShowingLoading ? (
-          <div
-            className="d-flex flex-column justify-content-center align-items-center"
-            style={{ minHeight: "50vh" }}
-          >
+          <div className="d-flex flex-column justify-content-center align-items-center" style={{ minHeight: "50vh" }}>
             <Spinner animation="border" variant="primary" />
             <p className="mt-3 text-muted">Đang tải dữ liệu...</p>
           </div>
@@ -688,12 +709,7 @@ const SellPage = ({ setLoading: setParentLoading }) => {
                     >
                       <Card className="hover-card">
                         <div className="card-img-wrapper">
-                          <Card.Img
-                            variant="top"
-                            src={project.img}
-                            alt={project.title}
-                            className="card-img-top"
-                          />
+                          <Card.Img variant="top" src={project.img} alt={project.title} className="card-img-top" />
                           <div className="card-img-overlay">
                             <Badge className={`vip-badge vip-${project.vipLevel}`}>
                               <FaStar className="vip-star" />
@@ -750,14 +766,8 @@ const SellPage = ({ setLoading: setParentLoading }) => {
               <Row className="justify-content-center mt-5">
                 <Col xs="auto">
                   <Pagination>
-                    <Pagination.First
-                      onClick={() => paginate(1)}
-                      disabled={currentPage === 1}
-                    />
-                    <Pagination.Prev
-                      onClick={() => paginate(currentPage - 1)}
-                      disabled={currentPage === 1}
-                    />
+                    <Pagination.First onClick={() => paginate(1)} disabled={currentPage === 1} />
+                    <Pagination.Prev onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} />
                     {startPage > 1 && (
                       <>
                         <Pagination.Item onClick={() => paginate(1)}>1</Pagination.Item>
@@ -765,30 +775,18 @@ const SellPage = ({ setLoading: setParentLoading }) => {
                       </>
                     )}
                     {pageNumbers.map((page) => (
-                      <Pagination.Item
-                        key={page}
-                        active={page === currentPage}
-                        onClick={() => paginate(page)}
-                      >
+                      <Pagination.Item key={page} active={page === currentPage} onClick={() => paginate(page)}>
                         {page}
                       </Pagination.Item>
                     ))}
                     {endPage < totalPages && (
                       <>
                         {endPage < totalPages - 1 && <Pagination.Ellipsis />}
-                        <Pagination.Item onClick={() => paginate(totalPages)}>
-                          {totalPages}
-                        </Pagination.Item>
+                        <Pagination.Item onClick={() => paginate(totalPages)}>{totalPages}</Pagination.Item>
                       </>
                     )}
-                    <Pagination.Next
-                      onClick={() => paginate(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                    />
-                    <Pagination.Last
-                      onClick={() => paginate(totalPages)}
-                      disabled={currentPage === totalPages}
-                    />
+                    <Pagination.Next onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages} />
+                    <Pagination.Last onClick={() => paginate(totalPages)} disabled={currentPage === totalPages} />
                     <Form.Control
                       type="number"
                       min="1"
@@ -799,11 +797,7 @@ const SellPage = ({ setLoading: setParentLoading }) => {
                       className="pagination-input"
                       placeholder="Trang"
                     />
-                    <Button
-                      variant="primary"
-                      onClick={handlePageInput}
-                      className="go-button"
-                    >
+                    <Button variant="primary" onClick={handlePageInput} className="go-button">
                       Đi
                     </Button>
                   </Pagination>

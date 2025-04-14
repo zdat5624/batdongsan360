@@ -348,8 +348,8 @@ const AdminVips = ({ user, handleLogout }) => {
           </Container>
         </div>
       </div>
-      <Footer />
     </div>
+
   );
 };
 

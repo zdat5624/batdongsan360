@@ -39,11 +39,13 @@ const App = () => {
       if (token && userId) {
         try {
           const response = await apiServices.get(`/api/users/${userId}`);
+
           if (response.data.statusCode === 200) {
             setUser({
               id: response.data.data.id,
               name: response.data.data.name,
               email: response.data.data.email,
+
               avatar: response.data.data.avatar || "https://i.pravatar.cc/150?u=" + response.data.data.email,
               role: response.data.data.role,
               accessToken: token,

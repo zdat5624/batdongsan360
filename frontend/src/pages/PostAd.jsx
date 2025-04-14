@@ -449,22 +449,22 @@ const PostAd = () => {
               </div>
             </form>
           )}
-        </div>
 
-        {/* Modal thông báo thành công */}
-        <Modal show={showSuccessModal} onHide={handleCloseModal} centered>
-          <Modal.Header closeButton>
-            <Modal.Title>Đăng Tin Thành Công</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <p className="text-center">Tin của bạn đã được đăng thành công và đang chờ duyệt!</p>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="success" onClick={handleCloseModal}>
-              OK
-            </Button>
-          </Modal.Footer>
-        </Modal>
+          {/* Modal thông báo thành công */}
+          <Modal show={showSuccessModal} onHide={handleCloseModal} centered>
+            <Modal.Header closeButton>
+              <Modal.Title>Đăng Tin Thành Công</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <p className="text-center">Tin của bạn đã được đăng thành công và đang chờ duyệt!</p>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="success" onClick={handleCloseModal}>
+                OK
+              </Button>
+            </Modal.Footer>
+          </Modal>
+        </div>
       </div>
     </div>
   );

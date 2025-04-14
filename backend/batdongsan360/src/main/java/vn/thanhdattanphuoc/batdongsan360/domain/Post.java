@@ -3,23 +3,13 @@ package vn.thanhdattanphuoc.batdongsan360.domain;
 import java.time.Instant;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
+import vn.thanhdattanphuoc.batdongsan360.domain.address.District;
+import vn.thanhdattanphuoc.batdongsan360.domain.address.Province;
+import vn.thanhdattanphuoc.batdongsan360.domain.address.Ward;
 import vn.thanhdattanphuoc.batdongsan360.util.SecurityUtil;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.PostStatusEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.PostTypeEnum;
@@ -33,32 +23,35 @@ public class Post {
     private long id;
 
     @NotBlank(message = "Tiêu đề không được để trống")
+    @Size(max = 255, message = "Tiêu đề không được quá 255 ký tự")
     private String title;
 
-    @Lob
+    @Column(columnDefinition = "MEDIUMTEXT")
     @NotBlank(message = "Mô tả không được để trống")
     private String description;
-
-    private int vip;
 
     private boolean notifyOnView;
 
     @Enumerated(EnumType.STRING)
+    @NotNull(message = "Loại bài đăng không được để trống")
     private PostTypeEnum type;
 
     @NotNull(message = "Giá không được để trống")
-    private double price;
+    @Min(value = 0, message = "Giá phải lớn hơn hoặc bằng 0")
+    private Long price;
 
     @NotNull(message = "Diện tích không được để trống")
-    private double area;
+    @DecimalMin(value = "0.1", message = "Diện tích phải lớn hơn 0")
+    private Double area;
 
+    @Min(value = 0, message = "Lượt xem phải không âm")
     private long view = 0;
 
     @Enumerated(EnumType.STRING)
     private PostStatusEnum status;
 
     private Instant expireDate;
-    private boolean deletedByUser = false;
+    private boolean deletedByUser;
 
     private Instant createdAt;
     private Instant updatedAt;
@@ -66,15 +59,37 @@ public class Post {
     private String updatedBy;
 
     @ManyToOne
+    @JoinColumn(name = "province_code")
+    @NotNull(message = "Tỉnh/Thành phố không được để trống")
+    private Province province;
+
+    @ManyToOne
+    @JoinColumn(name = "district_code")
+    @NotNull(message = "Quận/Huyện không được để trống")
+    private District district;
+
+    @ManyToOne
+    @JoinColumn(name = "ward_code")
+    private Ward ward;
+
+    @Size(max = 255, message = "Địa chỉ chi tiết không được quá 255 ký tự")
+    private String detailAddress;
+
+    @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
 
     @ManyToOne
     @JoinColumn(name = "category_id")
+    @NotNull(message = "Danh mục không được để trống")
     private Category category;
 
-    @OneToMany(mappedBy = "post")
-    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "vip_id")
+    private Vip vip;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<Image> images;
 
     public long getId() {
@@ -101,14 +116,6 @@ public class Post {
         this.description = description;
     }
 
-    public int getVip() {
-        return vip;
-    }
-
-    public void setVip(int vip) {
-        this.vip = vip;
-    }
-
     public boolean isNotifyOnView() {
         return notifyOnView;
     }
@@ -125,19 +132,19 @@ public class Post {
         this.type = type;
     }
 
-    public double getPrice() {
+    public Long getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(Long price) {
         this.price = price;
     }
 
-    public double getArea() {
+    public Double getArea() {
         return area;
     }
 
-    public void setArea(double area) {
+    public void setArea(Double area) {
         this.area = area;
     }
 
@@ -205,6 +212,38 @@ public class Post {
         this.updatedBy = updatedBy;
     }
 
+    public Province getProvince() {
+        return province;
+    }
+
+    public void setProvince(Province province) {
+        this.province = province;
+    }
+
+    public District getDistrict() {
+        return district;
+    }
+
+    public void setDistrict(District district) {
+        this.district = district;
+    }
+
+    public Ward getWard() {
+        return ward;
+    }
+
+    public void setWard(Ward ward) {
+        this.ward = ward;
+    }
+
+    public String getDetailAddress() {
+        return detailAddress;
+    }
+
+    public void setDetailAddress(String detailAddress) {
+        this.detailAddress = detailAddress;
+    }
+
     public User getUser() {
         return user;
     }
@@ -221,6 +260,14 @@ public class Post {
         this.category = category;
     }
 
+    public Vip getVip() {
+        return vip;
+    }
+
+    public void setVip(Vip vip) {
+        this.vip = vip;
+    }
+
     public List<Image> getImages() {
         return images;
     }
@@ -231,7 +278,10 @@ public class Post {
 
     @PrePersist
     public void handleBeforeCreate() {
-        this.createdBy = SecurityUtil.getCurrentUserLogin().orElse("");
+        if (this.createdBy == null) {
+            this.createdBy = SecurityUtil.getCurrentUserLogin().orElse("");
+        }
+
         this.createdAt = Instant.now();
     }
 

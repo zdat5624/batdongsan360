@@ -7,11 +7,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import vn.thanhdattanphuoc.batdongsan360.domain.Post;
 
 @Entity
 @Table(name = "districts")
@@ -21,17 +23,24 @@ public class District {
     private long code;
 
     private String name;
+    @JsonIgnore
     private String codename;
     @JsonProperty("division_type")
     private String divisionType;
     @JsonProperty("short_codename")
+    @JsonIgnore
     private String shortCodename;
+
+    @OneToMany(mappedBy = "district")
+    @JsonIgnore
+    private List<Post> post;
 
     @ManyToOne
     @JoinColumn(name = "province_code")
+    @JsonIgnore
     private Province province;
 
-    @OneToMany(mappedBy = "district", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "district", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Ward> wards;
 
@@ -53,6 +62,14 @@ public class District {
 
     public String getCodename() {
         return codename;
+    }
+
+    public List<Post> getPost() {
+        return post;
+    }
+
+    public void setPost(List<Post> post) {
+        this.post = post;
     }
 
     public void setCodename(String codename) {

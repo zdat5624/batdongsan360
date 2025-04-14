@@ -35,6 +35,7 @@ public class User {
     private String email;
 
     @NotBlank(message = "Password không được để trống")
+    @JsonIgnore
     private String password;
 
     @Enumerated(EnumType.STRING)
@@ -214,6 +215,8 @@ public class User {
         if (this.createdBy.equals("")) {
             this.createdBy = this.email;
         }
+
+        this.avatar = "avatar-default.webp";
 
         this.createdAt = Instant.now();
     }

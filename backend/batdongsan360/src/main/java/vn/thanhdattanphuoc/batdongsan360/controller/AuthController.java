@@ -101,6 +101,7 @@ public class AuthController {
         newUser.setName(registerDTO.getName());
         newUser.setPhone(registerDTO.getPhone());
         newUser.setEmail(registerDTO.getEmail());
+        newUser.setGender(registerDTO.getGender());
         newUser.setPassword(hashPassword);
         newUser.setRole(RoleEnum.USER);
         newUser.setCreatedBy(registerDTO.getEmail());
@@ -111,6 +112,7 @@ public class AuthController {
         res.setName(currentUserDB.getName());
         res.setEmail(currentUserDB.getEmail());
         res.setRole(currentUserDB.getRole());
+        res.setGender(currentUserDB.getGender());
         res.setPhone(currentUserDB.getPhone());
         res.setCreatedAt(currentUserDB.getCreatedAt());
         res.setCreatedBy(currentUserDB.getCreatedBy());

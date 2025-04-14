@@ -239,7 +239,6 @@ const NotificationsPage = ({ user, handleLogout }) => {
                     <th className="p-3">Nội Dung</th>
                     <th className="p-3">Thời Gian</th>
                     <th className="p-3">Trạng Thái</th>
-                    <th className="p-3">Hành Động</th>
                   </tr>
                 </thead>
                 <tbody>

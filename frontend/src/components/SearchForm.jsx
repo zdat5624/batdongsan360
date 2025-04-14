@@ -3,12 +3,14 @@ import { Dropdown, Form, Button, Container, Row, Col } from "react-bootstrap";
 import apiServices from "../services/apiServices";
 import "../assets/styles/SearchForm.css";
 
-const SearchForm = ({ onSearch, hideTransactionType }) => {
+const SearchForm = ({ onSearch, hideTransactionType, projects = [] }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [propertyTypes, setPropertyTypes] = useState({});
   const [categories, setCategories] = useState([]);
   const [priceRange, setPriceRange] = useState([null, null]);
   const [areaRange, setAreaRange] = useState([null, null]);
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const isSellPage = window.location.pathname.includes("/sell");
   const isRentPage = window.location.pathname.includes("/rent");
@@ -38,6 +40,57 @@ const SearchForm = ({ onSearch, hideTransactionType }) => {
     fetchCategories();
   }, [isSellPage, isRentPage, isHomePage]);
 
+  const handleSearchInputChange = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+
+    if (value.trim().length > 0) {
+      const query = value.toLowerCase().trim().replace(/\s+/g, " ");
+      console.log("Search Query for Suggestions:", query);
+      console.log("Projects available for suggestions:", projects);
+
+      const filteredSuggestions = projects
+        .filter((project) => {
+          const normalizedTitle = project.title ? project.title.toLowerCase().trim().replace(/\s+/g, " ") : "";
+          const matches = normalizedTitle.includes(query);
+          console.log(`Title: ${normalizedTitle}, Matches: ${matches}`);
+          return matches;
+        })
+        .map((project) => project.title)
+        .filter((title, index, self) => self.indexOf(title) === index) // Loại bỏ trùng lặp
+        .slice(0, 5);
+
+      console.log("Filtered Suggestions:", filteredSuggestions);
+      setSuggestions(filteredSuggestions);
+      setShowSuggestions(true);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+
+  const handleSuggestionClick = (suggestion) => {
+    setSearchQuery(suggestion);
+    setShowSuggestions(false);
+
+    const selectedCategoryIds = Object.keys(propertyTypes)
+      .filter((key) => propertyTypes[key])
+      .map((key) => parseInt(key, 10));
+    const searchData = {
+      searchQuery: suggestion.trim(),
+      categoryIds: selectedCategoryIds.length > 0 ? selectedCategoryIds : [],
+      price: { min: priceRange[0], max: priceRange[1] },
+      area: { min: areaRange[0], max: areaRange[1] },
+    };
+    onSearch(searchData);
+  };
+
+  const handleBlur = () => {
+    setTimeout(() => {
+      setShowSuggestions(false);
+    }, 200);
+  };
+
   const handlePropertyTypeChange = (e) => {
     const { name, checked } = e.target;
     setPropertyTypes((prev) => ({ ...prev, [name]: checked }));
@@ -55,6 +108,7 @@ const SearchForm = ({ onSearch, hideTransactionType }) => {
       area: { min: areaRange[0], max: areaRange[1] },
     };
     onSearch(searchData);
+    setShowSuggestions(false);
   };
 
   const handleReset = () => {
@@ -67,6 +121,7 @@ const SearchForm = ({ onSearch, hideTransactionType }) => {
     });
     setPropertyTypes(resetPropertyTypes);
     onSearch({});
+    setShowSuggestions(false);
   };
 
   const allPriceOptions = {
@@ -129,14 +184,33 @@ const SearchForm = ({ onSearch, hideTransactionType }) => {
     <Container className="search-form-container">
       <Form onSubmit={handleSearch}>
         <Row className="g-2 align-items-center">
-          <Col xs={12} md={3}>
+          <Col xs={12} md={3} className="position-relative">
             <Form.Control
               type="text"
               placeholder="Tìm kiếm..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={handleSearchInputChange}
+              onBlur={handleBlur}
+              onFocus={() => searchQuery.trim().length > 0 && setShowSuggestions(true)}
               className="search-input"
             />
+            {showSuggestions && suggestions.length > 0 && (
+              <div
+                className="position-absolute w-100 bg-white border rounded shadow-sm"
+                style={{ zIndex: 1000, maxHeight: "200px", overflowY: "auto" }}
+              >
+                {suggestions.map((suggestion, index) => (
+                  <div
+                    key={index}
+                    className="p-2 cursor-pointer hover-bg-light"
+                    onMouseDown={() => handleSuggestionClick(suggestion)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    {suggestion}
+                  </div>
+                ))}
+              </div>
+            )}
           </Col>
           <Col xs={12} md={3}>
             <Dropdown>

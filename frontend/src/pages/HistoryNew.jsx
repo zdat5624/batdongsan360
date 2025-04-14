@@ -427,8 +427,7 @@ const HistoryNew = ({ user, handleShowLogoutConfirm }) => {
                                 variant="outline-primary"
                                 size="sm"
                                 className="action-btn view-btn px-3"
-                                onClick={() => handleViewPostDetail(post.id 
-                                )}
+                                onClick={() => handleViewPostDetail(post.id)}
                               >
                                 Xem chi tiết
                               </Button>
@@ -502,7 +501,6 @@ const HistoryNew = ({ user, handleShowLogoutConfirm }) => {
           </Container>
         </div>
       </div>
-      <Footer />
     </div>
   );
 };

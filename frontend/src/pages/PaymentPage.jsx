@@ -118,7 +118,6 @@ const PaymentPage = ({ user, handleLogout }) => {
     }
   };
 
-  // Lấy lịch sử giao dịch
   const fetchTransactions = async (page = 0, type = "all") => {
     setLoading(true);
     try {
@@ -581,7 +580,6 @@ const PaymentPage = ({ user, handleLogout }) => {
           </Container>
         </div>
       </div>
-      <Footer />
     </div>
   );
 };

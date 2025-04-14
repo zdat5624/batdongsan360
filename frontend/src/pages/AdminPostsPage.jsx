@@ -708,145 +708,146 @@ const AdminPostsPage = ({ user, handleLogout }) => {
                     </Modal.Footer>
                   </Modal>
 
-<Modal show={showModal} onHide={handleCloseModal} size="lg">
-  <Modal.Header closeButton>
-    <Modal.Title className="text-white">{selectedPost?.title}</Modal.Title>
-  </Modal.Header>
-  <Modal.Body className="p-4">
-    {selectedPost && (
-      <div>
-        {/* Hình ảnh: Carousel toàn chiều rộng */}
-        <div className="mb-4">
-          <h5 className="fw-bold mb-3 text-primary">Hình ảnh</h5>
-          {selectedPost.images.length > 0 ? (
-            <Carousel>
-              {selectedPost.images.map((img, index) => (
-                <Carousel.Item key={index}>
-                  <img
-                    src={img}
-                    alt={`Ảnh ${index + 1}`}
-                    className="d-block w-100"
-                    style={{ height: "300px", objectFit: "contain", borderRadius: "10px", cursor: "pointer" }}
-                    onClick={() => handleShowImage(img)}
-                  />
-                </Carousel.Item>
-              ))}
-            </Carousel>
-          ) : (
-            <p className="text-muted">Không có hình ảnh</p>
-          )}
-        </div>
+                  <Modal show={showModal} onHide={handleCloseModal} size="lg">
+                    <Modal.Header closeButton>
+                      <Modal.Title className="text-white">{selectedPost?.title}</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body className="p-4">
+                      {selectedPost && (
+                        <div>
+                          {/* Hình ảnh: Carousel toàn chiều rộng */}
+                          <div className="mb-4">
+                            <h5 className="fw-bold mb-3 text-primary">Hình ảnh</h5>
+                            {selectedPost.images.length > 0 ? (
+                              <Carousel>
+                                {selectedPost.images.map((img, index) => (
+                                  <Carousel.Item key={index}>
+                                    <img
+                                      src={img}
+                                      alt={`Ảnh ${index + 1}`}
+                                      className="d-block w-100"
+                                      style={{ height: "300px", objectFit: "contain", borderRadius: "10px", cursor: "pointer" }}
+                                      onClick={() => handleShowImage(img)}
+                                    />
+                                  </Carousel.Item>
+                                ))}
+                              </Carousel>
+                            ) : (
+                              <p className="text-muted">Không có hình ảnh</p>
+                            )}
+                          </div>
 
-        {/* Thông tin: Bố cục dọc với các phần phân chia bằng đường kẻ ngang */}
-        <div>
-          {/* Thông tin cơ bản */}
-          <h5 className="fw-bold mb-3 text-primary">Thông tin cơ bản</h5>
-          <ul className="list-unstyled mb-4">
-            <li className="mb-2 d-flex align-items-center">
-              <FaMoneyBillWave className="me-2 text-primary" />
-              <strong>Giá:</strong>&nbsp;
-              <Badge bg="primary">{selectedPost.price}</Badge>
-            </li>
-            <li className="mb-2 d-flex align-items-center">
-              <FaRulerCombined className="me-2 text-primary" />
-              <strong>Diện tích:</strong>&nbsp;{selectedPost.area}
-            </li>
-            <li className="mb-2 d-flex align-items-center">
-              <FaMapMarkerAlt className="me-2 text-primary" />
-              <strong>Vị trí:</strong>&nbsp;{selectedPost.address}
-            </li>
-            <li className="mb-2 d-flex align-items-center">
-              <FaHome className="me-2 text-primary" />
-              <strong>Loại bài đăng:</strong>&nbsp;{selectedPost.type === "SALE" ? "Bán" : "Cho thuê"}
-            </li>
-            <li className="mb-2 d-flex align-items-center">
-              <FaFolderOpen className="me-2 text-primary" />
-              <strong>Danh mục:</strong>&nbsp;{selectedPost.category}
-            </li>
-            <li className="mb-2 d-flex align-items-center">
-              <FaStar className="me-2 text-primary" />
-              <strong>Gói VIP:</strong>&nbsp;
-              <span className="d-flex align-items-center gap-1">
-                <FaStar className="text-warning" /> {selectedPost.vip}
-              </span>
-            </li>
-          </ul>
-          <hr className="my-4" />
+                          {/* Thông tin: Bố cục dọc với các phần phân chia bằng đường kẻ ngang */}
+                          <div>
+                            {/* Thông tin cơ bản */}
+                            <h5 className="fw-bold mb-3 text-primary">Thông tin cơ bản</h5>
+                            <ul className="list-unstyled mb-4">
+                              <li className="mb-2 d-flex align-items-center">
+                                <FaMoneyBillWave className="me-2 text-primary" />
+                                <strong>Giá:</strong> 
+                                <Badge bg="primary">{selectedPost.price}</Badge>
+                              </li>
+                              <li className="mb-2 d-flex align-items-center">
+                                <FaRulerCombined className="me-2 text-primary" />
+                                <strong>Diện tích:</strong> {selectedPost.area}
+                              </li>
+                              <li className="mb-2 d-flex align-items-center">
+                                <FaMapMarkerAlt className="me-2 text-primary" />
+                                <strong>Vị trí:</strong> {selectedPost.address}
+                              </li>
+                              <li className="mb-2 d-flex align-items-center">
+                                <FaHome className="me-2 text-primary" />
+                                <strong>Loại bài đăng:</strong> {selectedPost.type === "SALE" ? "Bán" : "Cho thuê"}
+                              </li>
+                              <li className="mb-2 d-flex align-items-center">
+                                <FaFolderOpen className="me-2 text-primary" />
+                                <strong>Danh mục:</strong> {selectedPost.category}
+                              </li>
+                              <li className="mb-2 d-flex align-items-center">
+                                <FaStar className="me-2 text-primary" />
+                                <strong>Gói VIP:</strong> 
+                                <span className="d-flex align-items-center gap-1">
+                                  <FaStar className="text-warning" /> {selectedPost.vip}
+                                </span>
+                              </li>
+                            </ul>
+                            <hr className="my-4" />
 
-          {/* Thông tin người đăng */}
-          <h5 className="fw-bold mb-3 text-primary">Thông tin người đăng</h5>
-          <ul className="list-unstyled mb-4">
-            <li className="mb-2 d-flex align-items-center">
-              <FaUser className="me-2 text-primary" />
-              <strong>Người bán:</strong>&nbsp;{selectedPost.seller}
-            </li>
-            <li className="mb-2 d-flex align-items-center">
-              <FaPhone className="me-2 text-primary" />
-              <strong>Liên hệ:</strong>&nbsp;
-              <a href={`tel:${selectedPost.contact}`} className="text-decoration-none text-primary">{selectedPost.contact}</a>
-            </li>
-            <li className="mb-2 d-flex align-items-center">
-              <FaEnvelope className="me-2 text-primary" />
-              <strong>Email:</strong>&nbsp;
-              <a href={`mailto:${selectedPost.email}`} className="text-decoration-none text-primary">{selectedPost.email}</a>
-            </li>
-          </ul>
-          <hr className="my-4" />
+                            {/* Thông tin người đăng */}
+                            <h5 className="fw-bold mb-3 text-primary">Thông tin người đăng</h5>
+                            <ul className="list-unstyled mb-4">
+                              <li className="mb-2 d-flex align-items-center">
+                                <FaUser className="me-2 text-primary" />
+                                <strong>Người bán:</strong> {selectedPost.seller}
+                              </li>
+                              <li className="mb-2 d-flex align-items-center">
+                                <FaPhone className="me-2 text-primary" />
+                                <strong>Liên hệ:</strong> 
+                                <a href={`tel:${selectedPost.contact}`} className="text-decoration-none text-primary">{selectedPost.contact}</a>
+                              </li>
+                              <li className="mb-2 d-flex align-items-center">
+                                <FaEnvelope className="me-2 text-primary" />
+                                <strong>Email:</strong> 
+                                <a href={`mailto:${selectedPost.email}`} className="text-decoration-none text-primary">{selectedPost.email}</a>
+                              </li>
+                            </ul>
+                            <hr className="my-4" />
 
-          {/* Chi tiết bài đăng */}
-          <h5 className="fw-bold mb-3 text-primary">Chi tiết bài đăng</h5>
-          <ul className="list-unstyled">
-            <li className="mb-2 d-flex align-items-center">
-              <FaCalendarAlt className="me-2 text-primary" />
-              <strong>Ngày đăng:</strong>&nbsp;{selectedPost.createdAt}
-            </li>
-            <li className="mb-2 d-flex align-items-center">
-              <FaCalendarTimes className="me-2 text-primary" />
-              <strong>Ngày hết hạn:</strong>&nbsp;{selectedPost.expireDate}
-            </li>
-            <li className="mb-2 d-flex align-items-center">
-              <FaSyncAlt className="me-2 text-primary" />
-              <strong>Trạng thái:</strong>&nbsp;
-              {selectedPost.status === "PENDING" ? "Chờ duyệt" : selectedPost.status === "REVIEW_LATER" ? "Xem sau" : selectedPost.status === "APPROVED" ? "Đã duyệt" : selectedPost.status === "REJECTED" ? "Từ chối" : "Hết hạn"}
-            </li>
-            <li className="mt-3">
-              <div className="d-flex align-items-start">
-                <FaFileAlt className="me-2 text-primary mt-1" />
-                <div>
-                  <strong>Mô tả:</strong>
-                  <div
-                    style={{
-                      wordBreak: "break-word",
-                      maxHeight: "150px",
-                      overflowY: "auto",
-                      whiteSpace: "pre-wrap",
-                      padding: "10px",
-                      border: "1px solid #ddd",
-                      borderRadius: "8px",
-                      background: "#f8f9fa",
-                      marginTop: "5px",
-                    }}
-                  >
-                    {selectedPost.description}
-                  </div>
-                </div>
-              </div>
-            </li>
-          </ul>
-        </div>
-      </div>
-    )}
-  </Modal.Body>
-  <Modal.Footer>
-    <Button
-      variant="outline-secondary"
-      onClick={handleCloseModal}
-      style={{ borderRadius: "20px" }}
-    >
-      Đóng
-    </Button>
-  </Modal.Footer>
-</Modal>
+                            {/* Chi tiết bài đăng */}
+                            <h5 className="fw-bold mb-3 text-primary">Chi tiết bài đăng</h5>
+                            <ul className="list-unstyled">
+                              <li className="mb-2 d-flex align-items-center">
+                                <FaCalendarAlt className="me-2 text-primary" />
+                                <strong>Ngày đăng:</strong> {selectedPost.createdAt}
+                              </li>
+                              <li className="mb-2 d-flex align-items-center">
+                                <FaCalendarTimes className="me-2 text-primary" />
+                                <strong>Ngày hết hạn:</strong> {selectedPost.expireDate}
+                              </li>
+                              <li className="mb-2 d-flex align-items-center">
+                                <FaSyncAlt className="me-2 text-primary" />
+                                <strong>Trạng thái:</strong> 
+                                {selectedPost.status === "PENDING" ? "Chờ duyệt" : selectedPost.status === "REVIEW_LATER" ? "Xem sau" : selectedPost.status === "APPROVED" ? "Đã duyệt" : selectedPost.status === "REJECTED" ? "Từ chối" : "Hết hạn"}
+                              </li>
+                              <li className="mt-3">
+                                <div className="d-flex align-items-start">
+                                  <FaFileAlt className="me-2 text-primary mt-1" />
+                                  <div>
+                                    <strong>Mô tả:</strong>
+                                    <div
+                                      style={{
+                                        wordBreak: "break-word",
+                                        maxHeight: "150px",
+                                        overflowY: "auto",
+                                        whiteSpace: "pre-wrap",
+                                        padding: "10px",
+                                        border: "1px solid #ddd",
+                                        borderRadius: "8px",
+                                        background: "#f8f9fa",
+                                        marginTop: "5px",
+                                      }}
+                                    >
+                                      {selectedPost.description}
+                                    </div>
+                                  </div>
+                                </div>
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+                      )}
+                    </Modal.Body>
+                    <Modal.Footer>
+                      <Button
+                        variant="outline-secondary"
+                        onClick={handleCloseModal}
+                        style={{ borderRadius: "20px" }}
+                      >
+                        Đóng
+                      </Button>
+                    </Modal.Footer>
+                  </Modal>
+
                   {/* Modal phóng to hình ảnh */}
                   <Modal show={showImageModal} onHide={handleCloseImageModal} centered size="xl">
                     <Modal.Body className="p-0">
@@ -948,7 +949,6 @@ const AdminPostsPage = ({ user, handleLogout }) => {
           </Container>
         </div>
       </div>
-      <Footer />
     </div>
   );
 };
