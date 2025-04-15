@@ -77,7 +77,7 @@ const UserProfile = ({ user, setUser, handleLogout }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [avatarChanged, setAvatarChanged] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false); // State cho Modal thông báo
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const userId = localStorage.getItem("userId");
 
@@ -92,10 +92,10 @@ const UserProfile = ({ user, setUser, handleLogout }) => {
       setLoading(true);
       setError(null);
       const response = await apiServices.get(`/api/users/${userId}`);
-      console.log("API Response /api/users:", response.data); // Log để kiểm tra dữ liệu trả về
+      console.log("API Response /api/users:", response.data);
       if (response.data.statusCode === 200) {
         const userData = response.data.data;
-        console.log("User Data with Balance:", userData); // Log để kiểm tra balance
+        console.log("User Data:", userData);
         setUser(userData);
         setEditedUser(userData);
         setAvatar(userData.avatar || "");
@@ -184,12 +184,10 @@ const UserProfile = ({ user, setUser, handleLogout }) => {
         id: parseInt(userId),
         name: editedUser.name || "",
         email: editedUser.email || "",
-        role: editedUser.role || "USER",
         gender: editedUser.gender || "",
         avatar: avatarUrl,
         phone: editedUser.phone || "",
         address: editedUser.address || "",
-        // Không gửi balance để tránh ghi đè
       };
 
       console.log("Dữ liệu gửi lên API (Save Avatar):", updatedUserData);
@@ -204,7 +202,6 @@ const UserProfile = ({ user, setUser, handleLogout }) => {
         setEditedUser(updatedUser);
         setAvatar(updatedUser.avatar || "");
         setAvatarChanged(false);
-        // Hiển thị thông báo thành công và reload trang
         setShowSuccessModal(true);
       } else {
         throw new Error(response.data.message || "Không thể cập nhật ảnh đại diện.");
@@ -235,16 +232,12 @@ const UserProfile = ({ user, setUser, handleLogout }) => {
         id: parseInt(userId),
         name: editedUser.name || "",
         email: editedUser.email,
-        role: editedUser.role || "USER",
         gender: editedUser.gender || "",
         avatar: editedUser.avatar || "",
         phone: editedUser.phone,
         address: editedUser.address || "",
-        // Không gửi balance để tránh ghi đè
       };
 
-      console.log("Before Save - user:", user);
-      console.log("Before Save - editedUser:", editedUser);
       console.log("Dữ liệu gửi lên API:", updatedUserData);
 
       const response = await apiServices.put(`/api/users`, updatedUserData);
@@ -257,7 +250,6 @@ const UserProfile = ({ user, setUser, handleLogout }) => {
         setEditedUser(updatedUser);
         setAvatar(updatedUser.avatar || "");
         setIsEditing(false);
-        // Hiển thị thông báo thành công và reload trang
         setShowSuccessModal(true);
       } else {
         throw new Error(response.data.message || "Không thể cập nhật thông tin người dùng.");
@@ -279,25 +271,9 @@ const UserProfile = ({ user, setUser, handleLogout }) => {
     setEditedUser({ ...editedUser, [e.target.name]: e.target.value });
   };
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleString("vi-VN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  const formatBalance = (balance) => {
-    return balance.toLocaleString("vi-VN") + " VNĐ";
-  };
-
-  // Hàm reload trang sau khi đóng Modal
   const handleCloseSuccessModal = () => {
     setShowSuccessModal(false);
-    window.location.reload(); // Reload trang
+    window.location.reload();
   };
 
   return (
@@ -397,39 +373,6 @@ const UserProfile = ({ user, setUser, handleLogout }) => {
                             />
                           </InputGroup>
                         </Form.Group>
-
-                        <Form.Group controlId="role" className="mb-4">
-                          <Form.Label className="fw-bold">Quyền</Form.Label>
-                          <InputGroup>
-                            <InputGroup.Text>
-                              <i className="bi bi-shield-lock"></i>
-                            </InputGroup.Text>
-                            <Form.Control
-                              type="text"
-                              name="role"
-                              value={editedUser.role || ""}
-                              onChange={handleChange}
-                              disabled
-                              className="rounded-end"
-                            />
-                          </InputGroup>
-                        </Form.Group>
-
-                        <Form.Group controlId="balance" className="mb-4">
-                          <Form.Label className="fw-bold">Số Dư</Form.Label>
-                          <InputGroup>
-                            <InputGroup.Text>
-                              <i className="bi bi-wallet"></i>
-                            </InputGroup.Text>
-                            <Form.Control
-                              type="text"
-                              name="balance"
-                              value={formatBalance(editedUser.balance || 0)}
-                              disabled
-                              className="rounded-end"
-                            />
-                          </InputGroup>
-                        </Form.Group>
                       </Col>
 
                       <Col md={6}>
@@ -471,38 +414,6 @@ const UserProfile = ({ user, setUser, handleLogout }) => {
                             </Form.Control>
                           </InputGroup>
                         </Form.Group>
-
-                        <Form.Group controlId="createdAt" className="mb-4">
-                          <Form.Label className="fw-bold">Ngày Tạo</Form.Label>
-                          <InputGroup>
-                            <InputGroup.Text>
-                              <i className="bi bi-calendar"></i>
-                            </InputGroup.Text>
-                            <Form.Control
-                              type="text"
-                              name="createdAt"
-                              value={formatDate(editedUser.createdAt) || ""}
-                              disabled
-                              className="rounded-end"
-                            />
-                          </InputGroup>
-                        </Form.Group>
-
-                        <Form.Group controlId="updatedAt" className="mb-4">
-                          <Form.Label className="fw-bold">Ngày Cập Nhật</Form.Label>
-                          <InputGroup>
-                            <InputGroup.Text>
-                              <i className="bi bi-calendar-check"></i>
-                            </InputGroup.Text>
-                            <Form.Control
-                              type="text"
-                              name="updatedAt"
-                              value={formatDate(editedUser.updatedAt) || ""}
-                              disabled
-                              className="rounded-end"
-                            />
-                          </InputGroup>
-                        </Form.Group>
                       </Col>
                     </Row>
 
@@ -530,7 +441,6 @@ const UserProfile = ({ user, setUser, handleLogout }) => {
         </div>
       </div>
 
-      {/* Modal thông báo chỉnh sửa thành công */}
       <Modal show={showSuccessModal} onHide={handleCloseSuccessModal} centered>
         <Modal.Header closeButton>
           <Modal.Title>Thông báo</Modal.Title>

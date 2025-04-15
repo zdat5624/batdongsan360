@@ -6,7 +6,9 @@
     image-rendering: crisp-edges; /* Giúp ảnh sắc nét trên trình duyệt */
     image-rendering: -webkit-optimize-contrast; /* Tăng độ nét trên trình duyệt WebKit */
 }
-
+.container-fluid{
+    margin-top: 40px;
+}
 /* Thumbnail ảnh */
 .img-thumbnail {
     width: 80px; /* Kích thước lớn hơn để ảnh rõ hơn */

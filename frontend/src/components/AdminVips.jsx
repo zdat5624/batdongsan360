@@ -9,106 +9,187 @@ import {
   Form,
   Spinner,
 } from "react-bootstrap";
-import { FaSyncAlt, FaEdit } from "react-icons/fa";
+import { FaSyncAlt, FaEdit, FaInfoCircle } from "react-icons/fa";
+import { motion } from "framer-motion";
+import { Helmet } from "react-helmet";
+import Sidebar from "../components/Sidebar";
 import apiServices from "../services/apiServices";
-import Sidebar from "../components/Sidebar"; // Thêm import Sidebar
-import Footer from "../components/Footer"; // Thêm import Footer để đồng bộ với các trang khác
 
-// Cập nhật CSS để thêm sidebar và đồng bộ giao diện
-const tableStyles = `
+// CSS tùy chỉnh
+const customStyles = `
   .layout {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(250px, 250px) 1fr;
     min-height: 100vh;
-    flex-direction: column;
-    background: rgb(240, 248, 255); /* Màu nền xanh nhạt cho toàn bộ layout */
+    background: #f0f4f8;
   }
+
   .content-wrapper {
     display: flex;
-    flex: 1;
-    width: 100%; /* Đảm bảo container cha chiếm toàn bộ chiều rộng */
+    flex-direction: column;
   }
+
   .main-content {
     flex: 1;
-    padding-top: 100px; /* Tăng padding-top để tránh bị che bởi header */
-    padding-bottom: 150px;
-    padding-left: 20px; /* Giảm padding để bảng gần sidebar hơn */
-    background: rgb(240, 248, 255); /* Đồng bộ màu nền với layout */
+    padding: 20px;
+    padding-top: 60px; /* Khoảng cách 60px từ đỉnh trang */
+    background: #f0f4f8;
   }
+
   .custom-container {
     padding: 20px;
   }
-  .table-responsive {
+
+  .page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .admin-table {
     background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
   }
-  .table thead {
-    background-color: #007bff;
+
+  .admin-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: linear-gradient(135deg, #007bff, #0056b3);
     color: #fff;
   }
-  .table tbody tr {
-    transition: background-color 0.3s;
+
+  .admin-table tbody tr {
+    transition: background-color 0.2s ease;
   }
+
+  .admin-table tbody tr:hover {
+    background-color: #e6f0ff;
+  }
+
+  .admin-table tbody tr:nth-child(odd) {
+    background-color: #f8f9fa;
+  }
+
   .modal-content {
-    border-radius: 10px;
+    border-radius: 12px;
     border: none;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   }
+
   .modal-header {
-    background: linear-gradient(135deg, #1a1a1a 0%, #2c3e50 100%);
+    background: linear-gradient(135deg, #1a1a1a, #2c3e50);
     color: #fff;
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
-    padding: 15px 20px;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    padding: 15px 25px;
   }
+
   .modal-title {
     font-weight: 600;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
   }
+
   .modal-body {
-    padding: 20px;
+    padding: 25px;
     font-size: 1rem;
     color: #333;
   }
+
   .modal-footer {
-    padding: 15px 20px;
+    padding: 15px 25px;
     border-top: none;
     display: flex;
-    width: auto;
     justify-content: space-between;
     gap: 10px;
   }
+
   .modal-footer .btn {
-    width: 48%;
-    border-radius: 20px;
+    flex: 1;
+    border-radius: 25px;
     font-weight: 500;
     transition: all 0.3s ease;
   }
+
   .modal-footer .btn-secondary {
     background-color: #6c757d;
     border: none;
   }
+
   .modal-footer .btn-secondary:hover {
     background-color: #5a6268;
   }
+
   .modal-footer .btn-primary {
-    background: linear-gradient(135deg, #1a1a1a 0%, #2c3e50 100%) !important;
-    border: none !important;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border: none;
   }
+
   .modal-footer .btn-primary:hover {
-    background: linear-gradient(135deg, #0f0f0f 0%, #1f2a3c 100%) !important;
+    background: linear-gradient(135deg, #0056b3, #003d80);
   }
-  /* Đảm bảo sidebar hiển thị và đồng bộ màu nền */
-  .sidebar {
-    display: block !important;
-    width: 250px !important;
-    position: sticky !important;
-    top: 0 !important;
-    z-index: 100 !important;
-    min-height: calc(100vh - 70px) !important;
-    background: rgb(240, 248, 255) !important;
-    border-right: 1px solid #dee2e6 !important;
+
+  .action-button {
+    border-radius: 25px;
+    padding: 6px 12px;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease;
+  }
+
+  .badge {
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+  }
+
+  @media (max-width: 768px) {
+    .layout {
+      grid-template-columns: 1fr;
+    }
+    .sidebar {
+      width: 100%;
+      position: fixed;
+      top: 0;
+      z-index: 1000;
+      display: none;
+    }
+    .main-content {
+      padding: 15px;
+      padding-top: 60px;
+    }
+    .page-title {
+      font-size: 1.5rem;
+    }
+    .admin-table th:nth-child(4),
+    .admin-table td:nth-child(4) {
+      display: none; /* Ẩn cột Giá Mỗi Ngày */
+    }
+  }
+
+  @media (max-width: 576px) {
+    .page-title {
+      font-size: 1.25rem;
+    }
+    .admin-table th:nth-child(3),
+    .admin-table td:nth-child(3) {
+      display: none; /* Ẩn cột Cấp VIP */
+    }
+    .action-button {
+      padding: 5px 8px;
+      font-size: 0.8rem;
+    }
   }
 `;
 
@@ -201,155 +282,140 @@ const AdminVips = ({ user, handleLogout }) => {
 
   return (
     <div className="layout">
-      <style>{tableStyles}</style>
+      <Helmet>
+        <title>Quản lý Gói VIP - Admin Panel</title>
+      </Helmet>
+      <style>{customStyles}</style>
+      <Sidebar user={user} handleLogout={handleLogout} />
       <div className="content-wrapper">
-        <Sidebar user={user} handleLogout={handleLogout} />
         <div className="main-content">
           <Container className="custom-container">
-            {/* Tiêu đề và nút tải lại */}
-            <div className="d-flex justify-content-between align-items-center mb-4">
-              <h2 className="text-primary fw-bold d-flex align-items-center">
-                <FaEdit className="me-2" /> Quản lý Gói VIP
-              </h2>
-              <Button
-                variant="outline-primary"
-                onClick={fetchVips}
-                disabled={loading}
-                className="d-flex align-items-center"
-              >
-                <FaSyncAlt className="me-2" /> Tải lại
-              </Button>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <div className="d-flex justify-content-between align-items-center mb-4">
+                <h2 className="page-title">
+                  <FaInfoCircle /> Quản lý Gói VIP
+                </h2>
+                <Button
+                  variant="outline-primary"
+                  onClick={fetchVips}
+                  disabled={loading}
+                  className="action-button"
+                >
+                  <FaSyncAlt className="me-2" /> Tải lại
+                </Button>
+              </div>
 
-            {/* Thông báo lỗi */}
-            {error && (
-              <Alert variant="danger" className="d-flex align-items-center">
-                <span role="img" aria-label="error" className="me-2">
-                  ⚠️
-                </span>{" "}
-                {error}
-              </Alert>
-            )}
+              {error && (
+                <Alert variant="danger" dismissible onClose={() => setError(null)}>
+                  {error}
+                </Alert>
+              )}
 
-            {/* Modal chỉnh sửa giá gói VIP */}
-            <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered>
-              <Modal.Header closeButton>
-                <Modal.Title className="text-primary">Chỉnh sửa Giá Gói VIP</Modal.Title>
-              </Modal.Header>
-              <Modal.Body>
-                <Form onSubmit={handleSaveEdit}>
-                  <Form.Group className="mb-4">
-                    <Form.Label className="fw-bold">Tên Gói VIP</Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={editVip.name}
-                      disabled
-                      className="bg-light"
-                    />
-                  </Form.Group>
-                  <Form.Group className="mb-4">
-                    <Form.Label className="fw-bold">Giá Mỗi Ngày (VNĐ)</Form.Label>
-                    <Form.Control
-                      type="number"
-                      value={editVip.pricePerDay}
-                      onChange={(e) => setEditVip({ ...editVip, pricePerDay: parseInt(e.target.value) })}
-                      required
-                      min="0"
-                      placeholder="Nhập giá mỗi ngày"
-                    />
-                  </Form.Group>
-                  <div className="d-flex justify-content-end gap-2">
-                    <Button
-                      variant="secondary"
-                      onClick={() => setShowEditModal(false)}
-                    >
-                      Hủy
-                    </Button>
-                    <Button variant="primary" type="submit">
-                      Lưu
-                    </Button>
-                  </div>
-                </Form>
-              </Modal.Body>
-            </Modal>
+              <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered>
+                <Modal.Header closeButton>
+                  <Modal.Title>
+                    <FaEdit className="me-2" /> Chỉnh sửa Giá Gói VIP
+                  </Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                  <Form onSubmit={handleSaveEdit}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Tên Gói VIP</Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={editVip.name}
+                        disabled
+                        className="bg-light"
+                      />
+                    </Form.Group>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Giá Mỗi Ngày (VNĐ)</Form.Label>
+                      <Form.Control
+                        type="number"
+                        value={editVip.pricePerDay}
+                        onChange={(e) =>
+                          setEditVip({ ...editVip, pricePerDay: parseInt(e.target.value) || 0 })
+                        }
+                        required
+                        min="0"
+                        placeholder="Nhập giá mỗi ngày"
+                      />
+                    </Form.Group>
+                  </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                  <Button
+                    variant="secondary"
+                    onClick={() => setShowEditModal(false)}
+                  >
+                    Hủy
+                  </Button>
+                  <Button
+                    variant="primary"
+                    onClick={handleSaveEdit}
+                  >
+                    Lưu
+                  </Button>
+                </Modal.Footer>
+              </Modal>
 
-            {/* Bảng danh sách gói VIP */}
-            <div className="table-responsive">
-              <Table hover className="align-middle">
+              <Table responsive className="admin-table">
                 <thead>
                   <tr>
-                    <th className="p-3">ID</th>
-                    <th className="p-3">Tên Gói</th>
-                    <th className="p-3">Cấp VIP</th>
-                    <th className="p-3">Giá Mỗi Ngày (VNĐ)</th>
-                    <th className="p-3">Hành động</th>
+                    <th>ID</th>
+                    <th>Tên Gói</th>
+                    <th>Cấp VIP</th>
+                    <th>Giá Mỗi Ngày (VNĐ)</th>
+                    <th>Hành động</th>
                   </tr>
                 </thead>
                 <tbody>
                   {loading ? (
                     <tr>
-                      <td colSpan="5" className="text-center p-4">
-                        <Spinner animation="border" variant="primary" role="status">
-                          <span className="visually-hidden">Đang tải...</span>
-                        </Spinner>
+                      <td colSpan="5" className="text-center py-4">
+                        <Spinner animation="border" variant="primary" />
+                        <span className="ms-2">Đang tải...</span>
                       </td>
                     </tr>
                   ) : vips.length > 0 ? (
                     vips.map((vip) => (
-                      <tr
-                        key={vip.id}
-                        style={{ transition: "background-color 0.3s" }}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f8f9fa")}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "white")}
-                      >
-                        <td className="p-3">{vip.id}</td>
-                        <td
-                          className="p-3"
-                          style={{
-                            color: getVipTextColor(vip.vipLevel),
-                            fontWeight: "bold",
-                          }}
-                        >
+                      <tr key={vip.id}>
+                        <td>{vip.id}</td>
+                        <td style={{ color: getVipTextColor(vip.vipLevel), fontWeight: "bold" }}>
                           {vip.name}
                         </td>
-                        <td className="p-3">{vip.vipLevel}</td>
-                        <td className="p-3">{vip.pricePerDay.toLocaleString("vi-VN")}</td>
-                        <td className="p-3">
+                        <td>{vip.vipLevel}</td>
+                        <td>{vip.pricePerDay.toLocaleString("vi-VN")}</td>
+                        <td>
                           <Button
                             variant="outline-primary"
                             size="sm"
+                            className="action-button"
                             onClick={() => handleEdit(vip.id)}
-                            className="d-flex align-items-center gap-1"
-                            style={{ transition: "all 0.3s" }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = "#007bff";
-                              e.currentTarget.style.color = "white";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.backgroundColor = "transparent";
-                              e.currentTarget.style.color = "#007bff";
-                            }}
                           >
-                            <FaEdit /> Sửa Giá
+                            <FaEdit className="me-1" /> Sửa Giá
                           </Button>
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="5" className="text-center p-4 text-muted">
+                      <td colSpan="5" className="text-center py-4">
                         Không tìm thấy gói VIP nào.
                       </td>
                     </tr>
                   )}
                 </tbody>
               </Table>
-            </div>
+            </motion.div>
           </Container>
         </div>
       </div>
     </div>
-
   );
 };
 

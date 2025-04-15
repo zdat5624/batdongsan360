@@ -28,142 +28,295 @@ import {
   FaHome,
   FaFolderOpen,
   FaFileAlt,
+  FaInfoCircle,
 } from "react-icons/fa";
-import apiServices from "../services/apiServices";
 import { motion } from "framer-motion";
 import { Carousel } from "react-bootstrap";
 import Sidebar from "../components/Sidebar";
-import Footer from "../components/Footer";
+import apiServices from "../services/apiServices";
+import { Helmet } from "react-helmet";
 
 // CSS tùy chỉnh
 const customStyles = `
   .layout {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(250px, 250px) 1fr;
     min-height: 100vh;
-    flex-direction: column;
-    background: rgb(240, 248, 255);
+    background: #f0f4f8;
   }
+
   .content-wrapper {
     display: flex;
-    flex: 1;
-    width: 100%;
+    flex-direction: column;
   }
+
   .main-content {
     flex: 1;
-    padding-top: 100px;
-    padding-bottom: 150px;
-    padding-left: 20px;
-    background: rgb(240, 248, 255);
+    padding: 20px;
+    padding-top: 60px; /* Khoảng cách 60px từ đỉnh trang */
+    background: #f0f4f8;
   }
+
+  .custom-container {
+    padding: 20px;
+  }
+
+  .page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .admin-table {
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+  }
+
+  .admin-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: #fff;
+  }
+
+  .admin-table tbody tr {
+    transition: background-color 0.2s ease;
+  }
+
+  .admin-table tbody tr:hover {
+    background-color: #e6f0ff;
+  }
+
+  .admin-table tbody tr:nth-child(odd) {
+    background-color: #f8f9fa;
+  }
+
+  .filter-card {
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .filter-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: flex-end;
+  }
+
+  .filter-select {
+    border-radius: 8px;
+    font-size: 0.9rem;
+    padding: 8px;
+  }
+
+  .filter-button {
+    border-radius: 25px;
+    font-size: 0.9rem;
+    padding: 8px 16px;
+    transition: all 0.2s ease;
+  }
+
   .pagination-container {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
+    margin-top: 20px;
   }
-  .pagination-input {
-    width: 60px;
-    height: 32px;
-    border-radius: 5px;
-    font-size: 0.9rem;
-  }
-  .pagination-go-button {
-    height: 32px;
-    border-radius: 5px;
-    font-size: 0.9rem;
-    padding: 0 15px;
-  }
-  .pagination {
-    margin-bottom: 0;
-  }
-  .table thead {
-    background-color: #007bff;
+
+  .pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border-color: #007bff;
     color: #fff;
   }
-  .table tbody tr {
-    transition: background-color 0.3s;
+
+  .pagination .page-link {
+    color: #007bff;
+    border-radius: 8px;
+    margin: 0 2px;
+    transition: all 0.2s ease;
   }
-  .modal-content {
-    border-radius: 10px;
+
+  .pagination .page-link:hover {
+    background-color: #e6f0ff;
+  }
+
+  .pagination-input {
+    width: 70px;
+    height: 38px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+  }
+
+  .pagination-go-button {
+    height: 38px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    padding: 0 15px;
+    background: linear-gradient(135deg, #007bff, #0056b3);
     border: none;
   }
-  .modal-header {
-    background: linear-gradient(135deg, #1a1a1a 0%, #2c3e50 100%);
-    color: #fff;
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
-    padding: 15px 20px;
+
+  .modal-content {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   }
+
+  .modal-header {
+    background: linear-gradient(135deg, #1a1a1a, #2c3e50);
+    color: #fff;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    padding: 15px 25px;
+  }
+
   .modal-title {
     font-weight: 600;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
   }
+
   .modal-body {
-    padding: 20px;
+    padding: 25px;
     font-size: 1rem;
     color: #333;
   }
+
   .modal-footer {
-    padding: 15px 20px;
+    padding: 15px 25px;
     border-top: none;
     display: flex;
-    width: auto;
     justify-content: space-between;
     gap: 10px;
   }
+
   .modal-footer .btn {
-    width: 48%;
-    border-radius: 20px;
+    flex: 1;
+    border-radius: 25px;
     font-weight: 500;
     transition: all 0.3s ease;
   }
+
   .modal-footer .btn-secondary {
     background-color: #6c757d;
     border: none;
   }
+
   .modal-footer .btn-secondary:hover {
     background-color: #5a6268;
   }
+
   .modal-footer .btn-primary {
-    background: linear-gradient(135deg, #1a1a1a 0%, #2c3e50 100%) !important;
-    border: none !important;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border: none;
   }
+
   .modal-footer .btn-primary:hover {
-    background: linear-gradient(135deg, #0f0f0f 0%, #1f2a3c 100%) !important;
+    background: linear-gradient(135deg, #0056b3, #003d80);
   }
-  .sidebar {
-    display: block !important;
-    width: 250px !important;
-    position: sticky !important;
-    top: 0 !important;
-    z-index: 100 !important;
-    min-height: calc(100vh - 70px) !important;
-    background: rgb(240, 248, 255) !important;
-    border-right: 1px solid #dee2e6 !important;
+
+  .action-button {
+    border-radius: 25px;
+    padding: 6px 12px;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease;
   }
-  /* Thu nhỏ thanh bộ lọc */
-  .filter-card {
-    padding: 1rem !important; /* Giảm padding */
+
+  .badge {
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 0.85rem;
   }
-  .filter-label {
-    font-size: 0.9rem !important; /* Giảm kích thước font của label */
-    font-weight: 600;
+
+  .carousel-img {
+    height: 300px;
+    object-fit: contain;
+    border-radius: 10px;
+    cursor: pointer;
+    width: 100%;
   }
-  .filter-select, .filter-button {
-    font-size: 0.85rem !important; /* Giảm kích thước font của select và button */
-    padding: 6px !important; /* Giảm padding */
-    border-radius: 8px !important;
+
+  .description-box {
+    word-break: break-word;
+    max-height: 150px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #f8f9fa;
+    margin-top: 5px;
   }
-  .filter-button {
-    padding: 6px 12px !important; /* Giảm padding của button */
+
+  @media (max-width: 768px) {
+    .layout {
+      grid-template-columns: 1fr;
+    }
+    .sidebar {
+      width: 100%;
+      position: fixed;
+      top: 0;
+      z-index: 1000;
+      display: none;
+    }
+    .main-content {
+      padding: 15px;
+      padding-top: 60px;
+    }
+    .page-title {
+      font-size: 1.5rem;
+    }
+    .admin-table th:nth-child(4),
+    .admin-table td:nth-child(4) {
+      display: none; /* Ẩn cột Diện tích */
+    }
+    .filter-group {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .filter-button {
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .page-title {
+      font-size: 1.25rem;
+    }
+    .admin-table th:nth-child(3),
+    .admin-table td:nth-child(3) {
+      display: none; /* Ẩn cột Giá */
+    }
+    .action-button {
+      padding: 5px 8px;
+      font-size: 0.8rem;
+    }
+    .carousel-img {
+      height: 200px;
+    }
   }
 `;
 
 // Hàm chuyển đổi giá từ số sang chuỗi (triệu VNĐ hoặc triệu/tháng)
 const formatPrice = (price, type) => {
+  if (!price) return "Không xác định";
   if (price >= 1000000000) {
     return `${(price / 1000000000).toLocaleString("vi-VN")} tỷ${type === "RENT" ? "/tháng" : ""}`;
   }
@@ -172,6 +325,7 @@ const formatPrice = (price, type) => {
 
 // Hàm định dạng ngày
 const formatDate = (dateString) => {
+  if (!dateString) return "Không xác định";
   const date = new Date(dateString);
   return date.toLocaleDateString("vi-VN", {
     day: "2-digit",
@@ -289,14 +443,16 @@ const AdminPostsPage = ({ user, handleLogout }) => {
       if (response.data.statusCode === 200) {
         return {
           posts: response.data.data.content.map((post) => ({
-            id: post.id,
-            title: post.title,
+            id: post.id || 0,
+            title: post.title || "Không có tiêu đề",
             description: post.description || "Không có mô tả",
-            type: post.type,
+            type: post.type || "Không xác định",
             price: formatPrice(post.price, post.type),
-            area: `${post.area}m²`,
-            address: `${post.detailAddress}${post.ward?.name ? `, ${post.ward.name}` : ""}${post.district?.name ? `, ${post.district.name}` : ""}${post.province?.name ? `, ${post.province.name}` : ""}`,
-            status: post.status,
+            area: post.area ? `${post.area}m²` : "Không xác định",
+            address: `${
+              post.detailAddress || ""
+            }${post.ward?.name ? `, ${post.ward.name}` : ""}${post.district?.name ? `, ${post.district.name}` : ""}${post.province?.name ? `, ${post.province.name}` : ""}`.trim() || "Không xác định",
+            status: post.status || "Không xác định",
             createdAt: formatDate(post.createdAt),
             expireDate: formatDate(post.expireDate),
             seller: post.user?.name || "Không xác định",
@@ -308,13 +464,13 @@ const AdminPostsPage = ({ user, handleLogout }) => {
               ? post.images.map((img) => `http://localhost:8080/uploads/${img.url}`)
               : ["https://placehold.co/300x300"],
           })),
-          totalPages: response.data.data.totalPages,
+          totalPages: response.data.data.totalPages || 1,
         };
       } else {
         throw new Error(response.data.message || "Không thể lấy danh sách bài đăng.");
       }
     } catch (err) {
-      console.error(`Lỗi khi lấy danh sách bài đăng cho status=${status}:`, err.response?.data || err.message);
+      console.error(`Lỗi khi lấy danh sách bài đăng cho status=${status}:`, err.message);
       return { posts: [], totalPages: 1 };
     }
   };
@@ -324,7 +480,11 @@ const AdminPostsPage = ({ user, handleLogout }) => {
       setLoading(true);
       setError(null);
 
-      const { posts: postsData, totalPages: totalPagesData } = await fetchPostsForStatus(updatedFilters.status, page, updatedFilters);
+      const { posts: postsData, totalPages: totalPagesData } = await fetchPostsForStatus(
+        updatedFilters.status,
+        page,
+        updatedFilters
+      );
 
       setPosts(postsData);
       setTotalPages(totalPagesData);
@@ -332,14 +492,13 @@ const AdminPostsPage = ({ user, handleLogout }) => {
       if (postsData.length === 0 && updatedFilters.status === "PENDING") {
         const newFilters = { ...updatedFilters, status: "REVIEW_LATER" };
         setFilters(newFilters);
-        fetchPosts(0, newFilters);
+        await fetchPosts(0, newFilters);
       }
-
-      setLoading(false);
     } catch (err) {
-      setError(err.response?.data?.message || err.message || "Không thể lấy danh sách bài đăng.");
+      setError(err.message || "Không thể lấy danh sách bài đăng.");
       setPosts([]);
       setTotalPages(1);
+    } finally {
       setLoading(false);
     }
   };
@@ -394,9 +553,9 @@ const AdminPostsPage = ({ user, handleLogout }) => {
       await confirmAction(postIdToAction);
       setShowConfirmModal(false);
       setCurrentPage(0);
-      fetchPosts(0);
+      await fetchPosts(0);
     } catch (err) {
-      setError(err.response?.data?.message || err.message || "Đã có lỗi xảy ra.");
+      setError(err.message || "Đã có lỗi xảy ra.");
       setShowConfirmModal(false);
     }
   };
@@ -407,9 +566,7 @@ const AdminPostsPage = ({ user, handleLogout }) => {
       status: "APPROVED",
       message: "Bài đăng của bạn đã được phê duyệt!",
     });
-    if (response.data.statusCode === 200) {
-      setConfirmMessage("Duyệt bài đăng thành công!");
-    } else {
+    if (response.data.statusCode !== 200) {
       throw new Error(response.data.message || "Duyệt bài đăng thất bại.");
     }
   };
@@ -420,27 +577,12 @@ const AdminPostsPage = ({ user, handleLogout }) => {
       status: "PENDING",
       message: "Bài đăng đã được gỡ trạng thái xem sau và chuyển về chờ duyệt.",
     });
-    if (response.data.statusCode === 200) {
-      setConfirmMessage("Gỡ bài đăng thành công! Bài đăng đã được chuyển về trạng thái chờ duyệt.");
-    } else {
+    if (response.data.statusCode !== 200) {
       throw new Error(response.data.message || "Gỡ bài đăng thất bại.");
     }
   };
 
   // Logic phân trang
-  const maxPagesToShow = 5;
-  const pageNumbers = [];
-  let startPage = Math.max(0, currentPage - Math.floor(maxPagesToShow / 2));
-  let endPage = Math.min(totalPages - 1, startPage + maxPagesToShow - 1);
-
-  if (endPage - startPage + 1 < maxPagesToShow) {
-    startPage = Math.max(0, endPage - maxPagesToShow + 1);
-  }
-
-  for (let i = startPage; i <= endPage; i++) {
-    pageNumbers.push(i);
-  }
-
   const paginate = (pageNumber) => {
     if (pageNumber >= 0 && pageNumber < totalPages) {
       setCurrentPage(pageNumber);
@@ -471,262 +613,326 @@ const AdminPostsPage = ({ user, handleLogout }) => {
     fetchPosts(0, newFilters);
   };
 
+  // Render phân trang
+  const renderPaginationItems = () => {
+    const items = [];
+    const maxPagesToShow = 5;
+    const halfPagesToShow = Math.floor(maxPagesToShow / 2);
+
+    let startPage = Math.max(0, currentPage - halfPagesToShow);
+    let endPage = Math.min(totalPages - 1, startPage + maxPagesToShow - 1);
+
+    if (endPage - startPage + 1 < maxPagesToShow) {
+      startPage = Math.max(0, endPage - maxPagesToShow + 1);
+    }
+
+    items.push(
+      <Pagination.First
+        key="first"
+        onClick={() => paginate(0)}
+        disabled={currentPage === 0}
+      />
+    );
+    items.push(
+      <Pagination.Prev
+        key="prev"
+        onClick={() => paginate(currentPage - 1)}
+        disabled={currentPage === 0}
+      />
+    );
+
+    for (let number = startPage; number <= endPage; number++) {
+      items.push(
+        <Pagination.Item
+          key={number}
+          active={number === currentPage}
+          onClick={() => paginate(number)}
+        >
+          {number + 1}
+        </Pagination.Item>
+      );
+    }
+
+    if (endPage < totalPages - 1) {
+      items.push(<Pagination.Ellipsis key="ellipsis" />);
+      items.push(
+        <Pagination.Item
+          key={totalPages - 1}
+          active={totalPages - 1 === currentPage}
+          onClick={() => paginate(totalPages - 1)}
+        >
+          {totalPages}
+        </Pagination.Item>
+      );
+    }
+
+    items.push(
+      <Pagination.Next
+        key="next"
+        onClick={() => paginate(currentPage + 1)}
+        disabled={currentPage === totalPages - 1}
+      />
+    );
+    items.push(
+      <Pagination.Last
+        key="last"
+        onClick={() => paginate(totalPages - 1)}
+        disabled={currentPage === totalPages - 1}
+      />
+    );
+
+    return items;
+  };
+
   return (
     <div className="layout">
+      <Helmet>
+        <title>Quản lý Bài Đăng - Admin Panel</title>
+      </Helmet>
       <style>{customStyles}</style>
+      <Sidebar user={user} handleLogout={handleLogout} />
       <div className="content-wrapper">
-        <Sidebar user={user} handleLogout={handleLogout} />
         <div className="main-content">
-          <Container>
+          <Container className="custom-container">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              {/* Tiêu đề */}
-              <Row className="mb-5">
-                <Col>
-                  <h2 className="text-primary fw-bold text-center" style={{ fontSize: "2.5rem" }}>
-                    Quản Lý Bài Đăng
-                  </h2>
-                </Col>
-              </Row>
+              <h2 className="page-title">
+                <FaInfoCircle /> Quản lý Bài Đăng
+              </h2>
+
+              {error && (
+                <Alert variant="danger" dismissible onClose={() => setError(null)}>
+                  {error}
+                </Alert>
+              )}
 
               {/* Bộ lọc */}
-              <Row className="mb-5">
-                <Col>
-                  <Card className="shadow-lg border-0 filter-card" style={{ borderRadius: "15px" }}>
-                    <Form onSubmit={handleFilterSubmit}>
-                      <Row className="align-items-end">
-                        <Col md={2} className="mb-2">
-                          <Form.Group controlId="priceRange">
-                            <Form.Label className="filter-label">Khoảng giá</Form.Label>
-                            <Form.Select
-                              name="priceRange"
-                              value={filters.priceRange}
-                              onChange={handleFilterChange}
-                              className="shadow-sm filter-select"
-                            >
-                              <option value="">Tất cả</option>
-                              <option value="under_1m">Dưới 1 triệu</option>
-                              <option value="1m_2m">1 - 2 triệu</option>
-                              <option value="2m_3m">2 - 3 triệu</option>
-                              <option value="3m_5m">3 - 5 triệu</option>
-                              <option value="5m_7m">5 - 7 triệu</option>
-                              <option value="7m_10m">7 - 10 triệu</option>
-                              <option value="10m_15m">10 - 15 triệu</option>
-                              <option value="above_15m">Trên 15 triệu</option>
-                            </Form.Select>
-                          </Form.Group>
-                        </Col>
-                        <Col md={2} className="mb-2">
-                          <Form.Group controlId="areaRange">
-                            <Form.Label className="filter-label">Diện tích</Form.Label>
-                            <Form.Select
-                              name="areaRange"
-                              value={filters.areaRange}
-                              onChange={handleFilterChange}
-                              className="shadow-sm filter-select"
-                            >
-                              <option value="">Tất cả</option>
-                              <option value="under_20m2">Dưới 20m²</option>
-                              <option value="20m2_30m2">20m² - 30m²</option>
-                              <option value="30m2_50m2">30m² - 50m²</option>
-                              <option value="50m2_70m2">50m² - 70m²</option>
-                              <option value="70m2_90m2">70m² - 90m²</option>
-                              <option value="above_90m2">Trên 90m²</option>
-                            </Form.Select>
-                          </Form.Group>
-                        </Col>
-                        <Col md={2} className="mb-2">
-                          <Form.Group controlId="status">
-                            <Form.Label className="filter-label">Trạng thái</Form.Label>
-                            <Form.Select
-                              name="status"
-                              value={filters.status}
-                              onChange={handleFilterChange}
-                              className="shadow-sm filter-select"
-                            >
-                              <option value="PENDING">Chờ duyệt</option>
-                              <option value="REVIEW_LATER">Xem sau</option>
-                              <option value="APPROVED">Đã duyệt</option>
-                              <option value="REJECTED">Từ chối</option>
-                              <option value="EXPIRED">Hết hạn</option>
-                            </Form.Select>
-                          </Form.Group>
-                        </Col>
-                        <Col md={2} className="mb-2">
-                          <Form.Group controlId="type">
-                            <Form.Label className="filter-label">Loại bài đăng</Form.Label>
-                            <Form.Select
-                              name="type"
-                              value={filters.type}
-                              onChange={handleFilterChange}
-                              className="shadow-sm filter-select"
-                            >
-                              <option value="">Tất cả</option>
-                              <option value="RENT">Cho thuê</option>
-                              <option value="SALE">Bán</option>
-                            </Form.Select>
-                          </Form.Group>
-                        </Col>
-                        <Col md={2} className="mb-2">
-                          <Button
-                            variant="primary"
-                            type="submit"
-                            className="w-100 shadow-sm filter-button"
-                          >
-                            Áp dụng
-                          </Button>
-                        </Col>
-                        <Col md={2} className="mb-2">
-                          <Button
-                            variant="outline-secondary"
-                            onClick={resetFilters}
-                            className="w-100 shadow-sm filter-button"
-                          >
-                            Đặt lại
-                          </Button>
-                        </Col>
-                      </Row>
-                    </Form>
-                  </Card>
-                </Col>
-              </Row>
+              <Card className="filter-card">
+                <Form onSubmit={handleFilterSubmit}>
+                  <div className="filter-group">
+                    <Form.Group controlId="priceRange" style={{ maxWidth: "200px" }}>
+                      <Form.Label>Khoảng giá</Form.Label>
+                      <Form.Select
+                        name="priceRange"
+                        value={filters.priceRange}
+                        onChange={handleFilterChange}
+                        className="filter-select"
+                      >
+                        <option value="">Tất cả</option>
+                        <option value="under_1m">Dưới 1 triệu</option>
+                        <option value="1m_2m">1 - 2 triệu</option>
+                        <option value="2m_3m">2 - 3 triệu</option>
+                        <option value="3m_5m">3 - 5 triệu</option>
+                        <option value="5m_7m">5 - 7 triệu</option>
+                        <option value="7m_10m">7 - 10 triệu</option>
+                        <option value="10m_15m">10 - 15 triệu</option>
+                        <option value="above_15m">Trên 15 triệu</option>
+                      </Form.Select>
+                    </Form.Group>
+                    <Form.Group controlId="areaRange" style={{ maxWidth: "200px" }}>
+                      <Form.Label>Diện tích</Form.Label>
+                      <Form.Select
+                        name="areaRange"
+                        value={filters.areaRange}
+                        onChange={handleFilterChange}
+                        className="filter-select"
+                      >
+                        <option value="">Tất cả</option>
+                        <option value="under_20m2">Dưới 20m²</option>
+                        <option value="20m2_30m2">20m² - 30m²</option>
+                        <option value="30m2_50m2">30m² - 50m²</option>
+                        <option value="50m2_70m2">50m² - 70m²</option>
+                        <option value="70m2_90m2">70m² - 90m²</option>
+                        <option value="above_90m2">Trên 90m²</option>
+                      </Form.Select>
+                    </Form.Group>
+                    <Form.Group controlId="status" style={{ maxWidth: "200px" }}>
+                      <Form.Label>Trạng thái</Form.Label>
+                      <Form.Select
+                        name="status"
+                        value={filters.status}
+                        onChange={handleFilterChange}
+                        className="filter-select"
+                      >
+                        <option value="PENDING">Chờ duyệt</option>
+                        <option value="REVIEW_LATER">Xem sau</option>
+                        <option value="APPROVED">Đã duyệt</option>
+                        <option value="REJECTED">Từ chối</option>
+                        <option value="EXPIRED">Hết hạn</option>
+                      </Form.Select>
+                    </Form.Group>
+                    <Form.Group controlId="type" style={{ maxWidth: "200px" }}>
+                      <Form.Label>Loại bài đăng</Form.Label>
+                      <Form.Select
+                        name="type"
+                        value={filters.type}
+                        onChange={handleFilterChange}
+                        className="filter-select"
+                      >
+                        <option value="">Tất cả</option>
+                        <option value="RENT">Cho thuê</option>
+                        <option value="SALE">Bán</option>
+                      </Form.Select>
+                    </Form.Group>
+                    <Button
+                      variant="primary"
+                      type="submit"
+                      className="filter-button"
+                    >
+                      Áp dụng
+                    </Button>
+                    <Button
+                      variant="outline-secondary"
+                      onClick={resetFilters}
+                      className="filter-button"
+                    >
+                      Đặt lại
+                    </Button>
+                  </div>
+                </Form>
+              </Card>
 
               {/* Danh sách bài đăng dạng bảng */}
               {loading ? (
-                <Row className="justify-content-center align-items-center" style={{ minHeight: "50vh" }}>
-                  <Col xs="auto" className="text-center">
-                    <Spinner animation="border" variant="primary" />
-                    <p className="mt-3 text-muted fw-bold">Đang tải dữ liệu...</p>
-                  </Col>
-                </Row>
-              ) : error ? (
-                <Row className="justify-content-center align-items-center" style={{ minHeight: "50vh" }}>
-                  <Col xs="auto" className="text-center">
-                    <Alert variant="danger" className="rounded-pill">{error}</Alert>
-                  </Col>
-                </Row>
+                <div className="text-center py-5">
+                  <Spinner animation="border" variant="primary" />
+                  <p className="mt-3">Đang tải dữ liệu...</p>
+                </div>
               ) : (
                 <>
-                  <Card className="shadow-lg border-0" style={{ borderRadius: "15px", overflow: "hidden" }}>
-                    <Table hover className="align-middle mb-0">
-                      <thead>
-                        <tr>
-                          <th>ID</th>
-                          <th>Tiêu đề</th>
-                          <th>Giá</th>
-                          <th>Diện tích</th>
-                          <th>Trạng thái</th>
-                          <th>Hành động</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {posts.length > 0 ? (
-                          posts.map((post) => (
-                            <tr key={post.id}>
-                              <td>{post.id}</td>
-                              <td>{post.title}</td>
-                              <td className="text-primary fw-bold">{post.price}</td>
-                              <td>{post.area}</td>
-                              <td>
-                                <Badge bg={getStatusBadgeVariant(post.status)}>
-                                  {post.status === "PENDING" ? "Chờ duyệt" : post.status === "REVIEW_LATER" ? "Xem sau" : post.status === "APPROVED" ? "Đã duyệt" : post.status === "REJECTED" ? "Từ chối" : "Hết hạn"}
-                                </Badge>
-                              </td>
-                              <td>
-                                {(post.status === "PENDING" || post.status === "REVIEW_LATER") && (
-                                  <Button
-                                    variant="success"
-                                    size="sm"
-                                    onClick={() => showConfirm(handleApprove, post.id, "Bạn có chắc chắn muốn duyệt bài đăng này?")}
-                                    className="me-2 shadow-sm"
-                                    style={{ borderRadius: "15px" }}
-                                  >
-                                    Duyệt
-                                  </Button>
-                                )}
-                                {post.status === "REVIEW_LATER" && (
-                                  <Button
-                                    variant="warning"
-                                    size="sm"
-                                    onClick={() => showConfirm(handleUnmarkReviewLater, post.id, "Bạn có chắc chắn muốn gỡ bài đăng này và chuyển về trạng thái chờ duyệt?")}
-                                    className="me-2 shadow-sm"
-                                    style={{ borderRadius: "15px" }}
-                                  >
-                                    Gỡ bài
-                                  </Button>
-                                )}
+                  <Table responsive className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Tiêu đề</th>
+                        <th>Giá</th>
+                        <th>Diện tích</th>
+                        <th>Trạng thái</th>
+                        <th>Hành động</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {posts.length > 0 ? (
+                        posts.map((post) => (
+                          <tr key={post.id}>
+                            <td>{post.id}</td>
+                            <td>{post.title}</td>
+                            <td className="text-primary fw-bold">{post.price}</td>
+                            <td>{post.area}</td>
+                            <td>
+                              <span
+                                className={`badge bg-${getStatusBadgeVariant(post.status)}`}
+                              >
+                                {post.status === "PENDING"
+                                  ? "Chờ duyệt"
+                                  : post.status === "REVIEW_LATER"
+                                  ? "Xem sau"
+                                  : post.status === "APPROVED"
+                                  ? "Đã duyệt"
+                                  : post.status === "REJECTED"
+                                  ? "Từ chối"
+                                  : "Hết hạn"}
+                              </span>
+                            </td>
+                            <td>
+                              {(post.status === "PENDING" || post.status === "REVIEW_LATER") && (
                                 <Button
-                                  variant="info"
+                                  variant="success"
                                   size="sm"
-                                  onClick={() => handleShowDetail(post)}
-                                  className="me-2 shadow-sm"
-                                  style={{ borderRadius: "15px" }}
+                                  onClick={() =>
+                                    showConfirm(
+                                      handleApprove,
+                                      post.id,
+                                      "Bạn có chắc chắn muốn duyệt bài đăng này?"
+                                    )
+                                  }
+                                  className="action-button me-2"
                                 >
-                                  Chi tiết
+                                  Duyệt
                                 </Button>
-                              </td>
-                            </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td colSpan="6" className="text-center py-4 text-muted">
-                              <i className="bi bi-exclamation-triangle me-2"></i>
-                              Không tìm thấy bài đăng nào phù hợp.
+                              )}
+                              {post.status === "REVIEW_LATER" && (
+                                <Button
+                                  variant="warning"
+                                  size="sm"
+                                  onClick={() =>
+                                    showConfirm(
+                                      handleUnmarkReviewLater,
+                                      post.id,
+                                      "Bạn có chắc chắn muốn gỡ bài đăng này và chuyển về trạng thái chờ duyệt?"
+                                    )
+                                  }
+                                  className="action-button me-2"
+                                >
+                                  Gỡ bài
+                                </Button>
+                              )}
+                              <Button
+                                variant="info"
+                                size="sm"
+                                onClick={() => handleShowDetail(post)}
+                                className="action-button"
+                              >
+                                Chi tiết
+                              </Button>
                             </td>
                           </tr>
-                        )}
-                      </tbody>
-                    </Table>
-                  </Card>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="6" className="text-center py-4">
+                            Không tìm thấy bài đăng nào phù hợp.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </Table>
 
                   {/* Modal xác nhận hành động */}
-                  <Modal show={showConfirmModal} onHide={() => setShowConfirmModal(false)} centered>
+                  <Modal
+                    show={showConfirmModal}
+                    onHide={() => setShowConfirmModal(false)}
+                    centered
+                  >
                     <Modal.Header closeButton>
-                      <Modal.Title className="text-white fw-bold">Xác nhận hành động</Modal.Title>
+                      <Modal.Title>Xác nhận hành động</Modal.Title>
                     </Modal.Header>
-                    <Modal.Body className="p-4">
-                      <p>{confirmMessage}</p>
-                    </Modal.Body>
+                    <Modal.Body>{confirmMessage}</Modal.Body>
                     <Modal.Footer>
                       <Button
-                        variant="outline-secondary"
+                        variant="secondary"
                         onClick={() => setShowConfirmModal(false)}
-                        style={{ borderRadius: "20px" }}
                       >
                         Hủy
                       </Button>
-                      <Button
-                        variant="primary"
-                        onClick={handleConfirmAction}
-                        style={{ borderRadius: "20px" }}
-                      >
+                      <Button variant="primary" onClick={handleConfirmAction}>
                         Xác nhận
                       </Button>
                     </Modal.Footer>
                   </Modal>
 
-                  <Modal show={showModal} onHide={handleCloseModal} size="lg">
-                    <Modal.Header closeButton>
-                      <Modal.Title className="text-white">{selectedPost?.title}</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body className="p-4">
-                      {selectedPost && (
+                  {/* Modal chi tiết bài đăng */}
+                  {selectedPost && (
+                    <Modal show={showModal} onHide={handleCloseModal} size="lg">
+                      <Modal.Header closeButton>
+                        <Modal.Title>{selectedPost.title}</Modal.Title>
+                      </Modal.Header>
+                      <Modal.Body>
                         <div>
-                          {/* Hình ảnh: Carousel toàn chiều rộng */}
+                          {/* Hình ảnh: Carousel */}
                           <div className="mb-4">
                             <h5 className="fw-bold mb-3 text-primary">Hình ảnh</h5>
-                            {selectedPost.images.length > 0 ? (
+                            {selectedPost.images?.length > 0 ? (
                               <Carousel>
                                 {selectedPost.images.map((img, index) => (
                                   <Carousel.Item key={index}>
                                     <img
                                       src={img}
                                       alt={`Ảnh ${index + 1}`}
-                                      className="d-block w-100"
-                                      style={{ height: "300px", objectFit: "contain", borderRadius: "10px", cursor: "pointer" }}
+                                      className="carousel-img"
                                       onClick={() => handleShowImage(img)}
                                     />
                                   </Carousel.Item>
@@ -737,119 +943,121 @@ const AdminPostsPage = ({ user, handleLogout }) => {
                             )}
                           </div>
 
-                          {/* Thông tin: Bố cục dọc với các phần phân chia bằng đường kẻ ngang */}
-                          <div>
-                            {/* Thông tin cơ bản */}
-                            <h5 className="fw-bold mb-3 text-primary">Thông tin cơ bản</h5>
-                            <ul className="list-unstyled mb-4">
-                              <li className="mb-2 d-flex align-items-center">
-                                <FaMoneyBillWave className="me-2 text-primary" />
-                                <strong>Giá:</strong> 
-                                <Badge bg="primary">{selectedPost.price}</Badge>
-                              </li>
-                              <li className="mb-2 d-flex align-items-center">
-                                <FaRulerCombined className="me-2 text-primary" />
-                                <strong>Diện tích:</strong> {selectedPost.area}
-                              </li>
-                              <li className="mb-2 d-flex align-items-center">
-                                <FaMapMarkerAlt className="me-2 text-primary" />
-                                <strong>Vị trí:</strong> {selectedPost.address}
-                              </li>
-                              <li className="mb-2 d-flex align-items-center">
-                                <FaHome className="me-2 text-primary" />
-                                <strong>Loại bài đăng:</strong> {selectedPost.type === "SALE" ? "Bán" : "Cho thuê"}
-                              </li>
-                              <li className="mb-2 d-flex align-items-center">
-                                <FaFolderOpen className="me-2 text-primary" />
-                                <strong>Danh mục:</strong> {selectedPost.category}
-                              </li>
-                              <li className="mb-2 d-flex align-items-center">
-                                <FaStar className="me-2 text-primary" />
-                                <strong>Gói VIP:</strong> 
-                                <span className="d-flex align-items-center gap-1">
-                                  <FaStar className="text-warning" /> {selectedPost.vip}
-                                </span>
-                              </li>
-                            </ul>
-                            <hr className="my-4" />
+                          {/* Thông tin cơ bản */}
+                          <h5 className="fw-bold mb-3 text-primary">Thông tin cơ bản</h5>
+                          <ul className="list-unstyled mb-4">
+                            <li className="mb-2 d-flex align-items-center">
+                              <FaMoneyBillWave className="me-2 text-primary" />
+                              <strong>Giá:</strong> <span className="ms-1">{selectedPost.price}</span>
+                            </li>
+                            <li className="mb-2 d-flex align-items-center">
+                              <FaRulerCombined className="me-2 text-primary" />
+                              <strong>Diện tích:</strong> <span className="ms-1">{selectedPost.area}</span>
+                            </li>
+                            <li className="mb-2 d-flex align-items-center">
+                              <FaMapMarkerAlt className="me-2 text-primary" />
+                              <strong>Vị trí:</strong> <span className="ms-1">{selectedPost.address}</span>
+                            </li>
+                            <li className="mb-2 d-flex align-items-center">
+                              <FaHome className="me-2 text-primary" />
+                              <strong>Loại bài đăng:</strong>{" "}
+                              <span className="ms-1">{selectedPost.type === "SALE" ? "Bán" : "Cho thuê"}</span>
+                            </li>
+                            <li className="mb-2 d-flex align-items-center">
+                              <FaFolderOpen className="me-2 text-primary" />
+                              <strong>Danh mục:</strong> <span className="ms-1">{selectedPost.category}</span>
+                            </li>
+                            <li className="mb-2 d-flex align-items-center">
+                              <FaStar className="me-2 text-primary" />
+                              <strong>Gói VIP:</strong>{" "}
+                              <span className="d-flex align-items-center gap-1 ms-1">
+                                <FaStar className="text-warning" /> {selectedPost.vip}
+                              </span>
+                            </li>
+                          </ul>
+                          <hr className="my-4" />
 
-                            {/* Thông tin người đăng */}
-                            <h5 className="fw-bold mb-3 text-primary">Thông tin người đăng</h5>
-                            <ul className="list-unstyled mb-4">
-                              <li className="mb-2 d-flex align-items-center">
-                                <FaUser className="me-2 text-primary" />
-                                <strong>Người bán:</strong> {selectedPost.seller}
-                              </li>
-                              <li className="mb-2 d-flex align-items-center">
-                                <FaPhone className="me-2 text-primary" />
-                                <strong>Liên hệ:</strong> 
-                                <a href={`tel:${selectedPost.contact}`} className="text-decoration-none text-primary">{selectedPost.contact}</a>
-                              </li>
-                              <li className="mb-2 d-flex align-items-center">
-                                <FaEnvelope className="me-2 text-primary" />
-                                <strong>Email:</strong> 
-                                <a href={`mailto:${selectedPost.email}`} className="text-decoration-none text-primary">{selectedPost.email}</a>
-                              </li>
-                            </ul>
-                            <hr className="my-4" />
+                          {/* Thông tin người đăng */}
+                          <h5 className="fw-bold mb-3 text-primary">Thông tin người đăng</h5>
+                          <ul className="list-unstyled mb-4">
+                            <li className="mb-2 d-flex align-items-center">
+                              <FaUser className="me-2 text-primary" />
+                              <strong>Người bán:</strong> <span className="ms-1">{selectedPost.seller}</span>
+                            </li>
+                            <li className="mb-2 d-flex align-items-center">
+                              <FaPhone className="me-2 text-primary" />
+                              <strong>Liên hệ:</strong>{" "}
+                              <a href={`tel:${selectedPost.contact}`} className="ms-1 text-decoration-none text-primary">
+                                {selectedPost.contact}
+                              </a>
+                            </li>
+                            <li className="mb-2 d-flex align-items-center">
+                              <FaEnvelope className="me-2 text-primary" />
+                              <strong>Email:</strong>{" "}
+                              <a href={`mailto:${selectedPost.email}`} className="ms-1 text-decoration-none text-primary">
+                                {selectedPost.email}
+                              </a>
+                            </li>
+                          </ul>
+                          <hr className="my-4" />
 
-                            {/* Chi tiết bài đăng */}
-                            <h5 className="fw-bold mb-3 text-primary">Chi tiết bài đăng</h5>
-                            <ul className="list-unstyled">
-                              <li className="mb-2 d-flex align-items-center">
-                                <FaCalendarAlt className="me-2 text-primary" />
-                                <strong>Ngày đăng:</strong> {selectedPost.createdAt}
-                              </li>
-                              <li className="mb-2 d-flex align-items-center">
-                                <FaCalendarTimes className="me-2 text-primary" />
-                                <strong>Ngày hết hạn:</strong> {selectedPost.expireDate}
-                              </li>
-                              <li className="mb-2 d-flex align-items-center">
-                                <FaSyncAlt className="me-2 text-primary" />
-                                <strong>Trạng thái:</strong> 
-                                {selectedPost.status === "PENDING" ? "Chờ duyệt" : selectedPost.status === "REVIEW_LATER" ? "Xem sau" : selectedPost.status === "APPROVED" ? "Đã duyệt" : selectedPost.status === "REJECTED" ? "Từ chối" : "Hết hạn"}
-                              </li>
-                              <li className="mt-3">
-                                <div className="d-flex align-items-start">
-                                  <FaFileAlt className="me-2 text-primary mt-1" />
-                                  <div>
-                                    <strong>Mô tả:</strong>
-                                    <div
-                                      style={{
-                                        wordBreak: "break-word",
-                                        maxHeight: "150px",
-                                        overflowY: "auto",
-                                        whiteSpace: "pre-wrap",
-                                        padding: "10px",
-                                        border: "1px solid #ddd",
-                                        borderRadius: "8px",
-                                        background: "#f8f9fa",
-                                        marginTop: "5px",
-                                      }}
-                                    >
-                                      {selectedPost.description}
-                                    </div>
-                                  </div>
+                          {/* Chi tiết bài đăng */}
+                          <h5 className="fw-bold mb-3 text-primary">Chi tiết bài đăng</h5>
+                          <ul className="list-unstyled">
+                            <li className="mb-2 d-flex align-items-center">
+                              <FaCalendarAlt className="me-2 text-primary" />
+                              <strong>Ngày đăng:</strong> <span className="ms-1">{selectedPost.createdAt}</span>
+                            </li>
+                            <li className="mb-2 d-flex align-items-center">
+                              <FaCalendarTimes className="me-2 text-primary" />
+                              <strong>Ngày hết hạn:</strong> <span className="ms-1">{selectedPost.expireDate}</span>
+                            </li>
+                            <li className="mb-2 d-flex align-items-center">
+                              <FaSyncAlt className="me-2 text-primary" />
+                              <strong>Trạng thái:</strong>{" "}
+                              <span className="ms-1">
+                                {selectedPost.status === "PENDING"
+                                  ? "Chờ duyệt"
+                                  : selectedPost.status === "REVIEW_LATER"
+                                  ? "Xem sau"
+                                  : selectedPost.status === "APPROVED"
+                                  ? "Đã duyệt"
+                                  : selectedPost.status === "REJECTED"
+                                  ? "Từ chối"
+                                  : "Hết hạn"}
+                              </span>
+                            </li>
+                            <li className="mt-3">
+                              <div className="d-flex align-items-start">
+                                <FaFileAlt className="me-2 text-primary mt-1" />
+                                <div>
+                                  <strong>Mô tả:</strong>
+                                  <div className="description-box">{selectedPost.description}</div>
                                 </div>
-                              </li>
-                            </ul>
-                          </div>
+                              </div>
+                            </li>
+                          </ul>
                         </div>
                       )}
                     </Modal.Body>
                     <Modal.Footer>
                       <Button
-                        variant="outline-secondary"
+                        variant="secondary"
                         onClick={handleCloseModal}
-                        style={{ borderRadius: "20px" }}
                       >
                         Đóng
                       </Button>
                     </Modal.Footer>
                   </Modal>
+                  )}
 
                   {/* Modal phóng to hình ảnh */}
-                  <Modal show={showImageModal} onHide={handleCloseImageModal} centered size="xl">
+                  <Modal
+                    show={showImageModal}
+                    onHide={handleCloseImageModal}
+                    centered
+                    size="xl"
+                  >
                     <Modal.Body className="p-0">
                       {selectedImage && (
                         <img
@@ -868,80 +1076,29 @@ const AdminPostsPage = ({ user, handleLogout }) => {
 
                   {/* Phân trang */}
                   {totalPages > 1 && (
-                    <Row className="justify-content-center mt-5">
-                      <Col xs="auto">
-                        <div className="pagination-container">
-                          <Pagination>
-                            <Pagination.First
-                              onClick={() => paginate(0)}
-                              disabled={currentPage === 0}
-                              className="shadow-sm"
-                            />
-                            <Pagination.Prev
-                              onClick={() => paginate(currentPage - 1)}
-                              disabled={currentPage === 0}
-                              className="shadow-sm"
-                            />
-                            {startPage > 0 && (
-                              <>
-                                <Pagination.Item onClick={() => paginate(0)} className="shadow-sm">1</Pagination.Item>
-                                {startPage > 1 && <Pagination.Ellipsis />}
-                              </>
-                            )}
-                            {pageNumbers.map((page) => (
-                              <Pagination.Item
-                                key={page}
-                                active={page === currentPage}
-                                onClick={() => paginate(page)}
-                                className="shadow-sm"
-                              >
-                                {page + 1}
-                              </Pagination.Item>
-                            ))}
-                            {endPage < totalPages - 1 && (
-                              <>
-                                {endPage < totalPages - 2 && <Pagination.Ellipsis />}
-                                <Pagination.Item onClick={() => paginate(totalPages - 1)} className="shadow-sm">
-                                  {totalPages}
-                                </Pagination.Item>
-                              </>
-                            )}
-                            <Pagination.Next
-                              onClick={() => paginate(currentPage + 1)}
-                              disabled={currentPage === totalPages - 1}
-                              className="shadow-sm"
-                            />
-                            <Pagination.Last
-                              onClick={() => paginate(totalPages - 1)}
-                              disabled={currentPage === totalPages - 1}
-                              className="shadow-sm"
-                            />
-                          </Pagination>
-
-                          <Form
-                            onSubmit={handlePageInputSubmit}
-                            className="d-flex align-items-center"
-                          >
-                            <Form.Control
-                              type="number"
-                              value={pageInput}
-                              onChange={(e) => setPageInput(e.target.value)}
-                              placeholder="Trang"
-                              min="1"
-                              max={totalPages}
-                              className="pagination-input"
-                            />
-                            <Button
-                              variant="primary"
-                              className="pagination-go-button"
-                              onClick={handlePageInputSubmit}
-                            >
-                              Đi
-                            </Button>
-                          </Form>
-                        </div>
-                      </Col>
-                    </Row>
+                    <div className="pagination-container">
+                      <Pagination>{renderPaginationItems()}</Pagination>
+                      <Form
+                        onSubmit={handlePageInputSubmit}
+                        className="d-flex align-items-center gap-2"
+                      >
+                        <Form.Control
+                          type="number"
+                          value={pageInput}
+                          onChange={(e) => setPageInput(e.target.value)}
+                          placeholder="Trang"
+                          min="1"
+                          max={totalPages}
+                          className="pagination-input"
+                        />
+                        <Button
+                          className="pagination-go-button"
+                          onClick={handlePageInputSubmit}
+                        >
+                          Đi
+                        </Button>
+                      </Form>
+                    </div>
                   )}
                 </>
               )}

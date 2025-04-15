@@ -16,148 +16,237 @@ import {
 import { useNavigate } from "react-router-dom";
 import { FaSearch, FaInfoCircle, FaTrash, FaLock, FaExclamationTriangle } from "react-icons/fa";
 import { motion } from "framer-motion";
-import Sidebar from "../components/Sidebar"; // Import Sidebar
+import { Helmet } from "react-helmet";
+import Sidebar from "../components/Sidebar";
 import apiServices from "../services/apiServices";
 
 // CSS tùy chỉnh
 const customStyles = `
   .layout {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(200px, 250px) 1fr;
     min-height: 100vh;
-    flex-direction: column;
+    background: #f0f4f8;
   }
+
   .content-wrapper {
     display: flex;
-    flex: 1;
+    flex-direction: column;
   }
+
   .main-content {
     flex: 1;
-    padding-top: 70px;
-    padding-bottom: 50px;
-    background: rgb(240, 248, 255);
+    padding: 20px;
+    overflow-y: auto;
+    margin-top:60px;
   }
+
+  .page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #007bff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
   .admin-table {
     background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
   }
+
   .admin-table thead {
-    background-color: #007bff;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: linear-gradient(135deg, #007bff, #0056b3);
     color: #fff;
   }
+
   .admin-table tbody tr {
-    transition: background-color 0.3s;
+    transition: background-color 0.2s ease;
   }
+
   .admin-table tbody tr:hover {
-    background-color: #e9ecef;
+    background-color: #e6f0ff;
   }
+
   .admin-table tbody tr:nth-child(odd) {
     background-color: #f8f9fa;
   }
-  .admin-table tbody tr:nth-child(even) {
-    background-color: #ffffff;
-  }
+
   .search-input {
-    border-radius: 20px;
+    border-radius: 25px;
     border: 1px solid #ced4da;
-    transition: all 0.3s;
-  }
-  .search-input:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
-  }
-  .pagination .page-item.active .page-link {
-    background-color: rgb(255, 255, 255);
-    border-color: #007bff;
-  }
-  .pagination .page-link {
-    color: #007bff;
-  }
-  .modal-content {
-    border-radius: 10px;
-    border: none;
-  }
-  .modal-header {
-    background: linear-gradient(135deg, #1a1a1a 0%, #2c3e50 100%);
-    color: #fff;
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
-    padding: 15px 20px;
-  }
-  .modal-title {
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .modal-body {
-    padding: 20px;
-    font-size: 1rem;
-    text-align: center;
-    color: #333;
-  }
-  .modal-footer {
-    padding: 15px 20px;
-    border-top: none;
-    display: flex;
-    width: auto;
-    justify-content: space-between;
-    gap: 10px;
-  }
-  .modal-footer .btn {
-    width: 48%;
-    border-radius: 20px;
-    font-weight: 500;
     transition: all 0.3s ease;
   }
-  .modal-footer .btn-secondary {
-    background-color: #6c757d;
-    border: none;
+
+  .search-input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.2);
   }
-  .modal-footer .btn-secondary:hover {
-    background-color: #5a6268;
-  }
-  .modal-footer .btn-primary {
-    background: linear-gradient(135deg, #1a1a1a 0%, #2c3e50 100%) !important;
-    border: none !important;
-  }
-  .modal-footer .btn-primary:hover {
-    background: linear-gradient(135deg, #0f0f0f 0%, #1f2a3c 100%) !important;
-  }
-  .action-button {
-    border-radius: 20px;
-    padding: 5px 10px;
-    font-size: 0.9rem;
-  }
+
   .pagination-container {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 15px;
-    flex-wrap: nowrap;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 20px;
   }
+
+  .pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border-color: #007bff;
+    color: #fff;
+  }
+
+  .pagination .page-link {
+    color: #007bff;
+    border-radius: 8px;
+    margin: 0 2px;
+    transition: all 0.2s ease;
+  }
+
+  .pagination .page-link:hover {
+    background-color: #e6f0ff;
+  }
+
   .pagination-input {
-    width: 60px;
-    height: 32px;
-    border-radius: 5px;
-    font-size: 0.9rem;
+    width: 70px;
+    height: 38px;
+    border-radius: 8px;
+    font-size: 0.95rem;
   }
+
   .pagination-go-button {
-    height: 32px;
-    border-radius: 5px;
-    font-size: 0.9rem;
+    height: 38px;
+    border-radius: 8px;
+    font-size: 0.95rem;
     padding: 0 15px;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border: none;
   }
-  .pagination {
-    margin-bottom: 0;
+
+  .modal-content {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   }
-  .pagination-form {
+
+  .modal-header {
+    background: linear-gradient(135deg, #1a1a1a, #2c3e50);
+    color: #fff;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    padding: 15px 25px;
+  }
+
+  .modal-title {
+    font-weight: 600;
     display: flex;
     align-items: center;
     gap: 10px;
   }
-  .sidebar {
-    display: block !important;
+
+  .modal-body {
+    padding: 25px;
+    font-size: 1rem;
+    color: #333;
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
+  .modal-footer {
+    padding: 15px 25px;
+    border-top: none;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .modal-footer .btn {
+    flex: 1;
+    border-radius: 25px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+
+  .modal-footer .btn-secondary {
+    background-color: #6c757d;
+    border: none;
+  }
+
+  .modal-footer .btn-secondary:hover {
+    background-color: #5a6268;
+  }
+
+  .modal-footer .btn-primary {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border: none;
+  }
+
+  .modal-footer .btn-primary:hover {
+    background: linear-gradient(135deg, #0056b3, #003d80);
+  }
+
+  .action-button {
+    border-radius: 25px;
+    padding: 6px 12px;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease;
+  }
+
+  .badge {
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+  }
+
+  @media (max-width: 768px) {
+    .layout {
+      grid-template-columns: 1fr;
+    }
+    .sidebar {
+      position: fixed;
+      width: 100%;
+      z-index: 1000;
+      top: 0;
+      left: 0;
+      display: none;
+    }
+    .main-content {
+      padding: 15px;
+    }
+    .admin-table th:nth-child(5),
+    .admin-table td:nth-child(5) {
+      display: none;
+    }
+    .page-title {
+      font-size: 1.5rem;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .admin-table th:nth-child(4),
+    .admin-table td:nth-child(4) {
+      display: none;
+    }
+    .action-button {
+      padding: 5px 8px;
+      font-size: 0.8rem;
+    }
+    .page-title {
+      font-size: 1.25rem;
+    }
   }
 `;
 
@@ -174,8 +263,6 @@ const AdminUsers = ({ user, handleLogout }) => {
   const [pageInput, setPageInput] = useState("");
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [detailUser, setDetailUser] = useState(null);
-
-  // State cho form xác nhận
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
   const [confirmMessage, setConfirmMessage] = useState("");
@@ -217,7 +304,7 @@ const AdminUsers = ({ user, handleLogout }) => {
         }
       } catch (err) {
         console.error("Error fetching users:", err);
-        setError(err.message || "Không thể tải danh sách người dùng. Vui lòng thử lại sau.");
+        setError(err.message || "Không thể tải danh sách người dùng.");
       } finally {
         setLoading(false);
       }
@@ -227,9 +314,7 @@ const AdminUsers = ({ user, handleLogout }) => {
   }, [currentPage, searchTerm]);
 
   const handleDelete = (userId) => {
-    setConfirmMessage(
-      `Bạn có chắc muốn xóa người dùng "${users.find((u) => u.id === userId).name}"?`
-    );
+    setConfirmMessage(`Bạn có chắc muốn xóa người dùng "${users.find((u) => u.id === userId).name}"?`);
     setConfirmAction(() => async () => {
       try {
         await apiServices.delete(`/api/admin/posts/by-user/${userId}`);
@@ -237,7 +322,7 @@ const AdminUsers = ({ user, handleLogout }) => {
         setUsers(users.filter((user) => user.id !== userId));
         alert("Người dùng đã được xóa thành công!");
       } catch (err) {
-        setError(err.message || "Không thể xóa người dùng. Vui lòng thử lại sau.");
+        setError(err.message || "Không thể xóa người dùng.");
       }
     });
     setConfirmUserId(userId);
@@ -245,24 +330,18 @@ const AdminUsers = ({ user, handleLogout }) => {
   };
 
   const handleLock = (userId) => {
-    setConfirmMessage(
-      `Bạn có chắc muốn khóa người dùng "${users.find((u) => u.id === userId).name}"?`
-    );
+    setConfirmMessage(`Bạn có chắc muốn khóa người dùng "${users.find((u) => u.id === userId).name}"?`);
     setConfirmAction(() => async () => {
       try {
         const response = await apiServices.put(`/api/admin/users/${userId}/lock`);
         if (response.data.statusCode === 200) {
-          setUsers(
-            users.map((user) =>
-              user.id === userId ? { ...user, status: "Locked" } : user
-            )
-          );
+          setUsers(users.map((user) => (user.id === userId ? { ...user, status: "Locked" } : user)));
           alert("Người dùng đã được khóa thành công!");
         } else {
           throw new Error(response.data.message || "Lỗi khi khóa người dùng.");
         }
       } catch (err) {
-        setError(err.message || "Không thể khóa người dùng. Vui lòng thử lại sau.");
+        setError(err.message || "Không thể khóa người dùng.");
       }
     });
     setConfirmUserId(userId);
@@ -276,10 +355,10 @@ const AdminUsers = ({ user, handleLogout }) => {
         setDetailUser(response.data.data);
         setShowDetailModal(true);
       } else {
-        throw new Error(response.data.message || "Không thể lấy thông tin chi tiết người dùng.");
+        throw new Error(response.data.message || "Không thể lấy thông tin chi tiết.");
       }
     } catch (err) {
-      setError(err.message || "Không thể lấy thông tin chi tiết người dùng. Vui lòng thử lại sau.");
+      setError(err.message || "Không thể lấy thông tin chi tiết người dùng.");
     }
   };
 
@@ -303,9 +382,12 @@ const AdminUsers = ({ user, handleLogout }) => {
 
   return (
     <div className="layout">
+      <Helmet>
+        <title>Quản lý Người dùng - Admin Panel</title>
+      </Helmet>
       <style>{customStyles}</style>
+      <Sidebar user={user} handleLogout={handleLogout} />
       <div className="content-wrapper">
-        <Sidebar user={user} handleLogout={handleLogout} />
         <div className="main-content">
           <Container>
             <motion.div
@@ -313,13 +395,19 @@ const AdminUsers = ({ user, handleLogout }) => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <h2 className="mb-4 text-primary fw-bold">Quản lý Người dùng</h2>
-              {error && <Alert variant="danger">{error}</Alert>}
+              <h2 className="page-title">
+                <FaInfoCircle /> Quản lý Người dùng
+              </h2>
+              {error && (
+                <Alert variant="danger" dismissible onClose={() => setError(null)}>
+                  {error}
+                </Alert>
+              )}
 
               {/* Thanh tìm kiếm */}
-              <div className="d-flex justify-content-between mb-4">
-                <InputGroup style={{ maxWidth: "300px" }}>
-                  <InputGroup.Text style={{ background: "#fff", borderRadius: "20px 0 0 20px" }}>
+              <div className="d-flex justify-content-start mb-4">
+                <InputGroup style={{ maxWidth: "350px" }}>
+                  <InputGroup.Text style={{ background: "#fff", borderRadius: "25px 0 0 25px" }}>
                     <FaSearch className="text-primary" />
                   </InputGroup.Text>
                   <Form.Control
@@ -331,7 +419,7 @@ const AdminUsers = ({ user, handleLogout }) => {
                       setCurrentPage(1);
                     }}
                     className="search-input"
-                    style={{ borderRadius: "0 20px 20px 0" }}
+                    style={{ borderRadius: "0 25px 25px 0" }}
                   />
                 </InputGroup>
               </div>
@@ -370,7 +458,10 @@ const AdminUsers = ({ user, handleLogout }) => {
               {/* Modal chi tiết người dùng */}
               <Modal show={showDetailModal} onHide={() => setShowDetailModal(false)} centered>
                 <Modal.Header closeButton>
-                  <Modal.Title>Chi tiết Người dùng</Modal.Title>
+                  <Modal.Title>
+                    <FaInfoCircle className="me-2" />
+                    Chi tiết Người dùng
+                  </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                   {detailUser ? (
@@ -398,20 +489,16 @@ const AdminUsers = ({ user, handleLogout }) => {
                         <strong>Avatar:</strong>{" "}
                         {detailUser.avatar ? (
                           <div className="mt-2">
-                            <img src={detailUser.avatar} alt="Avatar" style={{ maxWidth: "100px", borderRadius: "5px" }} />
+                            <img src={detailUser.avatar} alt="Avatar" style={{ maxWidth: "120px", borderRadius: "8px" }} />
                           </div>
                         ) : (
                           <span className="text-muted">Chưa có avatar</span>
                         )}
                       </ListGroup.Item>
-                      <ListGroup.Item><strong>Số điện thoại:</strong> {detailUser.phone}</ListGroup.Item>
+                      <ListGroup.Item><strong>Số điện thoại:</strong> {detailUser.phone || "Chưa cập nhật"}</ListGroup.Item>
                       <ListGroup.Item>
                         <strong>Địa chỉ:</strong>{" "}
-                        {detailUser.address ? (
-                          detailUser.address
-                        ) : (
-                          <span className="text-danger">Chưa cập nhật</span>
-                        )}
+                        {detailUser.address || <span className="text-muted">Chưa cập nhật</span>}
                       </ListGroup.Item>
                       <ListGroup.Item>
                         <strong>Ngày tạo:</strong>{" "}
@@ -420,15 +507,6 @@ const AdminUsers = ({ user, handleLogout }) => {
                       <ListGroup.Item>
                         <strong>Ngày cập nhật:</strong>{" "}
                         {new Date(detailUser.updatedAt).toLocaleString("vi-VN")}
-                      </ListGroup.Item>
-                      <ListGroup.Item><strong>Người tạo:</strong> {detailUser.createdBy}</ListGroup.Item>
-                      <ListGroup.Item>
-                        <strong>Người cập nhật:</strong>{" "}
-                        {detailUser.updatedBy ? (
-                          detailUser.updatedBy
-                        ) : (
-                          <span className="text-danger">Chưa cập nhật</span>
-                        )}
                       </ListGroup.Item>
                     </ListGroup>
                   ) : (
@@ -442,6 +520,7 @@ const AdminUsers = ({ user, handleLogout }) => {
                 </Modal.Footer>
               </Modal>
 
+              {/* Bảng người dùng */}
               <Table responsive className="admin-table">
                 <thead>
                   <tr>
@@ -457,10 +536,9 @@ const AdminUsers = ({ user, handleLogout }) => {
                 <tbody>
                   {loading ? (
                     <tr>
-                      <td colSpan="7" className="text-center">
-                        <Spinner animation="border" role="status">
-                          <span className="visually-hidden">Đang tải...</span>
-                        </Spinner>
+                      <td colSpan="7" className="text-center py-4">
+                        <Spinner animation="border" variant="primary" />
+                        <span className="ms-2">Đang tải...</span>
                       </td>
                     </tr>
                   ) : users.length > 0 ? (
@@ -469,10 +547,18 @@ const AdminUsers = ({ user, handleLogout }) => {
                         <td>{user.id}</td>
                         <td>{user.name}</td>
                         <td>{user.email}</td>
-                        <td>{user.role}</td>
+                        <td>
+                          <span className={`badge ${user.role === "admin" ? "bg-primary" : "bg-secondary"}`}>
+                            {user.role}
+                          </span>
+                        </td>
                         <td>{user.joinedDate}</td>
                         <td>
-                          <span className={`badge ${user.status === "Active" ? "bg-success" : user.status === "Locked" ? "bg-danger" : "bg-secondary"}`}>
+                          <span
+                            className={`badge ${
+                              user.status === "Active" ? "bg-success" : user.status === "Locked" ? "bg-danger" : "bg-secondary"
+                            }`}
+                          >
                             {user.status}
                           </span>
                         </td>
@@ -507,7 +593,7 @@ const AdminUsers = ({ user, handleLogout }) => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="7" className="text-center">
+                      <td colSpan="7" className="text-center py-4">
                         Không tìm thấy người dùng nào.
                       </td>
                     </tr>
@@ -516,7 +602,7 @@ const AdminUsers = ({ user, handleLogout }) => {
               </Table>
 
               {/* Phân trang */}
-              <div className="pagination-container mt-3">
+              <div className="pagination-container">
                 <Pagination>
                   <Pagination.First onClick={() => paginate(1)} disabled={currentPage === 1} />
                   <Pagination.Prev onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} />
@@ -580,10 +666,7 @@ const AdminUsers = ({ user, handleLogout }) => {
                   />
                 </Pagination>
 
-                <Form
-                  onSubmit={handlePageInputSubmit}
-                  className="pagination-form"
-                >
+                <Form onSubmit={handlePageInputSubmit} className="d-flex align-items-center gap-2">
                   <Form.Control
                     type="number"
                     value={pageInput}
@@ -593,11 +676,7 @@ const AdminUsers = ({ user, handleLogout }) => {
                     max={totalPages}
                     className="pagination-input"
                   />
-                  <Button
-                    variant="primary"
-                    className="pagination-go-button"
-                    onClick={handlePageInputSubmit}
-                  >
+                  <Button type="submit" className="pagination-go-button">
                     Đi
                   </Button>
                 </Form>

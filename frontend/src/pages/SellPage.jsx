@@ -37,7 +37,7 @@ const getTimeAgo = (createdAt) => {
   }
 };
 
-// CSS tùy chỉnh
+// CSS tùy chỉnh (giữ nguyên như cũ)
 const customStyles = `
   .sell-page-container {
     background-color: #f0f8ff;
@@ -260,9 +260,7 @@ const customStyles = `
 const SellPage = ({ setLoading: setParentLoading }) => {
   const [loading, setLoading] = useState(false);
   const [isShowingLoading, setIsShowingLoading] = useState(false);
-  const [pageDataCache, setPageDataCache] = useState({});
   const [allProjects, setAllProjects] = useState([]);
-  const [filteredProjects, setFilteredProjects] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalPosts, setTotalPosts] = useState(0);
@@ -275,8 +273,6 @@ const SellPage = ({ setLoading: setParentLoading }) => {
   const fetchVipLevels = async () => {
     try {
       const response = await apiServices.get("/api/vips");
-      console.log("Response từ API /api/vips:", response.data);
-
       if (response.data.statusCode === 200) {
         const vipData = response.data.data;
         const vipLevelMap = {};
@@ -284,7 +280,6 @@ const SellPage = ({ setLoading: setParentLoading }) => {
           vipLevelMap[vip.id] = vip.vipLevel;
         });
         setVipLevels(vipLevelMap);
-        console.log("Ánh xạ vipId sang vipLevel:", vipLevelMap);
       } else {
         throw new Error(response.data.message || "Không thể lấy danh sách gói VIP.");
       }
@@ -304,12 +299,9 @@ const SellPage = ({ setLoading: setParentLoading }) => {
       });
 
       const response = await apiServices.get(`/api/posts?${queryParams.toString()}`);
-      console.log("Response từ API /api/posts (Total Posts):", response.data);
-
       if (response.data.statusCode === 200) {
         const total = response.data.data.totalElements;
         setTotalPosts(total);
-        console.log("Tổng số bài đăng (SALE, APPROVED):", total);
       } else {
         throw new Error(response.data.message || "Không thể lấy tổng số bài đăng.");
       }
@@ -319,22 +311,10 @@ const SellPage = ({ setLoading: setParentLoading }) => {
     }
   };
 
-  const fetchPosts = async (page = 0, filters) => {
-    const cacheKey = `${page}_${JSON.stringify(filters)}`;
-    if (pageDataCache[cacheKey]) {
-      console.log(`Lấy dữ liệu từ cache cho trang ${page} với bộ lọc:`, pageDataCache[cacheKey]);
-      setAllProjects(pageDataCache[cacheKey].data);
-      setLoading(false);
-      setParentLoading(false);
-      return;
-    }
-
+  const fetchPosts = async (page = 0, filters = {}) => {
     try {
       setLoading(true);
       setParentLoading(true);
-
-      const minPrice = filters?.price?.min ?? 0;
-      const maxPrice = filters?.price?.max ?? 50000000000000000;
 
       const queryParams = new URLSearchParams({
         page,
@@ -342,21 +322,36 @@ const SellPage = ({ setLoading: setParentLoading }) => {
         sort: "id,desc",
         type: "SALE",
         status: "APPROVED",
-        minPrice,
-        maxPrice,
+        minPrice: filters.minPrice ?? 0,
+        maxPrice: filters.maxPrice ?? 50000000000000000,
+        minArea: filters.minArea ?? 0,
+        maxArea: filters.maxArea ?? 1000000000,
       });
+
+      // Chỉ thêm các tham số nếu chúng có giá trị (không phải null hoặc undefined)
+      if (filters.provinceCode != null) {
+        queryParams.append("provinceCode", filters.provinceCode);
+      }
+      if (filters.districtCode != null) {
+        queryParams.append("districtCode", filters.districtCode);
+      }
+      if (filters.wardCode != null) {
+        queryParams.append("wardCode", filters.wardCode);
+      }
+      if (filters.categoryIds != null && filters.categoryIds.length > 0) {
+        // Gửi danh sách categoryIds dưới dạng chuỗi, ví dụ: categoryIds=1,2,3
+        queryParams.append("categoryIds", filters.categoryIds.join(","));
+      }
 
       console.log("Query params gửi đến API:", queryParams.toString());
 
       const response = await apiServices.get(`/api/posts?${queryParams.toString()}`);
-      console.log("Response từ API /api/posts (SellPage):", response.data);
+      console.log("Phản hồi từ API:", response.data);
 
       if (response.data.statusCode === 200) {
         const posts = response.data.data.content;
-        console.log("Dữ liệu từ API (SellPage):", posts);
-
         if (posts.length === 0) {
-          console.warn("API trả về danh sách bài đăng rỗng. Kiểm tra xem có bài đăng nào với type: 'SALE' và status: 'APPROVED' không.");
+          console.warn("API trả về danh sách bài đăng rỗng. Kiểm tra bộ lọc và dữ liệu trong database.");
         }
 
         const formattedProjects = posts
@@ -393,8 +388,6 @@ const SellPage = ({ setLoading: setParentLoading }) => {
               }
             }
 
-            console.log(`Cấp độ VIP cho bài đăng ID ${post.id}: ${vipLevel}, Tên gói: ${vipName}`);
-
             const timeAgo = getTimeAgo(post.createdAt);
 
             return {
@@ -415,158 +408,26 @@ const SellPage = ({ setLoading: setParentLoading }) => {
           })
           .filter((project) => project !== null);
 
-        console.log("Dữ liệu sau khi định dạng (SellPage):", formattedProjects);
-
-        setPageDataCache((prevCache) => ({
-          ...prevCache,
-          [cacheKey]: { data: formattedProjects, filters },
-        }));
-
         setAllProjects(formattedProjects);
         setTotalPages(response.data.data.totalPages);
-        setLoading(false);
-        setParentLoading(false);
       } else {
         throw new Error(response.data.message || "Không thể lấy danh sách bài đăng.");
       }
     } catch (err) {
       console.error("Lỗi khi lấy danh sách bài đăng (SellPage):", err.response?.data || err.message);
       setAllProjects([]);
-      setFilteredProjects([]);
       setTotalPages(1);
+    } finally {
       setLoading(false);
       setParentLoading(false);
-      sessionStorage.removeItem("sellPageState");
     }
-  };
-
-  const applyFilters = (projectsToFilter, filters) => {
-    const { searchQuery, categoryIds, area } = filters || {};
-    // Chuẩn hóa query: loại bỏ khoảng trắng thừa và chuyển về lowercase
-    const query = searchQuery ? searchQuery.toLowerCase().trim().replace(/\s+/g, " ") : "";
-
-    console.log("Filters received in applyFilters (SellPage):", filters);
-    console.log("Danh sách dự án trước khi lọc (SellPage):", projectsToFilter);
-
-    const filtered = projectsToFilter.filter((project) => {
-      let projectArea;
-      try {
-        const areaString = project.area.replace(/[^\d.]/g, "");
-        projectArea = parseFloat(areaString);
-        if (isNaN(projectArea)) {
-          console.warn(`Diện tích không hợp lệ cho bài đăng: ${project.title}, area: ${project.area}`);
-          return false;
-        }
-      } catch (error) {
-        console.warn(`Lỗi khi tính diện tích cho bài đăng: ${project.title}`, error);
-        return false;
-      }
-
-      // Chuẩn hóa title và desc: loại bỏ khoảng trắng thừa và chuyển về lowercase
-      const normalizedTitle = project.title ? project.title.toLowerCase().trim().replace(/\s+/g, " ") : "";
-      const normalizedDesc = project.desc ? project.desc.toLowerCase().trim().replace(/\s+/g, " ") : "";
-
-      const matchesQuery =
-        !query ||
-        normalizedTitle.includes(query) ||
-        normalizedDesc.includes(query);
-
-      const matchesCategory =
-        !categoryIds ||
-        categoryIds.length === 0 ||
-        (project.categoryId && categoryIds.includes(project.categoryId));
-
-      const minArea = area?.min != null ? parseFloat(area.min) : null;
-      const maxArea = area?.max != null ? parseFloat(area.max) : null;
-
-      const matchesArea =
-        (minArea == null || projectArea >= minArea) &&
-        (maxArea == null || projectArea <= maxArea);
-
-      console.log("Dự án (SellPage):", project);
-      console.log("Normalized Title:", normalizedTitle);
-      console.log("Normalized Desc:", normalizedDesc);
-      console.log("Query:", query);
-      console.log("projectArea:", projectArea);
-      console.log("minArea:", minArea, "maxArea:", maxArea);
-      console.log("matchesQuery:", matchesQuery);
-      console.log("matchesCategory:", matchesCategory);
-      console.log("matchesArea:", matchesArea);
-
-      return matchesQuery && matchesCategory && matchesArea;
-    });
-
-    console.log("Danh sách dự án sau khi lọc (SellPage):", filtered);
-    setFilteredProjects(filtered);
   };
 
   useEffect(() => {
     fetchVipLevels();
     fetchTotalPosts();
+    fetchPosts(0, searchFilters);
   }, []);
-
-  useEffect(() => {
-    const savedState = sessionStorage.getItem("sellPageState");
-    let initialPage = 1;
-    let initialScrollPosition = 0;
-    let initialFilters = {};
-
-    if (savedState) {
-      const { currentPage, scrollPosition, searchFilters: savedFilters, pageDataCache: savedCache } = JSON.parse(savedState);
-      initialPage = currentPage || 1;
-      initialScrollPosition = scrollPosition || 0;
-      initialFilters = savedFilters || {};
-      setPageDataCache(savedCache || {});
-      setCurrentPage(initialPage);
-      setSearchFilters(initialFilters);
-
-      setIsShowingLoading(true);
-      setTimeout(() => {
-        setIsShowingLoading(false);
-      }, 2000);
-
-      window.scrollTo(0, initialScrollPosition);
-
-      const cacheKey = `${initialPage - 1}_${JSON.stringify(initialFilters)}`;
-      if (pageDataCache[cacheKey]) {
-        setAllProjects(pageDataCache[cacheKey].data);
-        applyFilters(pageDataCache[cacheKey].data, initialFilters);
-        setLoading(false);
-        setParentLoading(false);
-      } else {
-        fetchPosts(initialPage - 1, initialFilters);
-      }
-    } else {
-      setIsShowingLoading(true);
-      setTimeout(() => {
-        setIsShowingLoading(false);
-      }, 2000);
-
-      fetchPosts(initialPage - 1, {});
-    }
-
-    const handleBeforeUnload = () => {
-      const state = {
-        currentPage,
-        scrollPosition: window.scrollY,
-        searchFilters,
-        pageDataCache,
-      };
-      sessionStorage.setItem("sellPageState", JSON.stringify(state));
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (allProjects.length > 0) {
-      applyFilters(allProjects, searchFilters);
-    }
-  }, [searchFilters, allProjects]);
 
   useEffect(() => {
     setIsShowingLoading(true);
@@ -575,12 +436,11 @@ const SellPage = ({ setLoading: setParentLoading }) => {
     }, 2000);
 
     fetchPosts(currentPage - 1, searchFilters);
-  }, [currentPage, vipLevels]);
+  }, [currentPage, vipLevels, searchFilters]); // Thêm searchFilters vào dependency để gọi lại fetchPosts khi bộ lọc thay đổi
 
   const handleSearch = (searchData) => {
     console.log("Search data received in SellPage:", searchData);
     setSearchFilters(searchData);
-    setPageDataCache({});
     setCurrentPage(1);
     setPageInput("");
 
@@ -590,14 +450,6 @@ const SellPage = ({ setLoading: setParentLoading }) => {
     }, 2000);
 
     fetchPosts(0, searchData);
-
-    const state = {
-      currentPage: 1,
-      scrollPosition: 0,
-      searchFilters: searchData,
-      pageDataCache: {},
-    };
-    sessionStorage.setItem("sellPageState", JSON.stringify(state));
   };
 
   const handleTogglePhone = (projectId) => {
@@ -610,25 +462,15 @@ const SellPage = ({ setLoading: setParentLoading }) => {
       } else {
         return {
           ...prev,
-          [projectId]: filteredProjects.find((p) => p.id === projectId)?.phone,
+          [projectId]: allProjects.find((p) => p.id === projectId)?.phone,
         };
       }
     });
   };
 
-  const currentProjects = filteredProjects;
-
   const paginate = (pageNumber) => {
     setCurrentPage(pageNumber);
     setPageInput("");
-
-    const state = {
-      currentPage: pageNumber,
-      scrollPosition: 0,
-      searchFilters,
-      pageDataCache,
-    };
-    sessionStorage.setItem("sellPageState", JSON.stringify(state));
   };
 
   const handlePageInput = () => {
@@ -669,7 +511,7 @@ const SellPage = ({ setLoading: setParentLoading }) => {
             <SearchForm
               onSearch={handleSearch}
               hideTransactionType={true}
-              projects={allProjects} // Truyền danh sách bài đăng cho SearchForm
+              projects={allProjects}
             />
           </Col>
         </Row>
@@ -678,7 +520,7 @@ const SellPage = ({ setLoading: setParentLoading }) => {
           <Col>
             <h2 className="text-primary fw-bold text-center">Danh Sách Nhà Đất Bán</h2>
             <p className="post-count">
-              Hiện có <strong>{currentProjects.length}</strong> bài đăng (Tổng cộng: <strong>{totalPosts}</strong> bài đăng)
+              Hiện có <strong>{allProjects.length}</strong> bài đăng (Tổng cộng: <strong>{totalPosts}</strong> bài đăng)
             </p>
           </Col>
         </Row>
@@ -691,22 +533,10 @@ const SellPage = ({ setLoading: setParentLoading }) => {
         ) : (
           <>
             <Row xs={1} className="g-4">
-              {currentProjects.length > 0 ? (
-                currentProjects.map((project) => (
+              {allProjects.length > 0 ? (
+                allProjects.map((project) => (
                   <Col key={project.id}>
-                    <NavLink
-                      to={`/post/${project.id}`}
-                      style={{ textDecoration: "none" }}
-                      onClick={() => {
-                        const state = {
-                          currentPage,
-                          scrollPosition: window.scrollY,
-                          searchFilters,
-                          pageDataCache,
-                        };
-                        sessionStorage.setItem("sellPageState", JSON.stringify(state));
-                      }}
-                    >
+                    <NavLink to={`/post/${project.id}`} style={{ textDecoration: "none" }}>
                       <Card className="hover-card">
                         <div className="card-img-wrapper">
                           <Card.Img variant="top" src={project.img} alt={project.title} className="card-img-top" />
@@ -762,7 +592,7 @@ const SellPage = ({ setLoading: setParentLoading }) => {
               )}
             </Row>
 
-            {totalPages > 1 && currentProjects.length > 0 && (
+            {totalPages > 1 && allProjects.length > 0 && (
               <Row className="justify-content-center mt-5">
                 <Col xs="auto">
                   <Pagination>

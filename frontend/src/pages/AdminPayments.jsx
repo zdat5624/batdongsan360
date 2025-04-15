@@ -12,111 +12,180 @@ import {
   Spinner,
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import apiServices from "../services/apiServices";
+import { FaSearch, FaInfoCircle } from "react-icons/fa";
+import { motion } from "framer-motion";
+import { Helmet } from "react-helmet";
 import Sidebar from "../components/Sidebar";
-import Footer from "../components/Footer";
+import apiServices from "../services/apiServices";
 
+// CSS tùy chỉnh
 const customStyles = `
   .layout {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(250px, 250px) 1fr;
     min-height: 100vh;
-    background: rgb(240, 248, 255);
-    flex-direction: column;
+    background: #f0f4f8;
   }
+
   .content-wrapper {
     display: flex;
-    flex: 1;
-    width: 100%;
+    flex-direction: column;
   }
+
   .main-content {
     flex: 1;
-    padding-top: 100px;
-    padding-bottom: 150px;
-    background: rgb(240, 248, 255);
-    margin-left: 20px;
+    padding: 20px;
+    padding-top: 60px; /* Khoảng cách 60px từ đỉnh trang */
+    background: #f0f4f8;
   }
+
   .custom-container {
     padding: 20px;
   }
+
+  .page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
   .admin-table {
     background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
   }
+
   .admin-table thead {
-    background-color: #007bff;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: linear-gradient(135deg, #007bff, #0056b3);
     color: #fff;
   }
+
   .admin-table tbody tr {
-    transition: background-color 0.3s;
+    transition: background-color 0.2s ease;
   }
+
   .admin-table tbody tr:hover {
-    background-color: #e9ecef;
+    background-color: #e6f0ff;
   }
+
   .admin-table tbody tr:nth-child(odd) {
     background-color: #f8f9fa;
   }
-  .admin-table tbody tr:nth-child(even) {
-    background-color: #ffffff;
-  }
+
   .search-input {
-    border-radius: 20px;
+    border-radius: 25px;
     border: 1px solid #ced4da;
-    transition: all 0.3s;
+    transition: all 0.3s ease;
   }
+
   .search-input:focus {
     border-color: #007bff;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.2);
   }
-  .pagination .page-item.active .page-link {
-    background-color: rgb(255, 255, 255);
-    border-color: #007bff;
-  }
-  .pagination .page-link {
-    color: #007bff;
-  }
+
   .pagination-container {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 15px;
-    flex-wrap: nowrap;
-  }
-  .pagination-input {
-    width: 60px;
-    height: 32px;
-    border-radius: 5px;
-    font-size: 0.9rem;
-  }
-  .pagination-go-button {
-    height: 32px;
-    border-radius: 5px;
-    font-size: 0.9rem;
-    padding: 0 15px;
-  }
-  .pagination {
-    margin-bottom: 0;
-  }
-  .pagination-form {
-    display: flex;
-    align-items: center;
     gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 20px;
   }
-  .btn-outline-primary {
-    height: 40px;
+
+  .pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border-color: #007bff;
+    color: #fff;
   }
-  .btn-primary {
-    height: 40px;
+
+  .pagination .page-link {
+    color: #007bff;
+    border-radius: 8px;
+    margin: 0 2px;
+    transition: all 0.2s ease;
   }
-  .sidebar {
-    display: block !important;
-    width: 250px !important;
-    position: sticky !important;
-    top: 0 !important;
-    z-index: 100 !important;
-    min-height: calc(100vh - 70px) !important;
-    background-color: #f8f9fa !important;
-    border-right: 1px solid #dee2e6 !important;
+
+  .pagination .page-link:hover {
+    background-color: #e6f0ff;
+  }
+
+  .pagination-input {
+    width: 70px;
+    height: 38px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+  }
+
+  .pagination-go-button {
+    height: 38px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    padding: 0 15px;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border: none;
+  }
+
+  .badge {
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+  }
+
+  .filter-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+
+  @media (max-width: 768px) {
+    .layout {
+      grid-template-columns: 1fr;
+    }
+    .sidebar {
+      width: 100%;
+      position: fixed;
+      top: 0;
+      z-index: 1000;
+      display: none;
+    }
+    .main-content {
+      padding: 15px;
+      padding-top: 60px;
+    }
+    .page-title {
+      font-size: 1.5rem;
+    }
+    .admin-table th:nth-child(5),
+    .admin-table td:nth-child(5) {
+      display: none;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .page-title {
+      font-size: 1.25rem;
+    }
+    .admin-table th:nth-child(7),
+    .admin-table td:nth-child(7) {
+      display: none;
+    }
+    .filter-group {
+      flex-direction: column;
+      align-items: stretch;
+    }
   }
 `;
 
@@ -128,7 +197,6 @@ const AdminPayments = ({ user, handleLogout }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  const [filterType, setFilterType] = useState("All");
   const [statusFilter, setStatusFilter] = useState("SUCCESS");
   const [startDate, setStartDate] = useState("2025-01-01");
   const [endDate, setEndDate] = useState("2025-12-31");
@@ -147,7 +215,9 @@ const AdminPayments = ({ user, handleLogout }) => {
       const startDateFormatted = `${startDate}T00:00:00Z`;
       const endDateFormatted = `${endDate}T23:59:59Z`;
       const response = await apiServices.get(
-        `/api/admin/payment/transactions?page=${currentPage - 1}&size=${paymentsPerPage}&sort=createdAt&direction=DESC&status=${statusFilter}&startDate=${startDateFormatted}&endDate=${endDateFormatted}`
+        `/api/admin/payment/transactions?page=${
+          currentPage - 1
+        }&size=${paymentsPerPage}&sort=createdAt&direction=DESC&status=${statusFilter}&startDate=${startDateFormatted}&endDate=${endDateFormatted}`
       );
 
       if (response.data.statusCode === 200) {
@@ -178,9 +248,10 @@ const AdminPayments = ({ user, handleLogout }) => {
     fetchPayments();
   }, [currentPage, statusFilter, startDate, endDate]);
 
-  const filteredPayments = payments.filter((payment) =>
-    payment.transactionId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    payment.userId.toString().includes(searchTerm)
+  const filteredPayments = payments.filter(
+    (payment) =>
+      payment.transactionId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      payment.userId.toString().includes(searchTerm)
   );
 
   const paginate = (pageNumber) => {
@@ -271,144 +342,160 @@ const AdminPayments = ({ user, handleLogout }) => {
 
   return (
     <div className="layout">
+      <Helmet>
+        <title>Quản lý Thanh Toán - Admin Panel</title>
+      </Helmet>
       <style>{customStyles}</style>
+      <Sidebar user={user} handleLogout={handleLogout} />
       <div className="content-wrapper">
-        <Sidebar user={user} handleLogout={handleLogout} />
         <div className="main-content">
           <Container className="custom-container">
-            <h2 className="mb-4 text-primary fw-bold">Quản lý Thanh Toán</h2>
-            {error && <Alert variant="danger">{error}</Alert>}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <h2 className="page-title">
+                <FaInfoCircle /> Quản lý Thanh Toán
+              </h2>
+              {error && (
+                <Alert variant="danger" dismissible onClose={() => setError(null)}>
+                  {error}
+                </Alert>
+              )}
 
-            <div className="d-flex justify-content-between mb-4 flex-wrap">
-              <div className="d-flex flex-wrap gap-2">
-                {/* Giữ lại các nút lọc nếu cần, nhưng loại bỏ liên quan đến type */}
-              </div>
-
-              <div className="d-flex flex-wrap gap-2">
-                <InputGroup style={{ maxWidth: "200px" }}>
-                  <Form.Control
-                    type="text"
-                    placeholder="Tìm kiếm..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="search-input"
-                  />
-                </InputGroup>
-                <InputGroup style={{ maxWidth: "200px" }}>
-                  <Form.Control
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                  />
-                </InputGroup>
-                <InputGroup style={{ maxWidth: "200px" }}>
-                  <Form.Control
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                  />
-                </InputGroup>
-                <InputGroup style={{ maxWidth: "200px" }}>
-                  <Form.Control
-                    as="select"
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                  >
-                    <option value="SUCCESS">Thành công</option>
-                    <option value="PENDING">Đang kiểm</option>
-                    <option value="FAILED">Thất bại</option>
-                  </Form.Control>
-                </InputGroup>
-              </div>
-            </div>
-
-            {loading ? (
-              <div className="text-center py-5">
-                <Spinner animation="border" variant="primary" />
-                <p className="mt-3">Đang tải dữ liệu...</p>
-              </div>
-            ) : (
-              <>
-                <Table responsive className="admin-table">
-                  <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>Mã Giao Dịch</th>
-                      <th>ID Người Dùng</th>
-                      <th>Số Tiền (VND)</th>
-                      <th>Phương Thức</th>
-                      <th>Trạng Thái</th>
-                      <th>Ngày Thanh Toán</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredPayments.length > 0 ? (
-                      filteredPayments.map((payment) => (
-                        <tr key={payment.id}>
-                          <td>{payment.id}</td>
-                          <td>{payment.transactionId}</td>
-                          <td>{payment.userId}</td>
-                          <td>{payment.amount.toLocaleString()}</td>
-                          <td>{payment.paymentMethod}</td>
-                          <td>
-                            <span
-                              className={`badge ${
-                                payment.status === "SUCCESS"
-                                  ? "bg-success"
-                                  : payment.status === "PENDING"
-                                  ? "bg-warning"
-                                  : "bg-danger"
-                              }`}
-                            >
-                              {payment.status === "SUCCESS"
-                                ? "Thành công"
-                                : payment.status === "PENDING"
-                                ? "Đang kiểm"
-                                : "Thất bại"}
-                            </span>
-                          </td>
-                          <td>{payment.paymentDate}</td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="7" className="text-center">
-                          Không tìm thấy giao dịch nào.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </Table>
-
-                <div className="pagination-container mt-3">
-                  <Pagination>{renderPaginationItems()}</Pagination>
-                  <Form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      handleGoToPage();
-                    }}
-                    className="pagination-form"
-                  >
-                    <Form.Control
-                      type="number"
-                      value={goToPage}
-                      onChange={(e) => setGoToPage(e.target.value)}
-                      placeholder="Trang"
-                      min="1"
-                      max={totalPages}
-                      className="pagination-input"
-                    />
-                    <Button
-                      variant="primary"
-                      className="pagination-go-button"
-                      onClick={handleGoToPage}
+              <div className="d-flex justify-content-start mb-4">
+                <div className="filter-group">
+                  <InputGroup style={{ maxWidth: "350px" }}>
+                    <InputGroup.Text
+                      style={{ background: "#fff", borderRadius: "25px 0 0 25px" }}
                     >
-                      Đi
-                    </Button>
-                  </Form>
+                      <FaSearch className="text-primary" />
+                    </InputGroup.Text>
+                    <Form.Control
+                      type="text"
+                      placeholder="Tìm kiếm mã giao dịch hoặc ID người dùng..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="search-input"
+                      style={{ borderRadius: "0 25px 25px 0" }}
+                    />
+                  </InputGroup>
+                  <InputGroup style={{ maxWidth: "200px" }}>
+                    <Form.Control
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                    />
+                  </InputGroup>
+                  <InputGroup style={{ maxWidth: "200px" }}>
+                    <Form.Control
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                    />
+                  </InputGroup>
+                  <InputGroup style={{ maxWidth: "200px" }}>
+                    <Form.Control
+                      as="select"
+                      value={statusFilter}
+                      onChange={(e) => setStatusFilter(e.target.value)}
+                    >
+                      <option value="SUCCESS">Thành công</option>
+                      <option value="PENDING">Đang kiểm</option>
+                      <option value="FAILED">Thất bại</option>
+                    </Form.Control>
+                  </InputGroup>
                 </div>
-              </>
-            )}
+              </div>
+
+              {loading ? (
+                <div className="text-center py-5">
+                  <Spinner animation="border" variant="primary" />
+                  <p className="mt-3">Đang tải dữ liệu...</p>
+                </div>
+              ) : (
+                <>
+                  <Table responsive className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Mã Giao Dịch</th>
+                        <th>ID Người Dùng</th>
+                        <th>Số Tiền (VND)</th>
+                        <th>Phương Thức</th>
+                        <th>Trạng Thái</th>
+                        <th>Ngày Thanh Toán</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredPayments.length > 0 ? (
+                        filteredPayments.map((payment) => (
+                          <tr key={payment.id}>
+                            <td>{payment.id}</td>
+                            <td>{payment.transactionId}</td>
+                            <td>{payment.userId}</td>
+                            <td>{payment.amount.toLocaleString()}</td>
+                            <td>{payment.paymentMethod}</td>
+                            <td>
+                              <span
+                                className={`badge ${
+                                  payment.status === "SUCCESS"
+                                    ? "bg-success"
+                                    : payment.status === "PENDING"
+                                    ? "bg-warning"
+                                    : "bg-danger"
+                                }`}
+                              >
+                                {payment.status === "SUCCESS"
+                                  ? "Thành công"
+                                  : payment.status === "PENDING"
+                                  ? "Đang kiểm"
+                                  : "Thất bại"}
+                              </span>
+                            </td>
+                            <td>{payment.paymentDate}</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="7" className="text-center py-4">
+                            Không tìm thấy giao dịch nào.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </Table>
+
+                  <div className="pagination-container">
+                    <Pagination>{renderPaginationItems()}</Pagination>
+                    <Form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        handleGoToPage();
+                      }}
+                      className="d-flex align-items-center gap-2"
+                    >
+                      <Form.Control
+                        type="number"
+                        value={goToPage}
+                        onChange={(e) => setGoToPage(e.target.value)}
+                        placeholder="Trang"
+                        min="1"
+                        max={totalPages}
+                        className="pagination-input"
+                      />
+                      <Button
+                        className="pagination-go-button"
+                        onClick={handleGoToPage}
+                      >
+                        Đi
+                      </Button>
+                    </Form>
+                  </div>
+                </>
+              )}
+            </motion.div>
           </Container>
         </div>
       </div>
