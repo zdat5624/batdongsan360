@@ -2,6 +2,8 @@ package vn.thanhdattanphuoc.batdongsan360.controller;
 
 import jakarta.validation.Valid;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -23,6 +25,7 @@ import vn.thanhdattanphuoc.batdongsan360.util.constant.PostTypeEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.error.IdInvalidException;
 import vn.thanhdattanphuoc.batdongsan360.util.request.PostRequestDTO;
 import vn.thanhdattanphuoc.batdongsan360.util.request.UpdatePostStatusDTO;
+import vn.thanhdattanphuoc.batdongsan360.util.response.MapPostDTO;
 import vn.thanhdattanphuoc.batdongsan360.util.response.ResAddressDTO;
 
 @RestController
@@ -131,4 +134,19 @@ public class PostController {
         addressDTO.setFullAddress(fullAddress);
         return ResponseEntity.ok(addressDTO);
     }
+
+    @GetMapping("/api/posts/map")
+    public List<MapPostDTO> getPostsForMap(
+            @RequestParam(required = false) Long minPrice,
+            @RequestParam(required = false) Long maxPrice,
+            @RequestParam(required = false) Double minArea,
+            @RequestParam(required = false) Double maxArea,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) Long provinceCode,
+            @RequestParam(required = false) Long districtCode,
+            @RequestParam(required = false) Long wardCode) {
+        return postService.getPostsForMap(minPrice, maxPrice, minArea, maxArea,
+                categoryId, provinceCode, districtCode, wardCode);
+    }
+
 }

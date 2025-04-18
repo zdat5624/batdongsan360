@@ -35,12 +35,14 @@ import vn.thanhdattanphuoc.batdongsan360.util.constant.PostTypeEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.RoleEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.TransStatusEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.error.IdInvalidException;
+import vn.thanhdattanphuoc.batdongsan360.util.response.MapPostDTO;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class PostService {
@@ -453,6 +455,32 @@ public class PostService {
         String province = post.getProvince() != null ? ", " + post.getProvince().getName() : "";
 
         return detail + ward + district + province;
+    }
+
+    public List<MapPostDTO> getPostsForMap(Long minPrice, Long maxPrice, Double minArea, Double maxArea,
+            Long categoryId, Long provinceCode, Long districtCode, Long wardCode) {
+        List<Object[]> results = postRepository.findPostsForMap(minPrice, maxPrice, minArea, maxArea,
+                categoryId, provinceCode, districtCode, wardCode);
+
+        List<MapPostDTO> mapPostDTOs = new ArrayList<>();
+
+        for (Object[] result : results) {
+            Double latitude = (Double) result[0];
+            Double longitude = (Double) result[1];
+            Long count = (Long) result[2];
+            Long postId = (Long) result[3]; // postId chỉ có giá trị khi count = 1
+            Long vipId = (Long) result[4]; // vipId chỉ có giá trị khi count = 1
+
+            if (count > 1) {
+                // Nhóm nhiều bài đăng
+                mapPostDTOs.add(new MapPostDTO(latitude, longitude, count.intValue()));
+            } else if (count == 1 && postId != null && vipId != null) {
+                // Bài đăng duy nhất, trả về postId và vipId
+                mapPostDTOs.add(new MapPostDTO(latitude, longitude, postId, vipId));
+            }
+        }
+
+        return mapPostDTOs;
     }
 
 }

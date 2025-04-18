@@ -36,4 +36,22 @@ public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificat
                         @Param("type") PostTypeEnum type,
                         @Param("provinceCode") Long provinceCode,
                         Pageable pageable);
+
+        @Query("SELECT p.latitude, p.longitude, COUNT(p) as count, " +
+                        "CASE WHEN COUNT(p) = 1 THEN MAX(p.id) ELSE NULL END as postId, " +
+                        "CASE WHEN COUNT(p) = 1 THEN MAX(p.vip.id) ELSE NULL END as vipId " +
+                        "FROM Post p " +
+                        "WHERE (:minPrice IS NULL OR p.price >= :minPrice) " +
+                        "AND (:maxPrice IS NULL OR p.price <= :maxPrice) " +
+                        "AND (:minArea IS NULL OR p.area >= :minArea) " +
+                        "AND (:maxArea IS NULL OR p.area <= :maxArea) " +
+                        "AND (:categoryId IS NULL OR p.category.id = :categoryId) " +
+                        "AND (:provinceCode IS NULL OR p.province.code = :provinceCode) " +
+                        "AND (:districtCode IS NULL OR p.district.code = :districtCode) " +
+                        "AND (:wardCode IS NULL OR p.ward.code = :wardCode) " +
+                        "AND p.status IN ('APPROVED', 'REVIEW_LATER') " +
+                        "GROUP BY p.latitude, p.longitude, p.detailAddress, p.ward.code, p.district.code, p.province.code")
+        List<Object[]> findPostsForMap(Long minPrice, Long maxPrice, Double minArea, Double maxArea,
+                        Long categoryId, Long provinceCode, Long districtCode, Long wardCode);
+
 }
