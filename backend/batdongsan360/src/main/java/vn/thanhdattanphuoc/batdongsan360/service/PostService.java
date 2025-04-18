@@ -40,6 +40,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PostService {
@@ -54,11 +55,13 @@ public class PostService {
     private final WardRepository wardRepository;
     private final NotificationRepository notificationRepository;
     private final TransactionRepository transactionRepository;
+    private final MapboxGeocodeService mapboxGeocodeService;
 
     public PostService(PostRepository postRepository, UserRepository userRepository,
             CategoryRepository categoryRepository, VipRepository vipRepository, ImageRepository imageRepository,
             ProvinceRepository provinceRepository, DistrictRepository districtRepository, WardRepository wardRepository,
-            NotificationRepository notificationRepository, TransactionRepository transactionRepository) {
+            NotificationRepository notificationRepository, TransactionRepository transactionRepository,
+            MapboxGeocodeService mapboxGeocodeService) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
@@ -69,6 +72,7 @@ public class PostService {
         this.wardRepository = wardRepository;
         this.notificationRepository = notificationRepository;
         this.transactionRepository = transactionRepository;
+        this.mapboxGeocodeService = mapboxGeocodeService;
     }
 
     public Post createPost(Post post, int numberOfDays) throws IdInvalidException {
@@ -117,6 +121,20 @@ public class PostService {
 
         if (post.getDetailAddress() != null && !post.getDetailAddress().isEmpty()) {
             post.setDetailAddress(post.getDetailAddress());
+        }
+
+        // Ghép địa chỉ đầy đủ để gửi tới Mapbox
+        String fullAddress = post.getDetailAddress() + ", "
+                + (post.getWard() != null ? post.getWard().getName() + ", " : "")
+                + (post.getDistrict() != null ? post.getDistrict().getName() + ", " : "")
+                + (post.getProvince() != null ? post.getProvince().getName() : "");
+
+        // Lấy tọa độ từ Mapbox
+        Optional<double[]> latLng = mapboxGeocodeService.getLatLngFromAddress(fullAddress);
+        if (latLng.isPresent()) {
+            double[] coords = latLng.get();
+            post.setLongitude(coords[0]);
+            post.setLatitude(coords[1]);
         }
 
         // Xử lý vip
@@ -421,4 +439,20 @@ public class PostService {
         return postRepository.findMyPosts(user.getEmail(), status, type, provinceCode,
                 pageable);
     }
+
+    public String getFullAddressByPostId(Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found with ID: " + postId));
+
+        String detail = post.getDetailAddress() != null ? post.getDetailAddress() : "";
+        String ward = post.getWard() != null ? ", " + post.getWard().getName() : "";
+        if (detail.equals("")) {
+            ward = post.getWard() != null ? post.getWard().getName() : "";
+        }
+        String district = post.getDistrict() != null ? ", " + post.getDistrict().getName() : "";
+        String province = post.getProvince() != null ? ", " + post.getProvince().getName() : "";
+
+        return detail + ward + district + province;
+    }
+
 }

@@ -71,7 +71,8 @@ public class SecurityConfiguration {
                                         "/api/posts/{id}",
                                         "/api/vips",
                                         "/api/categories",
-                                        "/api/notifications"
+                                        "/api/notifications",
+                                        "/api/posts/{postId}/address"
 
                                 ).permitAll()
 

@@ -23,6 +23,7 @@ import vn.thanhdattanphuoc.batdongsan360.util.constant.PostTypeEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.error.IdInvalidException;
 import vn.thanhdattanphuoc.batdongsan360.util.request.PostRequestDTO;
 import vn.thanhdattanphuoc.batdongsan360.util.request.UpdatePostStatusDTO;
+import vn.thanhdattanphuoc.batdongsan360.util.response.ResAddressDTO;
 
 @RestController
 public class PostController {
@@ -121,5 +122,13 @@ public class PostController {
 
         Page<Post> posts = postService.getMyPosts(pageable, status, type, provinceCode);
         return ResponseEntity.ok(posts);
+    }
+
+    @GetMapping("/api/posts/{postId}/address")
+    public ResponseEntity<ResAddressDTO> getFullAddress(@PathVariable Long postId) {
+        String fullAddress = postService.getFullAddressByPostId(postId);
+        ResAddressDTO addressDTO = new ResAddressDTO();
+        addressDTO.setFullAddress(fullAddress);
+        return ResponseEntity.ok(addressDTO);
     }
 }

@@ -7,10 +7,14 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
+import lombok.Getter;
+import lombok.Setter;
 import vn.thanhdattanphuoc.batdongsan360.util.SecurityUtil;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.PostStatusEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.PostTypeEnum;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "posts")
 public class Post {
@@ -90,189 +94,11 @@ public class Post {
     @JsonManagedReference
     private List<Image> images;
 
-    public long getId() {
-        return id;
-    }
+    @Column(name = "latitude")
+    private Double latitude;
 
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public boolean isNotifyOnView() {
-        return notifyOnView;
-    }
-
-    public void setNotifyOnView(boolean notifyOnView) {
-        this.notifyOnView = notifyOnView;
-    }
-
-    public PostTypeEnum getType() {
-        return type;
-    }
-
-    public void setType(PostTypeEnum type) {
-        this.type = type;
-    }
-
-    public Long getPrice() {
-        return price;
-    }
-
-    public void setPrice(Long price) {
-        this.price = price;
-    }
-
-    public Double getArea() {
-        return area;
-    }
-
-    public void setArea(Double area) {
-        this.area = area;
-    }
-
-    public long getView() {
-        return view;
-    }
-
-    public void setView(long view) {
-        this.view = view;
-    }
-
-    public PostStatusEnum getStatus() {
-        return status;
-    }
-
-    public void setStatus(PostStatusEnum status) {
-        this.status = status;
-    }
-
-    public Instant getExpireDate() {
-        return expireDate;
-    }
-
-    public void setExpireDate(Instant expireDate) {
-        this.expireDate = expireDate;
-    }
-
-    public boolean isDeletedByUser() {
-        return deletedByUser;
-    }
-
-    public void setDeletedByUser(boolean deletedByUser) {
-        this.deletedByUser = deletedByUser;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Instant getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(Instant updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public String getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public String getUpdatedBy() {
-        return updatedBy;
-    }
-
-    public void setUpdatedBy(String updatedBy) {
-        this.updatedBy = updatedBy;
-    }
-
-    public Province getProvince() {
-        return province;
-    }
-
-    public void setProvince(Province province) {
-        this.province = province;
-    }
-
-    public District getDistrict() {
-        return district;
-    }
-
-    public void setDistrict(District district) {
-        this.district = district;
-    }
-
-    public Ward getWard() {
-        return ward;
-    }
-
-    public void setWard(Ward ward) {
-        this.ward = ward;
-    }
-
-    public String getDetailAddress() {
-        return detailAddress;
-    }
-
-    public void setDetailAddress(String detailAddress) {
-        this.detailAddress = detailAddress;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public Category getCategory() {
-        return category;
-    }
-
-    public void setCategory(Category category) {
-        this.category = category;
-    }
-
-    public Vip getVip() {
-        return vip;
-    }
-
-    public void setVip(Vip vip) {
-        this.vip = vip;
-    }
-
-    public List<Image> getImages() {
-        return images;
-    }
-
-    public void setImages(List<Image> images) {
-        this.images = images;
-    }
+    @Column(name = "longitude")
+    private Double longitude;
 
     @PrePersist
     public void handleBeforeCreate() {
