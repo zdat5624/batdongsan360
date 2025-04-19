@@ -366,7 +366,6 @@ const AdminVips = ({ user, handleLogout }) => {
               <Table responsive className="admin-table">
                 <thead>
                   <tr>
-                    <th>ID</th>
                     <th>Tên Gói</th>
                     <th>Cấp VIP</th>
                     <th>Giá Mỗi Ngày (VNĐ)</th>
@@ -384,7 +383,6 @@ const AdminVips = ({ user, handleLogout }) => {
                   ) : vips.length > 0 ? (
                     vips.map((vip) => (
                       <tr key={vip.id}>
-                        <td>{vip.id}</td>
                         <td style={{ color: getVipTextColor(vip.vipLevel), fontWeight: "bold" }}>
                           {vip.name}
                         </td>

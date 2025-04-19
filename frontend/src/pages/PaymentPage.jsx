@@ -1,6 +1,5 @@
-/* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Container,
@@ -16,12 +15,13 @@ import {
   Badge,
   Alert,
   Spinner,
+  Pagination,
 } from "react-bootstrap";
 import apiServices from "../services/apiServices";
 import { motion } from "framer-motion";
 import Sidebar from "../components/Sidebar";
-import Footer from "../components/Footer";
 
+// CSS tối ưu
 const customStyles = `
   .layout {
     display: flex;
@@ -34,45 +34,57 @@ const customStyles = `
   }
   .main-content {
     flex: 1;
+    padding: 20px;
     padding-top: 70px;
-    padding-bottom: 150px;
-    background: linear-gradient(135deg, #e6f3ff 0%, #f0f8ff 100%);
+    background: #f0f4f8;
   }
   .custom-tabs .nav-link {
     font-weight: bold;
     color: #007bff;
     border-radius: 10px 10px 0 0;
-    font-size: 1.1rem;
   }
   .custom-tabs .nav-link.active {
-    background-color: #007bff;
+    background: #007bff;
     color: white;
   }
   .modal-custom {
     max-width: 400px;
   }
   .balance-card {
-    margin-top: 30px;
     max-width: 400px;
-    margin-left: auto;
-    margin-right: auto;
+    margin: 30px auto;
+    border-radius: 15px;
+    overflow: hidden;
+    background: linear-gradient(45deg, #007bff, #00b4d8);
   }
   .balance-card h3 {
     font-size: 1.5rem;
+    color: white;
   }
   .balance-card .badge {
     font-size: 1.2rem;
     padding: 8px 16px;
   }
-  .balance-card .btn {
-    font-size: 0.9rem;
-    padding: 6px 20px;
+  .table th {
+    background: #f8f9fa;
   }
-  .sidebar {
-    display: block !important;
+  .pagination-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
   }
-  .failed-transaction {
-    color: red !important;
+  .pagination .page-item.active .page-link {
+    background: #007bff;
+    border-color: #007bff;
+    color: #fff;
+  }
+  .pagination .page-link {
+    color: #007bff;
+    border-radius: 8px;
+    margin: 0 2px;
+  }
+  .pagination .page-link:hover {
+    background: #e6f0ff;
   }
 `;
 
@@ -82,16 +94,18 @@ const PaymentPage = ({ user, handleLogout }) => {
   const [balance, setBalance] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [depositAmount, setDepositAmount] = useState("");
-  const [depositHistory, setDepositHistory] = useState([]);
-  const [paymentHistory, setPaymentHistory] = useState([]);
+  const [allDeposits, setAllDeposits] = useState([]); // Lưu tất cả giao dịch nạp tiền
+  const [allPayments, setAllPayments] = useState([]); // Lưu tất cả giao dịch thanh toán
+  const [depositHistory, setDepositHistory] = useState([]); // Giao dịch hiển thị trên trang hiện tại
+  const [paymentHistory, setPaymentHistory] = useState([]); // Giao dịch hiển thị trên trang hiện tại
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [currentDepositPage, setCurrentDepositPage] = useState(0);
-  const [currentPaymentPage, setCurrentPaymentPage] = useState(0);
-  const [totalDepositPages, setTotalDepositPages] = useState(0);
-  const [totalPaymentPages, setTotalPaymentPages] = useState(0);
-  const pageSize = 10;
+  const [loading, setLoading] = useState(false);
+  const [currentDepositPage, setCurrentDepositPage] = useState(1);
+  const [currentPaymentPage, setCurrentPaymentPage] = useState(1);
+  const [totalDepositPages, setTotalDepositPages] = useState(1);
+  const [totalPaymentPages, setTotalPaymentPages] = useState(1);
+  const pageSize = 10; // Hiển thị 10 dòng mỗi trang
 
   // Kiểm tra trạng thái đăng nhập
   useEffect(() => {
@@ -100,96 +114,102 @@ const PaymentPage = ({ user, handleLogout }) => {
     }
   }, [user, navigate]);
 
-  // Xác định xem có phải tài khoản khách hay không
-  const isGuest = user?.role === "GUEST"; // Điều chỉnh điều kiện dựa trên logic của bạn
-
   // Lấy số dư
-  const fetchBalance = async () => {
+  const fetchBalance = useCallback(async () => {
     if (!user || !user.id) return;
     try {
       const response = await apiServices.get(`/api/users/${user.id}`);
       if (response.data.statusCode === 200) {
         setBalance(response.data.data.balance);
       } else {
-        throw new Error("Không thể lấy số dư: " + (response.data.message || "Lỗi không xác định"));
+        throw new Error("Không thể lấy số dư.");
       }
     } catch (err) {
-      setError(err.message || "Không thể tải số dư. Vui lòng thử lại.");
+      setError(err.message || "Không thể tải số dư.");
     }
-  };
+  }, [user]);
 
-  const fetchTransactions = async (page = 0, type = "all") => {
+  // Lấy tất cả giao dịch
+  const fetchTransactions = useCallback(async () => {
     setLoading(true);
     try {
-      // Nếu là tài khoản khách, lấy tất cả giao dịch mà không phân trang
-      const url = isGuest
-        ? `/api/payment/my-transactions?page=0&size=1000&sort=createdAt,desc`
-        : `/api/payment/my-transactions?page=${page}&size=${pageSize}&sort=createdAt,desc`;
-
-      const response = await apiServices.get(url);
+      // Lấy nhiều giao dịch để lọc client-side
+      const response = await apiServices.get(
+        `/api/payment/my-transactions?page=0&size=1000&sort=createdAt,desc`
+      );
       if (response.data.statusCode === 200) {
         const transactions = response.data.data.content || [];
+
+        // Lọc giao dịch nạp tiền
         const deposits = transactions
           .filter((txn) => txn.amount > 0)
-          .map((txn) => {
-            const createdAt = new Date(txn.createdAt);
-            const now = new Date();
-            const timeDiff = (now - createdAt) / (1000 * 60);
-            let status;
+          .map((txn) => ({
+            id: txn.id,
+            status: txn.status === "SUCCESS" ? "Thành công" : "Thất bại",
+            depositDate: new Date(txn.createdAt).toLocaleString("vi-VN", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            depositAmount: `+${Math.abs(txn.amount).toLocaleString("vi-VN")}`,
+            netAmount: Math.abs(txn.amount).toLocaleString("vi-VN"),
+            transactionId: txn.txnId || `PT${txn.id}`,
+          }));
 
-            if (txn.status === "SUCCESS") {
-              status = "Thành công";
-            } else if (txn.status === "FAILED" || timeDiff > 15) {
-              status = "Thất bại";
-            } else {
-              status = "Đang kiểm";
-            }
-
-            return {
-              id: txn.id,
-              status,
-              depositDate: createdAt.toLocaleString("vi-VN"),
-              depositAmount: `+${txn.amount.toLocaleString("vi-VN")}`,
-              netAmount: txn.amount.toLocaleString("vi-VN"),
-              transactionId: txn.txnId || `PT${txn.id}`,
-            };
-          });
-
+        // Lọc giao dịch thanh toán
         const payments = transactions
           .filter((txn) => txn.amount < 0)
           .map((txn) => {
-            const postIdMatch = txn.description.match(/Thanh toán phí đăng tin (\d+)/);
+            const postIdMatch = txn.description?.match(/Thanh toán phí đăng tin (\d+)/);
             return {
               id: txn.id,
-              time: new Date(txn.createdAt).toLocaleString("vi-VN"),
+              time: new Date(txn.createdAt).toLocaleString("vi-VN", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
               fee: Math.abs(txn.amount).toLocaleString("vi-VN"),
               activityType: "Đăng tin",
               postId: postIdMatch ? postIdMatch[1] : "N/A",
             };
           });
 
-        if (type === "deposit" || type === "all") {
-          setDepositHistory(deposits);
-          if (!isGuest) {
-            setTotalDepositPages(Math.ceil(response.data.data.totalElements / pageSize));
-          }
-        }
+        setAllDeposits(deposits);
+        setAllPayments(payments);
 
-        if (type === "payment" || type === "all") {
-          setPaymentHistory(payments);
-          if (!isGuest) {
-            setTotalPaymentPages(Math.ceil(response.data.data.totalElements / pageSize));
-          }
-        }
+        // Tính tổng số trang
+        setTotalDepositPages(Math.ceil(deposits.length / pageSize) || 1);
+        setTotalPaymentPages(Math.ceil(payments.length / pageSize) || 1);
+
+        // Cập nhật trang đầu tiên
+        setDepositHistory(deposits.slice(0, pageSize));
+        setPaymentHistory(payments.slice(0, pageSize));
       } else {
-        throw new Error("Không thể lấy lịch sử giao dịch: " + (response.data.message || "Lỗi không xác định"));
+        throw new Error("Không thể lấy lịch sử giao dịch.");
       }
     } catch (err) {
       setError(err.message || "Không thể tải lịch sử giao dịch.");
     } finally {
       setLoading(false);
     }
-  };
+  }, [pageSize]);
+
+  // Cập nhật giao dịch hiển thị khi trang thay đổi
+  useEffect(() => {
+    const start = (currentDepositPage - 1) * pageSize;
+    const end = start + pageSize;
+    setDepositHistory(allDeposits.slice(start, end));
+  }, [currentDepositPage, allDeposits, pageSize]);
+
+  useEffect(() => {
+    const start = (currentPaymentPage - 1) * pageSize;
+    const end = start + pageSize;
+    setPaymentHistory(allPayments.slice(start, end));
+  }, [currentPaymentPage, allPayments, pageSize]);
 
   // Xử lý kết quả thanh toán và tải dữ liệu ban đầu
   useEffect(() => {
@@ -201,35 +221,19 @@ const PaymentPage = ({ user, handleLogout }) => {
     if (status || vnpResponseCode || vnpTransactionStatus) {
       if (status === "1" || vnpResponseCode === "00" || vnpTransactionStatus === "00") {
         setSuccessMessage("Thanh toán thành công! Số dư đã được cập nhật.");
-        localStorage.setItem("paymentMessage", "Thanh toán thành công! Số dư đã được cập nhật.");
       } else {
         setError("Thanh toán thất bại. Vui lòng thử lại.");
-        localStorage.setItem("paymentMessage", "Thanh toán thất bại. Vui lòng thử lại.");
       }
       window.history.replaceState({}, document.title, "/payment");
     }
 
-    const storedMessage = localStorage.getItem("paymentMessage");
-    if (storedMessage) {
-      if (storedMessage.includes("Thành công")) {
-        setSuccessMessage(storedMessage);
-      } else {
-        setError(storedMessage);
-      }
-      localStorage.removeItem("paymentMessage");
-    }
-
     if (user && user.id) {
       setLoading(true);
-      Promise.all([fetchBalance(), fetchTransactions(0)])
-        .catch((err) => {
-          setError("Lỗi khi tải dữ liệu: " + err.message);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+      Promise.all([fetchBalance(), fetchTransactions()])
+        .catch((err) => setError("Lỗi khi tải dữ liệu: " + err.message))
+        .finally(() => setLoading(false));
     }
-  }, [location.search, user]);
+  }, [user, location.search, fetchBalance, fetchTransactions]);
 
   const formatNumber = (value) => {
     return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
@@ -243,113 +247,91 @@ const PaymentPage = ({ user, handleLogout }) => {
   const handleDeposit = async () => {
     try {
       const amount = parseInt(depositAmount);
-      if (isNaN(amount) || amount <= 0) {
-        throw new Error("Số tiền không hợp lệ.");
-      }
-      const payload = { amount };
-      const response = await apiServices.post("/api/payment/create", payload);
+      if (isNaN(amount) || amount <= 0) throw new Error("Số tiền không hợp lệ.");
+      const response = await apiServices.post("/api/payment/create", { amount });
       if (response.data.statusCode === 201 && response.data.data.paymentLink) {
         window.location.href = response.data.data.paymentLink;
       } else {
-        throw new Error("Không thể tạo link thanh toán: " + (response.data.message || "Lỗi không xác định"));
+        throw new Error("Không thể tạo link thanh toán.");
       }
     } catch (err) {
-      setError(err.message || "Không thể tạo link thanh toán. Vui lòng thử lại.");
+      setError(err.message || "Không thể tạo link thanh toán.");
       setShowModal(false);
     }
   };
 
   const getStatusColor = (status) => {
-    switch (status) {
-      case "Đang kiểm":
-        return "warning";
-      case "Thành công":
-        return "success";
-      case "Thất bại":
-        return "danger";
-      default:
-        return "secondary";
-    }
+    return status === "Thành công" ? "success" : "danger";
   };
 
-  // Hàm tạo phân trang (chỉ dùng cho tài khoản không phải khách)
   const renderPagination = (currentPage, totalPages, setPage) => {
-    const pageNumbers = [];
+    const items = [];
     const maxPagesToShow = 5;
-    let startPage = Math.max(0, currentPage - 2);
-    let endPage = Math.min(totalPages - 1, startPage + maxPagesToShow - 1);
+    const halfPagesToShow = Math.floor(maxPagesToShow / 2);
+
+    let startPage = Math.max(1, currentPage - halfPagesToShow);
+    let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
 
     if (endPage - startPage + 1 < maxPagesToShow) {
-      startPage = Math.max(0, endPage - maxPagesToShow + 1);
+      startPage = Math.max(1, endPage - maxPagesToShow + 1);
     }
 
-    for (let i = startPage; i <= endPage; i++) {
-      pageNumbers.push(i);
+    items.push(
+      <Pagination.First
+        key="first"
+        onClick={() => setPage(1)}
+        disabled={currentPage === 1}
+      />
+    );
+    items.push(
+      <Pagination.Prev
+        key="prev"
+        onClick={() => setPage(currentPage - 1)}
+        disabled={currentPage === 1}
+      />
+    );
+
+    for (let number = startPage; number <= endPage; number++) {
+      items.push(
+        <Pagination.Item
+          key={number}
+          active={number === currentPage}
+          onClick={() => setPage(number)}
+        >
+          {number}
+        </Pagination.Item>
+      );
     }
+
+    if (endPage < totalPages) {
+      items.push(<Pagination.Ellipsis key="ellipsis" />);
+      items.push(
+        <Pagination.Item key={totalPages} onClick={() => setPage(totalPages)}>
+          {totalPages}
+        </Pagination.Item>
+      );
+    }
+
+    items.push(
+      <Pagination.Next
+        key="next"
+        onClick={() => setPage(currentPage + 1)}
+        disabled={currentPage === totalPages}
+      />
+    );
+    items.push(
+      <Pagination.Last
+        key="last"
+        onClick={() => setPage(totalPages)}
+        disabled={currentPage === totalPages}
+      />
+    );
 
     return (
-      <div className="d-flex justify-content-center mt-4">
-        <nav>
-          <ul className="pagination custom-pagination">
-            <li className={`page-item ${currentPage === 0 ? "disabled" : ""}`}>
-              <button className="page-link" onClick={() => setPage(0)}>
-                «
-              </button>
-            </li>
-            <li className={`page-item ${currentPage === 0 ? "disabled" : ""}`}>
-              <button className="page-link" onClick={() => setPage(currentPage - 1)}>
-                ‹
-              </button>
-            </li>
-            {startPage > 0 && (
-              <li className="page-item disabled">
-                <span className="page-link">...</span>
-              </li>
-            )}
-            {pageNumbers.map((page) => (
-              <li key={page} className={`page-item ${page === currentPage ? "active" : ""}`}>
-                <button className="page-link" onClick={() => setPage(page)}>
-                  {page + 1}
-                </button>
-              </li>
-            ))}
-            {endPage < totalPages - 1 && (
-              <li className="page-item disabled">
-                <span className="page-link">...</span>
-              </li>
-            )}
-            {totalPages > 0 && (
-              <li className="page-item">
-                <button className="page-link" onClick={() => setPage(totalPages - 1)}>
-                  {totalPages}
-                </button>
-              </li>
-            )}
-            <li className={`page-item ${currentPage === totalPages - 1 ? "disabled" : ""}`}>
-              <button className="page-link" onClick={() => setPage(currentPage + 1)}>
-                ›
-              </button>
-            </li>
-            <li className={`page-item ${currentPage === totalPages - 1 ? "disabled" : ""}`}>
-              <button className="page-link" onClick={() => setPage(totalPages - 1)}>
-                »
-              </button>
-            </li>
-          </ul>
-        </nav>
+      <div className="pagination-container">
+        <Pagination>{items}</Pagination>
       </div>
     );
-  };
-
-  // Xử lý thay đổi trang (chỉ áp dụng cho tài khoản không phải khách)
-  const handleDepositPageChange = (page) => {
-    setCurrentDepositPage(page);
-    fetchTransactions(page, "deposit");
-  };
-
-  const handlePaymentPageChange = (page) => {
-    setCurrentPaymentPage(page);
-    fetchTransactions(page, "payment");
   };
 
   if (!user) return null;
@@ -367,24 +349,17 @@ const PaymentPage = ({ user, handleLogout }) => {
               transition={{ duration: 0.5 }}
             >
               <Row className="justify-content-center mb-5">
-                <Col md={8} lg={6}>
-                  <Card className="shadow-lg border-0 balance-card" style={{ borderRadius: "15px", overflow: "hidden" }}>
-                    <Card.Body
-                      className="p-4 d-flex flex-column align-items-center"
-                      style={{ background: "linear-gradient(45deg, #007bff, #00b4d8)" }}
-                    >
-                      <h3 className="text-white fw-bold mb-3">Số dư tài khoản</h3>
-                      <Badge
-                        bg="light"
-                        className="py-2 px-4 text-dark shadow-sm mb-4"
-                        style={{ borderRadius: "10px" }}
-                      >
+                <Col xs={12} md={8} lg={6}>
+                  <Card className="shadow-lg border-0 balance-card">
+                    <Card.Body className="p-4 d-flex flex-column align-items-center">
+                      <h3 className="fw-bold mb-3 text-white">Số dư tài khoản</h3>
+                      <Badge bg="light" className="py-2 px-4 text-dark shadow-sm mb-4">
                         {balance.toLocaleString("vi-VN")} VNĐ
                       </Badge>
                       <Button
                         variant="light"
                         className="fw-bold shadow-sm"
-                        style={{ borderRadius: "25px", width: "fit-content" }}
+                        style={{ borderRadius: "25px" }}
                         onClick={() => setShowModal(true)}
                       >
                         Nạp tiền ngay
@@ -396,118 +371,94 @@ const PaymentPage = ({ user, handleLogout }) => {
 
               <Row>
                 <Col>
-                  {error && <Alert variant="danger" className="rounded-pill text-center">{error}</Alert>}
-                  {successMessage && <Alert variant="success" className="rounded-pill text-center">{successMessage}</Alert>}
+                  {error && <Alert variant="danger">{error}</Alert>}
+                  {successMessage && <Alert variant="success">{successMessage}</Alert>}
 
                   {loading ? (
                     <div className="text-center py-5">
                       <Spinner animation="border" variant="primary" />
-                      <p className="mt-3 text-muted fw-bold">Đang tải dữ liệu...</p>
+                      <p className="mt-3">Đang tải...</p>
                     </div>
                   ) : (
-                    <Tabs
-                      defaultActiveKey="deposit"
-                      className="mb-4 custom-tabs"
-                      justify
-                      style={{ borderBottom: "none" }}
-                    >
+                    <Tabs defaultActiveKey="deposit" className="mb-4 custom-tabs" justify>
                       <Tab eventKey="deposit" title="Lịch sử nạp tiền">
-                        <Card className="shadow-sm border-0" style={{ borderRadius: "15px" }}>
+                        <Card className="shadow-sm border-0">
                           <Card.Body className="p-4">
                             <h4 className="text-primary fw-bold mb-4">Lịch sử nạp tiền</h4>
-                            <div className="table-responsive">
-                              <Table hover className="align-middle">
-                                <thead style={{ background: "#f8f9fa" }}>
-                                  <tr>
-                                    <th>Trạng thái</th>
-                                    <th>Ngày nạp</th>
-                                    <th>Số tiền</th>
-                                    <th>Thực nhận</th>
-                                    <th>Mã GD</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {depositHistory.length > 0 ? (
-                                    depositHistory.map((item) => (
-                                      <tr key={item.id}>
-                                        <td>
-                                          <Badge bg={getStatusColor(item.status)}>{item.status}</Badge>
-                                        </td>
-                                        <td>{item.depositDate}</td>
-                                        <td
-                                          className={
-                                            item.status === "Thất bại"
-                                              ? "failed-transaction fw-bold"
-                                              : "text-success fw-bold"
-                                          }
-                                        >
-                                          {item.depositAmount}
-                                        </td>
-                                        <td>{item.netAmount}</td>
-                                        <td>{item.transactionId}</td>
-                                      </tr>
-                                    ))
-                                  ) : (
-                                    <tr>
-                                      <td colSpan="5" className="text-center py-4 text-muted">
-                                        Chưa có lịch sử nạp tiền
+                            <Table hover>
+                              <thead>
+                                <tr>
+                                  <th>Trạng thái</th>
+                                  <th>Ngày nạp</th>
+                                  <th>Số tiền</th>
+                                  <th>Thực nhận</th>
+                                  <th>Mã GD</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {depositHistory.length > 0 ? (
+                                  depositHistory.map((item) => (
+                                    <tr key={item.id}>
+                                      <td>
+                                        <Badge bg={getStatusColor(item.status)}>{item.status}</Badge>
                                       </td>
+                                      <td>{item.depositDate}</td>
+                                      <td className={item.status === "Thất bại" ? "text-danger" : "text-success"}>
+                                        {item.depositAmount}
+                                      </td>
+                                      <td>{item.netAmount}</td>
+                                      <td>{item.transactionId}</td>
                                     </tr>
-                                  )}
-                                </tbody>
-                              </Table>
-                            </div>
-                            {!isGuest && totalDepositPages > 1 && (
-                              renderPagination(
-                                currentDepositPage,
-                                totalDepositPages,
-                                handleDepositPageChange
-                              )
+                                  ))
+                                ) : (
+                                  <tr>
+                                    <td colSpan="5" className="text-center py-4">
+                                      Chưa có lịch sử nạp tiền
+                                    </td>
+                                  </tr>
+                                )}
+                              </tbody>
+                            </Table>
+                            {totalDepositPages > 1 && (
+                              renderPagination(currentDepositPage, totalDepositPages, setCurrentDepositPage)
                             )}
                           </Card.Body>
                         </Card>
                       </Tab>
-
                       <Tab eventKey="payment" title="Lịch sử thanh toán">
-                        <Card className="shadow-sm border-0" style={{ borderRadius: "15px" }}>
+                        <Card className="shadow-sm border-0">
                           <Card.Body className="p-4">
                             <h4 className="text-primary fw-bold mb-4">Lịch sử thanh toán</h4>
-                            <div className="table-responsive">
-                              <Table hover className="align-middle">
-                                <thead style={{ background: "#f8f9fa" }}>
-                                  <tr>
-                                    <th>Thời gian</th>
-                                    <th>Phí</th>
-                                    <th>Hoạt động</th>
-                                    <th>Mã tin</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {paymentHistory.length > 0 ? (
-                                    paymentHistory.map((item) => (
-                                      <tr key={item.id}>
-                                        <td>{item.time}</td>
-                                        <td className="text-danger fw-bold">{item.fee}</td>
-                                        <td>{item.activityType}</td>
-                                        <td>{item.postId}</td>
-                                      </tr>
-                                    ))
-                                  ) : (
-                                    <tr>
-                                      <td colSpan="4" className="text-center py-4 text-muted">
-                                        Chưa có lịch sử thanh toán
-                                      </td>
+                            <Table hover>
+                              <thead>
+                                <tr>
+                                  <th>Thời gian</th>
+                                  <th>Phí</th>
+                                  <th>Hoạt động</th>
+                                  <th>Mã tin</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {paymentHistory.length > 0 ? (
+                                  paymentHistory.map((item) => (
+                                    <tr key={item.id}>
+                                      <td>{item.time}</td>
+                                      <td className="text-danger">{item.fee}</td>
+                                      <td>{item.activityType}</td>
+                                      <td>{item.postId}</td>
                                     </tr>
-                                  )}
-                                </tbody>
-                              </Table>
-                            </div>
-                            {!isGuest && totalPaymentPages > 1 && (
-                              renderPagination(
-                                currentPaymentPage,
-                                totalPaymentPages,
-                                handlePaymentPageChange
-                              )
+                                  ))
+                                ) : (
+                                  <tr>
+                                    <td colSpan="4" className="text-center py-4">
+                                      Chưa có lịch sử thanh toán
+                                    </td>
+                                  </tr>
+                                )}
+                              </tbody>
+                            </Table>
+                            {totalPaymentPages > 1 && (
+                              renderPagination(currentPaymentPage, totalPaymentPages, setCurrentPaymentPage)
                             )}
                           </Card.Body>
                         </Card>
@@ -517,32 +468,9 @@ const PaymentPage = ({ user, handleLogout }) => {
                 </Col>
               </Row>
 
-              <Row className="mt-5">
-                <Col className="text-center">
-                  <Button
-                    variant="outline-primary"
-                    size="lg"
-                    className="px-5 py-2 shadow-sm"
-                    style={{ borderRadius: "25px" }}
-                    onClick={() => navigate("/")}
-                  >
-                    Quay lại trang chủ
-                  </Button>
-                </Col>
-              </Row>
-
-              <Modal
-                show={showModal}
-                onHide={() => setShowModal(false)}
-                centered
-                dialogClassName="modal-custom"
-              >
-                <Modal.Header
-                  closeButton
-                  className="border-0"
-                  style={{ background: "linear-gradient(45deg, #007bff, #00b4d8)" }}
-                >
-                  <Modal.Title className="text-white fw-bold">Nạp tiền vào tài khoản</Modal.Title>
+              <Modal show={showModal} onHide={() => setShowModal(false)} centered dialogClassName="modal-custom">
+                <Modal.Header closeButton style={{ background: "linear-gradient(45deg, #007bff, #00b4d8)" }}>
+                  <Modal.Title className="text-white">Nạp tiền vào tài khoản</Modal.Title>
                 </Modal.Header>
                 <Modal.Body className="p-4">
                   <Form>
@@ -553,26 +481,16 @@ const PaymentPage = ({ user, handleLogout }) => {
                         value={depositAmount ? formatNumber(depositAmount) : ""}
                         onChange={handleAmountChange}
                         placeholder="Nhập số tiền, ví dụ: 100000"
-                        className="shadow-sm"
-                        style={{ borderRadius: "10px", padding: "12px" }}
                       />
                     </Form.Group>
                   </Form>
                 </Modal.Body>
-                <Modal.Footer className="border-0">
-                  <Button
-                    variant="outline-secondary"
-                    style={{ borderRadius: "20px" }}
-                    onClick={() => setShowModal(false)}
-                  >
-                    Hủy bỏ
+                <Modal.Footer>
+                  <Button variant="outline-secondary" onClick={() => setShowModal(false)}>
+                    Hủy
                   </Button>
-                  <Button
-                    variant="success"
-                    style={{ borderRadius: "20px" }}
-                    onClick={handleDeposit}
-                  >
-                    Xác nhận nạp
+                  <Button variant="success" onClick={handleDeposit}>
+                    Nạp tiền
                   </Button>
                 </Modal.Footer>
               </Modal>

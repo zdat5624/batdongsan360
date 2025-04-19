@@ -110,6 +110,36 @@ const customStyles = `
     margin-bottom: 2rem;
   }
 
+  .status-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 1rem;
+  }
+
+  .status-tab {
+    border-radius: 50px; /* Rounded buttons */
+    padding: 6px 16px;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    border: 1px solid #007bff;
+    background-color: transparent;
+    color: #007bff;
+  }
+
+  .status-tab:hover {
+    background-color: #e6f0ff;
+  }
+
+  .status-tab.active,
+  .status-tab:focus,
+  .status-tab:active,
+  .btn-primary.status-tab {
+    background-color: #007bff;
+    color: #fff;
+    border-color: #007bff;
+  }
+
   .filter-group {
     display: flex;
     flex-wrap: wrap;
@@ -121,13 +151,33 @@ const customStyles = `
     border-radius: 8px;
     font-size: 0.9rem;
     padding: 8px;
+    border: 1px solid #ced4da;
   }
 
   .filter-button {
-    border-radius: 25px;
+    border-radius: 50px; /* Rounded buttons */
     font-size: 0.9rem;
-    padding: 8px 16px;
+    padding: 6px 16px;
     transition: all 0.2s ease;
+    height: 38px; /* Match height with select inputs */
+  }
+
+  .filter-button.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+  }
+
+  .filter-button.btn-outline-secondary {
+    border-color: #ced4da;
+    color: #6c757d;
+  }
+
+  .filter-button.btn-outline-secondary:hover {
+    background-color: #f8f9fa;
+  }
+
+  .align-self-end {
+    align-self: flex-end;
   }
 
   .pagination-container {
@@ -287,12 +337,20 @@ const customStyles = `
     .admin-table td:nth-child(4) {
       display: none; /* Ẩn cột Diện tích */
     }
-    .filter-group {
-      flex-direction: column;
-      align-items: stretch;
+    .status-tabs {
+      gap: 8px;
     }
+    .status-tab {
+      padding: 5px 12px;
+      font-size: 0.85rem;
+    }
+    .filter-group {
+      flex-direction: row;
+      gap: 8px;
+    }
+    .filter-select,
     .filter-button {
-      width: 100%;
+      font-size: 0.85rem;
     }
   }
 
@@ -310,6 +368,21 @@ const customStyles = `
     }
     .carousel-img {
       height: 200px;
+    }
+    .status-tabs {
+      gap: 6px;
+    }
+    .status-tab {
+      padding: 4px 10px;
+      font-size: 0.8rem;
+    }
+    .filter-group {
+      gap: 6px;
+    }
+    .filter-select,
+    .filter-button {
+      font-size: 0.8rem;
+      padding: 6px;
     }
   }
 `;
@@ -709,10 +782,34 @@ const AdminPostsPage = ({ user, handleLogout }) => {
                 </Alert>
               )}
 
-              {/* Bộ lọc */}
               <Card className="filter-card">
                 <Form onSubmit={handleFilterSubmit}>
                   <div className="filter-group">
+                    {/* Status Buttons */}
+                    {["PENDING", "REVIEW_LATER", "APPROVED", "REJECTED", "EXPIRED"].map((status) => (
+                      <Button
+                        key={status}
+                        variant={filters.status === status ? "primary" : "outline-primary"}
+                        onClick={() => {
+                          setFilters((prev) => ({ ...prev, status }));
+                          setCurrentPage(0);
+                          fetchPosts(0, { ...filters, status });
+                        }}
+                        className="status-tab me-2"
+                      >
+                        {status === "PENDING"
+                          ? "Chờ duyệt"
+                          : status === "REVIEW_LATER"
+                          ? "Xem sau"
+                          : status === "APPROVED"
+                          ? "Đã duyệt"
+                          : status === "REJECTED"
+                          ? "Từ chối"
+                          : "Hết hạn"}
+                      </Button>
+                    ))}
+
+                    {/* Bộ lọc giá */}
                     <Form.Group controlId="priceRange" style={{ maxWidth: "200px" }}>
                       <Form.Label>Khoảng giá</Form.Label>
                       <Form.Select
@@ -732,6 +829,8 @@ const AdminPostsPage = ({ user, handleLogout }) => {
                         <option value="above_15m">Trên 15 triệu</option>
                       </Form.Select>
                     </Form.Group>
+
+                    {/* Bộ lọc diện tích */}
                     <Form.Group controlId="areaRange" style={{ maxWidth: "200px" }}>
                       <Form.Label>Diện tích</Form.Label>
                       <Form.Select
@@ -749,21 +848,8 @@ const AdminPostsPage = ({ user, handleLogout }) => {
                         <option value="above_90m2">Trên 90m²</option>
                       </Form.Select>
                     </Form.Group>
-                    <Form.Group controlId="status" style={{ maxWidth: "200px" }}>
-                      <Form.Label>Trạng thái</Form.Label>
-                      <Form.Select
-                        name="status"
-                        value={filters.status}
-                        onChange={handleFilterChange}
-                        className="filter-select"
-                      >
-                        <option value="PENDING">Chờ duyệt</option>
-                        <option value="REVIEW_LATER">Xem sau</option>
-                        <option value="APPROVED">Đã duyệt</option>
-                        <option value="REJECTED">Từ chối</option>
-                        <option value="EXPIRED">Hết hạn</option>
-                      </Form.Select>
-                    </Form.Group>
+
+                    {/* Bộ lọc loại bài đăng */}
                     <Form.Group controlId="type" style={{ maxWidth: "200px" }}>
                       <Form.Label>Loại bài đăng</Form.Label>
                       <Form.Select
@@ -777,17 +863,19 @@ const AdminPostsPage = ({ user, handleLogout }) => {
                         <option value="SALE">Bán</option>
                       </Form.Select>
                     </Form.Group>
+
+                    {/* Nút áp dụng và đặt lại */}
                     <Button
                       variant="primary"
                       type="submit"
-                      className="filter-button"
+                      className="filter-button align-self-end me-2"
                     >
                       Áp dụng
                     </Button>
                     <Button
                       variant="outline-secondary"
                       onClick={resetFilters}
-                      className="filter-button"
+                      className="filter-button align-self-end"
                     >
                       Đặt lại
                     </Button>
@@ -806,7 +894,6 @@ const AdminPostsPage = ({ user, handleLogout }) => {
                   <Table responsive className="admin-table">
                     <thead>
                       <tr>
-                        <th>ID</th>
                         <th>Tiêu đề</th>
                         <th>Giá</th>
                         <th>Diện tích</th>
@@ -818,7 +905,6 @@ const AdminPostsPage = ({ user, handleLogout }) => {
                       {posts.length > 0 ? (
                         posts.map((post) => (
                           <tr key={post.id}>
-                            <td>{post.id}</td>
                             <td>{post.title}</td>
                             <td className="text-primary fw-bold">{post.price}</td>
                             <td>{post.area}</td>
@@ -1038,19 +1124,14 @@ const AdminPostsPage = ({ user, handleLogout }) => {
                             </li>
                           </ul>
                         </div>
-                      )}
-                    </Modal.Body>
-                    <Modal.Footer>
-                      <Button
-                        variant="secondary"
-                        onClick={handleCloseModal}
-                      >
-                        Đóng
-                      </Button>
-                    </Modal.Footer>
-                  </Modal>
+                      </Modal.Body>
+                      <Modal.Footer>
+                        <Button variant="secondary" onClick={handleCloseModal}>
+                          Đóng
+                        </Button>
+                      </Modal.Footer>
+                    </Modal>
                   )}
-
                   {/* Modal phóng to hình ảnh */}
                   <Modal
                     show={showImageModal}

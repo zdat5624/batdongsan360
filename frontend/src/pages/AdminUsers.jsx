@@ -524,7 +524,6 @@ const AdminUsers = ({ user, handleLogout }) => {
               <Table responsive className="admin-table">
                 <thead>
                   <tr>
-                    <th>ID</th>
                     <th>Tên</th>
                     <th>Email</th>
                     <th>Quyền</th>
@@ -544,7 +543,6 @@ const AdminUsers = ({ user, handleLogout }) => {
                   ) : users.length > 0 ? (
                     users.map((user) => (
                       <tr key={user.id}>
-                        <td>{user.id}</td>
                         <td>{user.name}</td>
                         <td>{user.email}</td>
                         <td>

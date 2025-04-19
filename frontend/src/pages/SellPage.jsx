@@ -1,5 +1,3 @@
-/* eslint-disable react/prop-types */
-/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { Container, Row, Col, Card, Spinner, Badge, Pagination, Form, Button } from "react-bootstrap";
@@ -37,7 +35,7 @@ const getTimeAgo = (createdAt) => {
   }
 };
 
-// CSS tùy chỉnh (giữ nguyên như cũ)
+// CSS tùy chỉnh
 const customStyles = `
   .sell-page-container {
     background-color: #f0f8ff;
@@ -255,6 +253,12 @@ const customStyles = `
     color: #28a745;
     font-weight: 500;
   }
+  .error-message {
+    color: #dc3545;
+    font-weight: 500;
+    text-align: center;
+    margin-top: 1rem;
+  }
 `;
 
 const SellPage = ({ setLoading: setParentLoading }) => {
@@ -268,11 +272,13 @@ const SellPage = ({ setLoading: setParentLoading }) => {
   const [searchFilters, setSearchFilters] = useState({});
   const [revealedPhones, setRevealedPhones] = useState({});
   const [vipLevels, setVipLevels] = useState({});
+  const [errorMessage, setErrorMessage] = useState("");
   const projectsPerPage = 12;
 
   const fetchVipLevels = async () => {
     try {
       const response = await apiServices.get("/api/vips");
+      console.log("VIP API response:", response.data);
       if (response.data.statusCode === 200) {
         const vipData = response.data.data;
         const vipLevelMap = {};
@@ -280,6 +286,7 @@ const SellPage = ({ setLoading: setParentLoading }) => {
           vipLevelMap[vip.id] = vip.vipLevel;
         });
         setVipLevels(vipLevelMap);
+        console.log("VIP levels fetched:", vipLevelMap);
       } else {
         throw new Error(response.data.message || "Không thể lấy danh sách gói VIP.");
       }
@@ -299,9 +306,11 @@ const SellPage = ({ setLoading: setParentLoading }) => {
       });
 
       const response = await apiServices.get(`/api/posts?${queryParams.toString()}`);
+      console.log("Total posts API response:", response.data);
       if (response.data.statusCode === 200) {
         const total = response.data.data.totalElements;
         setTotalPosts(total);
+        console.log("Total posts fetched:", total);
       } else {
         throw new Error(response.data.message || "Không thể lấy tổng số bài đăng.");
       }
@@ -313,8 +322,10 @@ const SellPage = ({ setLoading: setParentLoading }) => {
 
   const fetchPosts = async (page = 0, filters = {}) => {
     try {
+      console.log("=== Starting fetchPosts in SellPage ===");
       setLoading(true);
       setParentLoading(true);
+      setErrorMessage("");
 
       const queryParams = new URLSearchParams({
         page,
@@ -322,36 +333,41 @@ const SellPage = ({ setLoading: setParentLoading }) => {
         sort: "id,desc",
         type: "SALE",
         status: "APPROVED",
-        minPrice: filters.minPrice ?? 0,
-        maxPrice: filters.maxPrice ?? 50000000000000000,
-        minArea: filters.minArea ?? 0,
-        maxArea: filters.maxArea ?? 1000000000,
+        minPrice: filters.minPrice || 0,
+        maxPrice: filters.maxPrice || 50000000000000000,
+        minArea: filters.minArea || 0,
+        maxArea: filters.maxArea || 1000000000,
       });
 
-      // Chỉ thêm các tham số nếu chúng có giá trị (không phải null hoặc undefined)
-      if (filters.provinceCode != null) {
-        queryParams.append("provinceCode", filters.provinceCode);
-      }
-      if (filters.districtCode != null) {
-        queryParams.append("districtCode", filters.districtCode);
-      }
-      if (filters.wardCode != null) {
-        queryParams.append("wardCode", filters.wardCode);
-      }
-      if (filters.categoryIds != null && filters.categoryIds.length > 0) {
-        // Gửi danh sách categoryIds dưới dạng chuỗi, ví dụ: categoryIds=1,2,3
-        queryParams.append("categoryIds", filters.categoryIds.join(","));
+      if (filters.provinceCode) queryParams.append("provinceCode", filters.provinceCode);
+      if (filters.districtCode) queryParams.append("districtCode", filters.districtCode);
+      if (filters.wardCode) queryParams.append("wardCode", filters.wardCode);
+
+      console.log("filters.categoryIds before appending:", filters.categoryIds);
+      if (filters.categoryIds && Array.isArray(filters.categoryIds) && filters.categoryIds.length > 0) {
+        const validCategoryIds = filters.categoryIds.filter(id => Number.isInteger(id) && id > 0);
+        if (validCategoryIds.length === 0) {
+          console.warn("Không có categoryIds hợp lệ để gửi:", filters.categoryIds);
+          setErrorMessage("Không có loại nhà đất hợp lệ được chọn. Vui lòng thử lại.");
+          return;
+        }
+        // Gửi từng categoryId riêng biệt
+        validCategoryIds.forEach(id => queryParams.append("categoryIds", id));
+        console.log("categoryIds sent to API:", validCategoryIds);
+      } else {
+        console.log("No categoryIds provided, fetching all categories.");
       }
 
       console.log("Query params gửi đến API:", queryParams.toString());
 
       const response = await apiServices.get(`/api/posts?${queryParams.toString()}`);
-      console.log("Phản hồi từ API:", response.data);
+      console.log("Phản hồi từ API /api/posts:", response.data);
 
       if (response.data.statusCode === 200) {
-        const posts = response.data.data.content;
+        const posts = response.data.data.content || [];
         if (posts.length === 0) {
           console.warn("API trả về danh sách bài đăng rỗng. Kiểm tra bộ lọc và dữ liệu trong database.");
+          setErrorMessage("Không tìm thấy bài đăng nào phù hợp với bộ lọc. Vui lòng thử lại với các tiêu chí khác.");
         }
 
         const formattedProjects = posts
@@ -392,12 +408,12 @@ const SellPage = ({ setLoading: setParentLoading }) => {
 
             return {
               id: post.id,
-              title: post.title,
+              title: post.title || "Không có tiêu đề",
               desc: post.description || "Không có mô tả",
               img: post.images && post.images.length > 0 ? `http://localhost:8080/uploads/${post.images[0].url}` : "https://placehold.co/300x300",
               price: formatPrice(price),
               area: `${area}m²`,
-              location: `${post.detailAddress}, ${post.ward.name}, ${post.district.name}, ${post.province.name}`,
+              location: `${post.detailAddress || ""}, ${post.ward?.name || ""}, ${post.district?.name || ""}, ${post.province?.name || ""}`,
               vipPackage: vipName,
               vipLevel: vipLevel,
               categoryId: post.category?.id || null,
@@ -408,18 +424,22 @@ const SellPage = ({ setLoading: setParentLoading }) => {
           })
           .filter((project) => project !== null);
 
+        console.log("Formatted projects:", formattedProjects);
         setAllProjects(formattedProjects);
-        setTotalPages(response.data.data.totalPages);
+        setTotalPages(response.data.data.totalPages || 1);
       } else {
         throw new Error(response.data.message || "Không thể lấy danh sách bài đăng.");
       }
     } catch (err) {
-      console.error("Lỗi khi lấy danh sách bài đăng (SellPage):", err.response?.data || err.message);
+      console.error("Lỗi khi lấy danh sách bài đăng:", err.response?.data || err.message);
       setAllProjects([]);
       setTotalPages(1);
+      setErrorMessage("Có lỗi xảy ra khi tải danh sách bài đăng. Vui lòng thử lại sau.");
     } finally {
       setLoading(false);
       setParentLoading(false);
+      setIsShowingLoading(false);
+      console.log("=== Finished fetchPosts in SellPage ===");
     }
   };
 
@@ -431,25 +451,22 @@ const SellPage = ({ setLoading: setParentLoading }) => {
 
   useEffect(() => {
     setIsShowingLoading(true);
-    setTimeout(() => {
-      setIsShowingLoading(false);
-    }, 2000);
-
     fetchPosts(currentPage - 1, searchFilters);
-  }, [currentPage, vipLevels, searchFilters]); // Thêm searchFilters vào dependency để gọi lại fetchPosts khi bộ lọc thay đổi
+  }, [currentPage, searchFilters]);
 
   const handleSearch = (searchData) => {
+    console.log("=== Starting handleSearch in SellPage ===");
     console.log("Search data received in SellPage:", searchData);
+    if (!searchData.categoryIds || !Array.isArray(searchData.categoryIds)) {
+      console.warn("categoryIds không hợp lệ hoặc không được cung cấp:", searchData.categoryIds);
+      searchData.categoryIds = [];
+    }
     setSearchFilters(searchData);
     setCurrentPage(1);
     setPageInput("");
-
     setIsShowingLoading(true);
-    setTimeout(() => {
-      setIsShowingLoading(false);
-    }, 2000);
-
     fetchPosts(0, searchData);
+    console.log("=== Finished handleSearch in SellPage ===");
   };
 
   const handleTogglePhone = (projectId) => {
@@ -469,8 +486,10 @@ const SellPage = ({ setLoading: setParentLoading }) => {
   };
 
   const paginate = (pageNumber) => {
-    setCurrentPage(pageNumber);
-    setPageInput("");
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+      setPageInput("");
+    }
   };
 
   const handlePageInput = () => {
@@ -522,6 +541,7 @@ const SellPage = ({ setLoading: setParentLoading }) => {
             <p className="post-count">
               Hiện có <strong>{allProjects.length}</strong> bài đăng (Tổng cộng: <strong>{totalPosts}</strong> bài đăng)
             </p>
+            {errorMessage && <p className="error-message">{errorMessage}</p>}
           </Col>
         </Row>
 
@@ -534,7 +554,7 @@ const SellPage = ({ setLoading: setParentLoading }) => {
           <>
             <Row xs={1} className="g-4">
               {allProjects.length > 0 ? (
-                allProjects.map((project) => (
+                allProjects.map((project, index) => (
                   <Col key={project.id}>
                     <NavLink to={`/post/${project.id}`} style={{ textDecoration: "none" }}>
                       <Card className="hover-card">
@@ -575,7 +595,7 @@ const SellPage = ({ setLoading: setParentLoading }) => {
                             }}
                           >
                             <FaPhone />{" "}
-                            {revealedPhones[project.id] ? `${revealedPhones[project.id]} - Hiển số` : `${project.hiddenPhone} - Hiển số`}
+                            {revealedPhones[project.id] ? `${revealedPhones[project.id]} - Ẩn số` : `${project.hiddenPhone} - Hiển số`}
                           </Button>
                         </Card.Body>
                       </Card>
@@ -586,7 +606,7 @@ const SellPage = ({ setLoading: setParentLoading }) => {
                 <Col className="text-center py-5">
                   <p className="text-muted">
                     <i className="bi bi-exclamation-triangle me-2"></i>
-                    Không tìm thấy kết quả nào phù hợp.
+                    Không tìm thấy bài đăng nào phù hợp với bộ lọc. Vui lòng thử các tiêu chí khác.
                   </p>
                 </Col>
               )}

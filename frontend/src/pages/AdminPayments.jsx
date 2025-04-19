@@ -18,7 +18,7 @@ import { Helmet } from "react-helmet";
 import Sidebar from "../components/Sidebar";
 import apiServices from "../services/apiServices";
 
-// CSS tùy chỉnh
+// CSS tùy chỉnh (giữ nguyên, không thay đổi)
 const customStyles = `
   .layout {
     display: grid;
@@ -178,8 +178,8 @@ const customStyles = `
     .page-title {
       font-size: 1.25rem;
     }
-    .admin-table th:nth-child(7),
-    .admin-table td:nth-child(7) {
+    .admin-table th:nth-child(6),
+    .admin-table td:nth-child(6) {
       display: none;
     }
     .filter-group {
@@ -222,7 +222,7 @@ const AdminPayments = ({ user, handleLogout }) => {
 
       if (response.data.statusCode === 200) {
         const transactions = response.data.data.content.map((txn) => ({
-          id: txn.id,
+          id: txn.id, // Vẫn giữ id trong dữ liệu để sử dụng cho key
           transactionId: txn.txnId || `PT${txn.id}`,
           userId: txn.user.id,
           amount: Math.abs(txn.amount),
@@ -419,7 +419,6 @@ const AdminPayments = ({ user, handleLogout }) => {
                   <Table responsive className="admin-table">
                     <thead>
                       <tr>
-                        <th>ID</th>
                         <th>Mã Giao Dịch</th>
                         <th>ID Người Dùng</th>
                         <th>Số Tiền (VND)</th>
@@ -432,7 +431,6 @@ const AdminPayments = ({ user, handleLogout }) => {
                       {filteredPayments.length > 0 ? (
                         filteredPayments.map((payment) => (
                           <tr key={payment.id}>
-                            <td>{payment.id}</td>
                             <td>{payment.transactionId}</td>
                             <td>{payment.userId}</td>
                             <td>{payment.amount.toLocaleString()}</td>
@@ -459,7 +457,7 @@ const AdminPayments = ({ user, handleLogout }) => {
                         ))
                       ) : (
                         <tr>
-                          <td colSpan="7" className="text-center py-4">
+                          <td colSpan="6" className="text-center py-4">
                             Không tìm thấy giao dịch nào.
                           </td>
                         </tr>
