@@ -2,6 +2,7 @@ package vn.thanhdattanphuoc.batdongsan360.controller;
 
 import jakarta.validation.Valid;
 
+import java.util.HashMap;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -136,17 +137,21 @@ public class PostController {
     }
 
     @GetMapping("/api/posts/map")
-    public List<MapPostDTO> getPostsForMap(
+    public ResponseEntity<List<MapPostDTO>> getPostsForMap(
             @RequestParam(required = false) Long minPrice,
             @RequestParam(required = false) Long maxPrice,
             @RequestParam(required = false) Double minArea,
             @RequestParam(required = false) Double maxArea,
             @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = true) PostTypeEnum type,
             @RequestParam(required = false) Long provinceCode,
             @RequestParam(required = false) Long districtCode,
             @RequestParam(required = false) Long wardCode) {
-        return postService.getPostsForMap(minPrice, maxPrice, minArea, maxArea,
-                categoryId, provinceCode, districtCode, wardCode);
+
+        List<MapPostDTO> result = postService.getPostsForMap(minPrice, maxPrice, minArea, maxArea,
+                categoryId, type, provinceCode, districtCode, wardCode);
+        System.out.println(">>> Count list MapPostDTO: " + result.size());
+        return ResponseEntity.ok(result);
     }
 
 }

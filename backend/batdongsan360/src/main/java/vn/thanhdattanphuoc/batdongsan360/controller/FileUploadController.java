@@ -19,8 +19,17 @@ import vn.thanhdattanphuoc.batdongsan360.service.FileStorageService;
 public class FileUploadController {
 
     private final FileStorageService fileStorageService;
-    private static final List<String> ALLOWED_TYPES = List.of("image/jpeg", "image/png", "image/gif");
-    private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    private static final List<String> ALLOWED_TYPES = List.of(
+            "image/jpeg", // JPG, JPEG
+            "image/png", // PNG
+            "image/gif", // GIF
+            "image/webp", // WebP
+            "image/bmp", // BMP
+            "image/tiff", // TIFF
+            "image/heic", // HEIC
+            "image/avif", // AVIF
+            "image/apng");
+    private static final long MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
     public FileUploadController(FileStorageService fileStorageService) {
         this.fileStorageService = fileStorageService;
@@ -52,7 +61,7 @@ public class FileUploadController {
 
         for (MultipartFile file : files) {
             if (file.getSize() > MAX_FILE_SIZE) {
-                errors.add(file.getOriginalFilename() + " exceeds 5MB limit");
+                errors.add(file.getOriginalFilename() + " exceeds 50MB limit");
                 continue;
             }
 
