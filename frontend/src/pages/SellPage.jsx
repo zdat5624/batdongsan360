@@ -275,6 +275,7 @@ const SellPage = ({ setLoading: setParentLoading }) => {
   const [errorMessage, setErrorMessage] = useState("");
   const projectsPerPage = 12;
 
+  // Lấy danh sách gói VIP
   const fetchVipLevels = async () => {
     try {
       const response = await apiServices.get("/api/vips");
@@ -296,6 +297,7 @@ const SellPage = ({ setLoading: setParentLoading }) => {
     }
   };
 
+  // Lấy tổng số bài đăng
   const fetchTotalPosts = async () => {
     try {
       const queryParams = new URLSearchParams({
@@ -320,6 +322,7 @@ const SellPage = ({ setLoading: setParentLoading }) => {
     }
   };
 
+  // Lấy danh sách bài đăng
   const fetchPosts = async (page = 0, filters = {}) => {
     try {
       console.log("=== Starting fetchPosts in SellPage ===");
@@ -342,21 +345,7 @@ const SellPage = ({ setLoading: setParentLoading }) => {
       if (filters.provinceCode) queryParams.append("provinceCode", filters.provinceCode);
       if (filters.districtCode) queryParams.append("districtCode", filters.districtCode);
       if (filters.wardCode) queryParams.append("wardCode", filters.wardCode);
-
-      console.log("filters.categoryIds before appending:", filters.categoryIds);
-      if (filters.categoryIds && Array.isArray(filters.categoryIds) && filters.categoryIds.length > 0) {
-        const validCategoryIds = filters.categoryIds.filter(id => Number.isInteger(id) && id > 0);
-        if (validCategoryIds.length === 0) {
-          console.warn("Không có categoryIds hợp lệ để gửi:", filters.categoryIds);
-          setErrorMessage("Không có loại nhà đất hợp lệ được chọn. Vui lòng thử lại.");
-          return;
-        }
-        // Gửi từng categoryId riêng biệt
-        validCategoryIds.forEach(id => queryParams.append("categoryIds", id));
-        console.log("categoryIds sent to API:", validCategoryIds);
-      } else {
-        console.log("No categoryIds provided, fetching all categories.");
-      }
+      if (filters.categoryId) queryParams.append("categoryId", filters.categoryId); // Sử dụng categoryId thay vì categoryIds
 
       console.log("Query params gửi đến API:", queryParams.toString());
 
@@ -443,24 +432,23 @@ const SellPage = ({ setLoading: setParentLoading }) => {
     }
   };
 
+  // Khởi tạo dữ liệu khi component mount
   useEffect(() => {
     fetchVipLevels();
     fetchTotalPosts();
     fetchPosts(0, searchFilters);
   }, []);
 
+  // Gọi API khi thay đổi trang hoặc bộ lọc
   useEffect(() => {
     setIsShowingLoading(true);
     fetchPosts(currentPage - 1, searchFilters);
   }, [currentPage, searchFilters]);
 
+  // Xử lý tìm kiếm
   const handleSearch = (searchData) => {
     console.log("=== Starting handleSearch in SellPage ===");
     console.log("Search data received in SellPage:", searchData);
-    if (!searchData.categoryIds || !Array.isArray(searchData.categoryIds)) {
-      console.warn("categoryIds không hợp lệ hoặc không được cung cấp:", searchData.categoryIds);
-      searchData.categoryIds = [];
-    }
     setSearchFilters(searchData);
     setCurrentPage(1);
     setPageInput("");
@@ -469,6 +457,7 @@ const SellPage = ({ setLoading: setParentLoading }) => {
     console.log("=== Finished handleSearch in SellPage ===");
   };
 
+  // Xử lý hiển thị/ẩn số điện thoại
   const handleTogglePhone = (projectId) => {
     setRevealedPhones((prev) => {
       const isRevealed = !!prev[projectId];
@@ -485,6 +474,7 @@ const SellPage = ({ setLoading: setParentLoading }) => {
     });
   };
 
+  // Xử lý phân trang
   const paginate = (pageNumber) => {
     if (pageNumber >= 1 && pageNumber <= totalPages) {
       setCurrentPage(pageNumber);

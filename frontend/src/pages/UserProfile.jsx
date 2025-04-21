@@ -2,7 +2,6 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import { Container, Card, Button, Row, Col, Nav, Form, Image, InputGroup, Modal } from "react-bootstrap";
-import Sidebar from "../components/Sidebar"; // Import Sidebar
 import apiServices from "../services/apiServices";
 
 const customStyles = `
@@ -10,10 +9,6 @@ const customStyles = `
     display: flex;
     min-height: 100vh;
     flex-direction: column;
-  }
-  .content-wrapper {
-    display: flex;
-    flex: 1;
   }
   .main-content {
     flex: 1;
@@ -63,9 +58,6 @@ const customStyles = `
     padding: 12px 30px;
     font-weight: bold;
     font-size: 1.1rem;
-  }
-  .sidebar {
-    display: block !important;
   }
 `;
 
@@ -279,166 +271,163 @@ const UserProfile = ({ user, setUser, handleLogout }) => {
   return (
     <div className="layout">
       <style>{customStyles}</style>
-      <div className="content-wrapper">
-        <Sidebar user={user} handleLogout={handleLogout} />
-        <div className="main-content">
-          <Container>
-            <Card className="profile-card p-4">
-              <Nav variant="tabs" activeKey={activeTab} onSelect={(k) => setActiveTab(k)} className="mb-5">
-                <Nav.Item>
-                  <Nav.Link eventKey="profile">Thông Tin Cá Nhân</Nav.Link>
-                </Nav.Item>
-              </Nav>
+      <div className="main-content">
+        <Container>
+          <Card className="profile-card p-4">
+            <Nav variant="tabs" activeKey={activeTab} onSelect={(k) => setActiveTab(k)} className="mb-5">
+              <Nav.Item>
+                <Nav.Link eventKey="profile">Thông Tin Cá Nhân</Nav.Link>
+              </Nav.Item>
+            </Nav>
 
-              <div>
-                {activeTab === "profile" && (
-                  <>
-                    <Row className="text-center mb-5">
-                      <Col>
-                        <div className="avatar-wrapper">
-                          <Image
-                            src={avatar || "https://via.placeholder.com/200"}
-                            alt="Avatar"
-                            roundedCircle
-                            className="avatar-img"
-                            style={{ width: "200px", height: "200px", objectFit: "cover" }}
+            <div>
+              {activeTab === "profile" && (
+                <>
+                  <Row className="text-center mb-5">
+                    <Col>
+                      <div className="avatar-wrapper">
+                        <Image
+                          src={avatar || "https://via.placeholder.com/200"}
+                          alt="Avatar"
+                          roundedCircle
+                          className="avatar-img"
+                          style={{ width: "200px", height: "200px", objectFit: "cover" }}
+                        />
+                        <div className="mt-4 d-flex justify-content-center gap-2">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleAvatarChange}
+                            style={{ display: "none" }}
+                            id="upload-avatar"
                           />
-                          <div className="mt-4 d-flex justify-content-center gap-2">
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={handleAvatarChange}
-                              style={{ display: "none" }}
-                              id="upload-avatar"
-                            />
+                          <Button
+                            variant="outline-primary"
+                            size="sm"
+                            as="label"
+                            htmlFor="upload-avatar"
+                            className="btn-custom"
+                          >
+                            Đổi Ảnh Đại Diện
+                          </Button>
+                          {avatarChanged && (
                             <Button
-                              variant="outline-primary"
+                              variant="success"
                               size="sm"
-                              as="label"
-                              htmlFor="upload-avatar"
                               className="btn-custom"
+                              onClick={handleSaveAvatar}
                             >
-                              Đổi Ảnh Đại Diện
+                              Lưu Ảnh
                             </Button>
-                            {avatarChanged && (
-                              <Button
-                                variant="success"
-                                size="sm"
-                                className="btn-custom"
-                                onClick={handleSaveAvatar}
-                              >
-                                Lưu Ảnh
-                              </Button>
-                            )}
-                          </div>
+                          )}
                         </div>
-                        <h4 className="mt-4 fw-bold text-primary" style={{ fontSize: "1.8rem" }}>
-                          {editedUser.name}
-                        </h4>
-                      </Col>
-                    </Row>
+                      </div>
+                      <h4 className="mt-4 fw-bold text-primary" style={{ fontSize: "1.8rem" }}>
+                        {editedUser.name}
+                      </h4>
+                    </Col>
+                  </Row>
 
-                    <Row className="g-5">
-                      <Col md={6}>
-                        <Form.Group controlId="email" className="mb-4">
-                          <Form.Label className="fw-bold">Email</Form.Label>
-                          <InputGroup>
-                            <InputGroup.Text>
-                              <i className="bi bi-envelope"></i>
-                            </InputGroup.Text>
-                            <Form.Control
-                              type="email"
-                              name="email"
-                              value={editedUser.email || ""}
-                              onChange={handleChange}
-                              disabled={!isEditing}
-                              className="rounded-end"
-                            />
-                          </InputGroup>
-                        </Form.Group>
+                  <Row className="g-5">
+                    <Col md={6}>
+                      <Form.Group controlId="email" className="mb-4">
+                        <Form.Label className="fw-bold">Email</Form.Label>
+                        <InputGroup>
+                          <InputGroup.Text>
+                            <i className="bi bi-envelope"></i>
+                          </InputGroup.Text>
+                          <Form.Control
+                            type="email"
+                            name="email"
+                            value={editedUser.email || ""}
+                            onChange={handleChange}
+                            disabled={!isEditing}
+                            className="rounded-end"
+                          />
+                        </InputGroup>
+                      </Form.Group>
 
-                        <Form.Group controlId="phone" className="mb-4">
-                          <Form.Label className="fw-bold">Số Điện Thoại</Form.Label>
-                          <InputGroup>
-                            <InputGroup.Text>
-                              <i className="bi bi-telephone"></i>
-                            </InputGroup.Text>
-                            <Form.Control
-                              type="text"
-                              name="phone"
-                              value={editedUser.phone || ""}
-                              onChange={handleChange}
-                              disabled={!isEditing}
-                              className="rounded-end"
-                            />
-                          </InputGroup>
-                        </Form.Group>
-                      </Col>
+                      <Form.Group controlId="phone" className="mb-4">
+                        <Form.Label className="fw-bold">Số Điện Thoại</Form.Label>
+                        <InputGroup>
+                          <InputGroup.Text>
+                            <i className="bi bi-telephone"></i>
+                          </InputGroup.Text>
+                          <Form.Control
+                            type="text"
+                            name="phone"
+                            value={editedUser.phone || ""}
+                            onChange={handleChange}
+                            disabled={!isEditing}
+                            className="rounded-end"
+                          />
+                        </InputGroup>
+                      </Form.Group>
+                    </Col>
 
-                      <Col md={6}>
-                        <Form.Group controlId="address" className="mb-4">
-                          <Form.Label className="fw-bold">Địa Chỉ</Form.Label>
-                          <InputGroup>
-                            <InputGroup.Text>
-                              <i className="bi bi-geo-alt"></i>
-                            </InputGroup.Text>
-                            <Form.Control
-                              type="text"
-                              name="address"
-                              value={editedUser.address || ""}
-                              onChange={handleChange}
-                              disabled={!isEditing}
-                              className="rounded-end"
-                            />
-                          </InputGroup>
-                        </Form.Group>
+                    <Col md={6}>
+                      <Form.Group controlId="address" className="mb-4">
+                        <Form.Label className="fw-bold">Địa Chỉ</Form.Label>
+                        <InputGroup>
+                          <InputGroup.Text>
+                            <i className="bi bi-geo-alt"></i>
+                          </InputGroup.Text>
+                          <Form.Control
+                            type="text"
+                            name="address"
+                            value={editedUser.address || ""}
+                            onChange={handleChange}
+                            disabled={!isEditing}
+                            className="rounded-end"
+                          />
+                        </InputGroup>
+                      </Form.Group>
 
-                        <Form.Group controlId="gender" className="mb-4">
-                          <Form.Label className="fw-bold">Giới Tính</Form.Label>
-                          <InputGroup>
-                            <InputGroup.Text>
-                              <i className="bi bi-person"></i>
-                            </InputGroup.Text>
-                            <Form.Control
-                              as="select"
-                              name="gender"
-                              value={editedUser.gender || ""}
-                              onChange={handleChange}
-                              disabled={!isEditing}
-                              className="rounded-end"
-                            >
-                              <option value="">Chọn giới tính</option>
-                              <option value="MALE">Nam</option>
-                              <option value="FEMALE">Nữ</option>
-                              <option value="OTHER">Khác</option>
-                            </Form.Control>
-                          </InputGroup>
-                        </Form.Group>
-                      </Col>
-                    </Row>
+                      <Form.Group controlId="gender" className="mb-4">
+                        <Form.Label className="fw-bold">Giới Tính</Form.Label>
+                        <InputGroup>
+                          <InputGroup.Text>
+                            <i className="bi bi-person"></i>
+                          </InputGroup.Text>
+                          <Form.Control
+                            as="select"
+                            name="gender"
+                            value={editedUser.gender || ""}
+                            onChange={handleChange}
+                            disabled={!isEditing}
+                            className="rounded-end"
+                          >
+                            <option value="">Chọn giới tính</option>
+                            <option value="MALE">Nam</option>
+                            <option value="FEMALE">Nữ</option>
+                            <option value="OTHER">Khác</option>
+                          </Form.Control>
+                        </InputGroup>
+                      </Form.Group>
+                    </Col>
+                  </Row>
 
-                    <div className="text-center mt-5">
-                      {!isEditing ? (
-                        <Button variant="primary" className="btn-custom" onClick={handleEditClick}>
-                          Chỉnh Sửa Thông Tin
+                  <div className="text-center mt-5">
+                    {!isEditing ? (
+                      <Button variant="primary" className="btn-custom" onClick={handleEditClick}>
+                        Chỉnh Sửa Thông Tin
+                      </Button>
+                    ) : (
+                      <div className="d-flex justify-content-center gap-4">
+                        <Button variant="success" className="btn-custom" onClick={handleSaveClick}>
+                          Lưu
                         </Button>
-                      ) : (
-                        <div className="d-flex justify-content-center gap-4">
-                          <Button variant="success" className="btn-custom" onClick={handleSaveClick}>
-                            Lưu
-                          </Button>
-                          <Button variant="outline-secondary" className="btn-custom" onClick={handleCancelClick}>
-                            Hủy
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </>
-                )}
-              </div>
-            </Card>
-          </Container>
-        </div>
+                        <Button variant="outline-secondary" className="btn-custom" onClick={handleCancelClick}>
+                          Hủy
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          </Card>
+        </Container>
       </div>
 
       <Modal show={showSuccessModal} onHide={handleCloseSuccessModal} centered>

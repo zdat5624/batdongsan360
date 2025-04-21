@@ -188,7 +188,7 @@ const ProjectDetail = () => {
               </Card>
             </Col>
 
-            {/* Thông tin liên hệ (chuyển lên chỗ bản đồ) */}
+            {/* Thông tin liên hệ */}
             <Col lg={4}>
               <Card className="shadow-sm border-0 h-100" style={{ borderRadius: "12px" }}>
                 <Card.Body className="p-4">
@@ -212,16 +212,17 @@ const ProjectDetail = () => {
                         <a href={`mailto:${project.email}`} className="text-decoration-none text-primary">{project.email}</a>
                       </span>
                     </li>
+                    
                   </ul>
                 </Card.Body>
               </Card>
             </Col>
 
-            {/* Thông tin chi tiết */}
+            {/* Thông tin bài đăng (gộp Thông tin chi tiết và Chi tiết bài đăng) */}
             <Col lg={12}>
               <Card className="shadow-sm border-0" style={{ borderRadius: "12px" }}>
                 <Card.Body className="p-4">
-                  <h5 className="text-primary fw-bold mb-4">Thông tin chi tiết</h5>
+                  <h5 className="text-primary fw-bold mb-4">Thông tin bài đăng</h5>
                   <ul className="list-unstyled">
                     <li className="mb-3 d-flex align-items-center">
                       <FaMoneyBillWave className="me-2 text-primary" />
@@ -237,35 +238,6 @@ const ProjectDetail = () => {
                       <FaMapMarkerAlt className="me-2 text-primary" />
                       <span><strong>Vị trí:</strong> {project.address}</span>
                     </li>
-                    <li>
-                      <strong><FaFileAlt className="me-2 text-primary" /> Mô tả:</strong>
-                      <div
-                        style={{
-                          wordBreak: "break-word",
-                          maxHeight: "120px",
-                          overflowY: "auto",
-                          whiteSpace: "pre-wrap",
-                          padding: "8px",
-                          border: "1px solid #e0e0e0",
-                          borderRadius: "6px",
-                          background: "#f9fafb",
-                          marginTop: "8px",
-                        }}
-                      >
-                        {project.description}
-                      </div>
-                    </li>
-                  </ul>
-                </Card.Body>
-              </Card>
-            </Col>
-
-            {/* Chi tiết bài đăng */}
-            <Col lg={12}>
-              <Card className="shadow-sm border-0" style={{ borderRadius: "12px" }}>
-                <Card.Body className="p-8">
-                  <h5 className="text-primary fw-bold mb-4">Chi tiết bài đăng</h5>
-                  <ul className="list-unstyled">
                     <li className="mb-3 d-flex align-items-center">
                       <FaHome className="me-2 text-primary" />
                       <span><strong>Loại bài đăng:</strong>{" "}
@@ -291,6 +263,24 @@ const ProjectDetail = () => {
                     <li className="mb-3 d-flex align-items-center">
                       <FaCalendarTimes className="me-2 text-primary" />
                       <span><strong>Ngày hết hạn:</strong> {project.expireDate}</span>
+                    </li>
+                    <li>
+                      <strong><FaFileAlt className="me-2 text-primary" /> Mô tả:</strong>
+                      <div
+                        style={{
+                          wordBreak: "break-word",
+                          maxHeight: "120px",
+                          overflowY: "auto",
+                          whiteSpace: "pre-wrap",
+                          padding: "8px",
+                          border: "1px solid #e0e0e0",
+                          borderRadius: "6px",
+                          background: "#f9fafb",
+                          marginTop: "8px",
+                        }}
+                      >
+                        {project.description}
+                      </div>
                     </li>
                   </ul>
                 </Card.Body>

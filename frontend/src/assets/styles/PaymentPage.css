@@ -12,4 +12,6 @@
   .card:hover {
     transform: none !important; /* Không scale khi hover */
     box-shadow: none !important; /* Không có đổ bóng khi hover */
+    position: absolute;
+    top: 50px;
   }

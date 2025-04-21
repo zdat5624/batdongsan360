@@ -18,7 +18,7 @@ import RegisterForm from "./RegisterForm";
 import apiServices from "../services/apiServices";
 import "../assets/styles/Header.css";
 
-const Header = ({ user, setUser, handleLogin, handleLogout }) => {
+const AdminHeader = ({ user, setUser, handleLogin, handleLogout }) => {
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -26,6 +26,7 @@ const Header = ({ user, setUser, handleLogin, handleLogout }) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [notificationLoading, setNotificationLoading] = useState(false);
   const [notificationError, setNotificationError] = useState(null);
+  const [balance, setBalance] = useState(null); // State để lưu số dư
   const navigate = useNavigate();
 
   const getTimeAgo = (createdAt) => {
@@ -42,6 +43,26 @@ const Header = ({ user, setUser, handleLogin, handleLogout }) => {
       return `${diffInHours} giờ trước`;
     } else {
       return `${diffInDays} ngày trước`;
+    }
+  };
+
+  // Lấy thông tin số dư của user
+  const fetchUserBalance = async () => {
+    if (!user) return;
+    try {
+      const userId = localStorage.getItem("userId");
+      if (!userId) {
+        throw new Error("Không tìm thấy ID người dùng.");
+      }
+      const response = await apiServices.get(`/api/users/${userId}`);
+      if (response.data.statusCode === 200) {
+        const userData = response.data.data;
+        setBalance(userData.balance || 0); // Lưu số dư vào state
+      } else {
+        throw new Error(response.data.message || "Không thể lấy thông tin số dư.");
+      }
+    } catch (err) {
+      console.error("Lỗi khi lấy số dư:", err.message);
     }
   };
 
@@ -73,19 +94,13 @@ const Header = ({ user, setUser, handleLogin, handleLogout }) => {
   useEffect(() => {
     if (user) {
       fetchNotifications();
+      fetchUserBalance(); // Gọi API để lấy số dư khi user đăng nhập
     } else {
       setNotifications([]);
       setUnreadCount(0);
+      setBalance(null); // Reset số dư khi không có user
     }
   }, [user]);
-
-  const handlePostAd = () => {
-    if (user) {
-      navigate("/post-ad");
-    } else {
-      setShowLogin(true);
-    }
-  };
 
   const handleLoginSuccess = (userData) => {
     handleLogin(userData);
@@ -103,6 +118,12 @@ const Header = ({ user, setUser, handleLogin, handleLogout }) => {
 
   const handleCloseLogoutConfirm = () => {
     setShowLogoutConfirm(false);
+  };
+
+  // Định dạng số dư với dấu phân cách hàng nghìn
+  const formatBalance = (balance) => {
+    if (balance === null || balance === undefined) return "N/A";
+    return balance.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " VNĐ";
   };
 
   return (
@@ -125,6 +146,12 @@ const Header = ({ user, setUser, handleLogin, handleLogout }) => {
             color: white !important;
             border-radius: 5px;
           }
+          /* Style cho số dư */
+          .balance-text {
+            font-size: 0.9rem;
+            color: #28a745; /* Màu xanh lá cho số dư */
+            margin-left: 10px;
+          }
         `}
       </style>
 
@@ -136,12 +163,7 @@ const Header = ({ user, setUser, handleLogin, handleLogout }) => {
           <Navbar.Toggle aria-controls="navbar-nav" />
           <Navbar.Collapse id="navbar-nav">
             <Nav className="me-auto">
-              <Nav.Link as={NavLink} to="/sell" className="nav-link-custom">
-                Nhà đất bán
-              </Nav.Link>
-              <Nav.Link as={NavLink} to="/rent" className="nav-link-custom">
-                Nhà đất cho thuê
-              </Nav.Link>
+              {/* Đã loại bỏ "Nhà đất bán" và "Nhà đất cho thuê" */}
             </Nav>
 
             {user ? (
@@ -160,6 +182,9 @@ const Header = ({ user, setUser, handleLogin, handleLogout }) => {
                       style={{ width: "40px", height: "40px" }}
                     />
                     <span className="fw-bold">{user.name}</span>
+                    {balance !== null && (
+                      <span className="balance-text">Số dư: {formatBalance(balance)}</span>
+                    )}
                   </Dropdown.Toggle>
 
                   <Dropdown.Menu align="end" className="dropdown-menu-custom user-dropdown">
@@ -184,14 +209,6 @@ const Header = ({ user, setUser, handleLogin, handleLogout }) => {
                     </Dropdown.Item>
                   </Dropdown.Menu>
                 </Dropdown>
-
-                <Button
-                  variant="warning"
-                  className="btn-custom btn-post-ad"
-                  onClick={handlePostAd}
-                >
-                  Đăng tin
-                </Button>
 
                 <Dropdown>
                   <Dropdown.Toggle
@@ -270,13 +287,6 @@ const Header = ({ user, setUser, handleLogin, handleLogout }) => {
                 >
                   Đăng ký
                 </Button>
-                <Button
-                  variant="warning"
-                  className="btn-custom btn-post-ad"
-                  onClick={handlePostAd}
-                >
-                  Đăng tin
-                </Button>
               </div>
             )}
           </Navbar.Collapse>
@@ -323,4 +333,4 @@ const Header = ({ user, setUser, handleLogin, handleLogout }) => {
   );
 };
 
-export default Header;
+export default AdminHeader;

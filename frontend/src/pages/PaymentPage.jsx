@@ -19,7 +19,6 @@ import {
 } from "react-bootstrap";
 import apiServices from "../services/apiServices";
 import { motion } from "framer-motion";
-import Sidebar from "../components/Sidebar";
 
 // CSS tối ưu
 const customStyles = `
@@ -27,10 +26,6 @@ const customStyles = `
     display: flex;
     min-height: 100vh;
     flex-direction: column;
-  }
-  .content-wrapper {
-    display: flex;
-    flex: 1;
   }
   .main-content {
     flex: 1;
@@ -94,10 +89,10 @@ const PaymentPage = ({ user, handleLogout }) => {
   const [balance, setBalance] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [depositAmount, setDepositAmount] = useState("");
-  const [allDeposits, setAllDeposits] = useState([]); // Lưu tất cả giao dịch nạp tiền
-  const [allPayments, setAllPayments] = useState([]); // Lưu tất cả giao dịch thanh toán
-  const [depositHistory, setDepositHistory] = useState([]); // Giao dịch hiển thị trên trang hiện tại
-  const [paymentHistory, setPaymentHistory] = useState([]); // Giao dịch hiển thị trên trang hiện tại
+  const [allDeposits, setAllDeposits] = useState([]);
+  const [allPayments, setAllPayments] = useState([]);
+  const [depositHistory, setDepositHistory] = useState([]);
+  const [paymentHistory, setPaymentHistory] = useState([]);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -105,16 +100,14 @@ const PaymentPage = ({ user, handleLogout }) => {
   const [currentPaymentPage, setCurrentPaymentPage] = useState(1);
   const [totalDepositPages, setTotalDepositPages] = useState(1);
   const [totalPaymentPages, setTotalPaymentPages] = useState(1);
-  const pageSize = 10; // Hiển thị 10 dòng mỗi trang
+  const pageSize = 10;
 
-  // Kiểm tra trạng thái đăng nhập
   useEffect(() => {
     if (!user || !user.id) {
       navigate("/");
     }
   }, [user, navigate]);
 
-  // Lấy số dư
   const fetchBalance = useCallback(async () => {
     if (!user || !user.id) return;
     try {
@@ -129,18 +122,15 @@ const PaymentPage = ({ user, handleLogout }) => {
     }
   }, [user]);
 
-  // Lấy tất cả giao dịch
   const fetchTransactions = useCallback(async () => {
     setLoading(true);
     try {
-      // Lấy nhiều giao dịch để lọc client-side
       const response = await apiServices.get(
         `/api/payment/my-transactions?page=0&size=1000&sort=createdAt,desc`
       );
       if (response.data.statusCode === 200) {
         const transactions = response.data.data.content || [];
 
-        // Lọc giao dịch nạp tiền
         const deposits = transactions
           .filter((txn) => txn.amount > 0)
           .map((txn) => ({
@@ -158,7 +148,6 @@ const PaymentPage = ({ user, handleLogout }) => {
             transactionId: txn.txnId || `PT${txn.id}`,
           }));
 
-        // Lọc giao dịch thanh toán
         const payments = transactions
           .filter((txn) => txn.amount < 0)
           .map((txn) => {
@@ -181,11 +170,9 @@ const PaymentPage = ({ user, handleLogout }) => {
         setAllDeposits(deposits);
         setAllPayments(payments);
 
-        // Tính tổng số trang
         setTotalDepositPages(Math.ceil(deposits.length / pageSize) || 1);
         setTotalPaymentPages(Math.ceil(payments.length / pageSize) || 1);
 
-        // Cập nhật trang đầu tiên
         setDepositHistory(deposits.slice(0, pageSize));
         setPaymentHistory(payments.slice(0, pageSize));
       } else {
@@ -198,7 +185,6 @@ const PaymentPage = ({ user, handleLogout }) => {
     }
   }, [pageSize]);
 
-  // Cập nhật giao dịch hiển thị khi trang thay đổi
   useEffect(() => {
     const start = (currentDepositPage - 1) * pageSize;
     const end = start + pageSize;
@@ -211,7 +197,6 @@ const PaymentPage = ({ user, handleLogout }) => {
     setPaymentHistory(allPayments.slice(start, end));
   }, [currentPaymentPage, allPayments, pageSize]);
 
-  // Xử lý kết quả thanh toán và tải dữ liệu ban đầu
   useEffect(() => {
     const query = new URLSearchParams(location.search);
     const status = query.get("status");
@@ -339,164 +324,161 @@ const PaymentPage = ({ user, handleLogout }) => {
   return (
     <div className="layout">
       <style>{customStyles}</style>
-      <div className="content-wrapper">
-        <Sidebar user={user} handleLogout={handleLogout} />
-        <div className="main-content">
-          <Container>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              <Row className="justify-content-center mb-5">
-                <Col xs={12} md={8} lg={6}>
-                  <Card className="shadow-lg border-0 balance-card">
-                    <Card.Body className="p-4 d-flex flex-column align-items-center">
-                      <h3 className="fw-bold mb-3 text-white">Số dư tài khoản</h3>
-                      <Badge bg="light" className="py-2 px-4 text-dark shadow-sm mb-4">
-                        {balance.toLocaleString("vi-VN")} VNĐ
-                      </Badge>
-                      <Button
-                        variant="light"
-                        className="fw-bold shadow-sm"
-                        style={{ borderRadius: "25px" }}
-                        onClick={() => setShowModal(true)}
-                      >
-                        Nạp tiền ngay
-                      </Button>
-                    </Card.Body>
-                  </Card>
-                </Col>
-              </Row>
+      <div className="main-content">
+        <Container>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <Row className="justify-content-center mb-5">
+              <Col xs={12} md={8} lg={6}>
+                <Card className="shadow-lg border-0 balance-card">
+                  <Card.Body className="p-4 d-flex flex-column align-items-center">
+                    <h3 className="fw-bold mb-3 text-white">Số dư tài khoản</h3>
+                    <Badge bg="light" className="py-2 px-4 text-dark shadow-sm mb-4">
+                      {balance.toLocaleString("vi-VN")} VNĐ
+                    </Badge>
+                    <Button
+                      variant="light"
+                      className="fw-bold shadow-sm"
+                      style={{ borderRadius: "25px" }}
+                      onClick={() => setShowModal(true)}
+                    >
+                      Nạp tiền ngay
+                    </Button>
+                  </Card.Body>
+                </Card>
+              </Col>
+            </Row>
 
-              <Row>
-                <Col>
-                  {error && <Alert variant="danger">{error}</Alert>}
-                  {successMessage && <Alert variant="success">{successMessage}</Alert>}
+            <Row>
+              <Col>
+                {error && <Alert variant="danger">{error}</Alert>}
+                {successMessage && <Alert variant="success">{successMessage}</Alert>}
 
-                  {loading ? (
-                    <div className="text-center py-5">
-                      <Spinner animation="border" variant="primary" />
-                      <p className="mt-3">Đang tải...</p>
-                    </div>
-                  ) : (
-                    <Tabs defaultActiveKey="deposit" className="mb-4 custom-tabs" justify>
-                      <Tab eventKey="deposit" title="Lịch sử nạp tiền">
-                        <Card className="shadow-sm border-0">
-                          <Card.Body className="p-4">
-                            <h4 className="text-primary fw-bold mb-4">Lịch sử nạp tiền</h4>
-                            <Table hover>
-                              <thead>
-                                <tr>
-                                  <th>Trạng thái</th>
-                                  <th>Ngày nạp</th>
-                                  <th>Số tiền</th>
-                                  <th>Thực nhận</th>
-                                  <th>Mã GD</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {depositHistory.length > 0 ? (
-                                  depositHistory.map((item) => (
-                                    <tr key={item.id}>
-                                      <td>
-                                        <Badge bg={getStatusColor(item.status)}>{item.status}</Badge>
-                                      </td>
-                                      <td>{item.depositDate}</td>
-                                      <td className={item.status === "Thất bại" ? "text-danger" : "text-success"}>
-                                        {item.depositAmount}
-                                      </td>
-                                      <td>{item.netAmount}</td>
-                                      <td>{item.transactionId}</td>
-                                    </tr>
-                                  ))
-                                ) : (
-                                  <tr>
-                                    <td colSpan="5" className="text-center py-4">
-                                      Chưa có lịch sử nạp tiền
+                {loading ? (
+                  <div className="text-center py-5">
+                    <Spinner animation="border" variant="primary" />
+                    <p className="mt-3">Đang tải...</p>
+                  </div>
+                ) : (
+                  <Tabs defaultActiveKey="deposit" className="mb-4 custom-tabs" justify>
+                    <Tab eventKey="deposit" title="Lịch sử nạp tiền">
+                      <Card className="shadow-sm border-0">
+                        <Card.Body className="p-4">
+                          <h4 className="text-primary fw-bold mb-4">Lịch sử nạp tiền</h4>
+                          <Table hover>
+                            <thead>
+                              <tr>
+                                <th>Trạng thái</th>
+                                <th>Ngày nạp</th>
+                                <th>Số tiền</th>
+                                <th>Thực nhận</th>
+                                <th>Mã GD</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {depositHistory.length > 0 ? (
+                                depositHistory.map((item) => (
+                                  <tr key={item.id}>
+                                    <td>
+                                      <Badge bg={getStatusColor(item.status)}>{item.status}</Badge>
                                     </td>
-                                  </tr>
-                                )}
-                              </tbody>
-                            </Table>
-                            {totalDepositPages > 1 && (
-                              renderPagination(currentDepositPage, totalDepositPages, setCurrentDepositPage)
-                            )}
-                          </Card.Body>
-                        </Card>
-                      </Tab>
-                      <Tab eventKey="payment" title="Lịch sử thanh toán">
-                        <Card className="shadow-sm border-0">
-                          <Card.Body className="p-4">
-                            <h4 className="text-primary fw-bold mb-4">Lịch sử thanh toán</h4>
-                            <Table hover>
-                              <thead>
-                                <tr>
-                                  <th>Thời gian</th>
-                                  <th>Phí</th>
-                                  <th>Hoạt động</th>
-                                  <th>Mã tin</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {paymentHistory.length > 0 ? (
-                                  paymentHistory.map((item) => (
-                                    <tr key={item.id}>
-                                      <td>{item.time}</td>
-                                      <td className="text-danger">{item.fee}</td>
-                                      <td>{item.activityType}</td>
-                                      <td>{item.postId}</td>
-                                    </tr>
-                                  ))
-                                ) : (
-                                  <tr>
-                                    <td colSpan="4" className="text-center py-4">
-                                      Chưa có lịch sử thanh toán
+                                    <td>{item.depositDate}</td>
+                                    <td className={item.status === "Thất bại" ? "text-danger" : "text-success"}>
+                                      {item.depositAmount}
                                     </td>
+                                    <td>{item.netAmount}</td>
+                                    <td>{item.transactionId}</td>
                                   </tr>
-                                )}
-                              </tbody>
-                            </Table>
-                            {totalPaymentPages > 1 && (
-                              renderPagination(currentPaymentPage, totalPaymentPages, setCurrentPaymentPage)
-                            )}
-                          </Card.Body>
-                        </Card>
-                      </Tab>
-                    </Tabs>
-                  )}
-                </Col>
-              </Row>
+                                ))
+                              ) : (
+                                <tr>
+                                  <td colSpan="5" className="text-center py-4">
+                                    Chưa có lịch sử nạp tiền
+                                  </td>
+                                </tr>
+                              )}
+                            </tbody>
+                          </Table>
+                          {totalDepositPages > 1 && (
+                            renderPagination(currentDepositPage, totalDepositPages, setCurrentDepositPage)
+                          )}
+                        </Card.Body>
+                      </Card>
+                    </Tab>
+                    <Tab eventKey="payment" title="Lịch sử thanh toán">
+                      <Card className="shadow-sm border-0">
+                        <Card.Body className="p-4">
+                          <h4 className="text-primary fw-bold mb-4">Lịch sử thanh toán</h4>
+                          <Table hover>
+                            <thead>
+                              <tr>
+                                <th>Thời gian</th>
+                                <th>Phí</th>
+                                <th>Hoạt động</th>
+                                <th>Mã tin</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {paymentHistory.length > 0 ? (
+                                paymentHistory.map((item) => (
+                                  <tr key={item.id}>
+                                    <td>{item.time}</td>
+                                    <td className="text-danger">{item.fee}</td>
+                                    <td>{item.activityType}</td>
+                                    <td>{item.postId}</td>
+                                  </tr>
+                                ))
+                              ) : (
+                                <tr>
+                                  <td colSpan="4" className="text-center py-4">
+                                    Chưa có lịch sử thanh toán
+                                  </td>
+                                </tr>
+                              )}
+                            </tbody>
+                          </Table>
+                          {totalPaymentPages > 1 && (
+                            renderPagination(currentPaymentPage, totalPaymentPages, setCurrentPaymentPage)
+                          )}
+                        </Card.Body>
+                      </Card>
+                    </Tab>
+                  </Tabs>
+                )}
+              </Col>
+            </Row>
 
-              <Modal show={showModal} onHide={() => setShowModal(false)} centered dialogClassName="modal-custom">
-                <Modal.Header closeButton style={{ background: "linear-gradient(45deg, #007bff, #00b4d8)" }}>
-                  <Modal.Title className="text-white">Nạp tiền vào tài khoản</Modal.Title>
-                </Modal.Header>
-                <Modal.Body className="p-4">
-                  <Form>
-                    <Form.Group>
-                      <Form.Label className="fw-bold">Số tiền (VNĐ)</Form.Label>
-                      <Form.Control
-                        type="text"
-                        value={depositAmount ? formatNumber(depositAmount) : ""}
-                        onChange={handleAmountChange}
-                        placeholder="Nhập số tiền, ví dụ: 100000"
-                      />
-                    </Form.Group>
-                  </Form>
-                </Modal.Body>
-                <Modal.Footer>
-                  <Button variant="outline-secondary" onClick={() => setShowModal(false)}>
-                    Hủy
-                  </Button>
-                  <Button variant="success" onClick={handleDeposit}>
-                    Nạp tiền
-                  </Button>
-                </Modal.Footer>
-              </Modal>
-            </motion.div>
-          </Container>
-        </div>
+            <Modal show={showModal} onHide={() => setShowModal(false)} centered dialogClassName="modal-custom">
+              <Modal.Header closeButton style={{ background: "linear-gradient(45deg, #007bff, #00b4d8)" }}>
+                <Modal.Title className="text-white">Nạp tiền vào tài khoản</Modal.Title>
+              </Modal.Header>
+              <Modal.Body className="p-4">
+                <Form>
+                  <Form.Group>
+                    <Form.Label className="fw-bold">Số tiền (VNĐ)</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={depositAmount ? formatNumber(depositAmount) : ""}
+                      onChange={handleAmountChange}
+                      placeholder="Nhập số tiền, ví dụ: 100000"
+                    />
+                  </Form.Group>
+                </Form>
+              </Modal.Body>
+              <Modal.Footer>
+                <Button variant="outline-secondary" onClick={() => setShowModal(false)}>
+                  Hủy
+                </Button>
+                <Button variant="success" onClick={handleDeposit}>
+                  Nạp tiền
+                </Button>
+              </Modal.Footer>
+            </Modal>
+          </motion.div>
+        </Container>
       </div>
     </div>
   );

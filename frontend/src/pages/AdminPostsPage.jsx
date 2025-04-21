@@ -32,9 +32,21 @@ import {
 } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { Carousel } from "react-bootstrap";
+import AdminHeader from "../components/AdminHeader";
 import Sidebar from "../components/Sidebar";
 import apiServices from "../services/apiServices";
 import { Helmet } from "react-helmet";
+
+// AdminFooter component (tái sử dụng từ AdminUsers)
+const AdminFooter = () => {
+  return (
+    <footer style={{ backgroundColor: '#343a40', color: '#fff', padding: '10px 0', textAlign: 'center' }}>
+      <Container>
+        <p style={{ margin: 0 }}>THÔNG TIN</p>
+      </Container>
+    </footer>
+  );
+};
 
 // CSS tùy chỉnh
 const customStyles = `
@@ -48,13 +60,34 @@ const customStyles = `
   .content-wrapper {
     display: flex;
     flex-direction: column;
+    min-height: 100vh;
   }
 
   .main-content {
     flex: 1;
     padding: 20px;
-    padding-top: 60px; /* Khoảng cách 60px từ đỉnh trang */
-    background: #f0f4f8;
+    padding-top: 50px; /* Tăng padding-top để không bị AdminHeader che khuất */
+    padding-bottom: 20px; /* Đảm bảo khoảng cách tự nhiên với footer */
+    background-color: #f0f8ff;
+    overflow-y: auto;
+  }
+
+  .admin-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 2000;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  footer {
+    background-color: #343a40;
+    color: #fff;
+    padding: 10px 0;
+    text-align: center;
+    width: 100%;
   }
 
   .custom-container {
@@ -185,8 +218,14 @@ const customStyles = `
     align-items: center;
     justify-content: center;
     gap: 10px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap; /* Đảm bảo các phần tử nằm trên cùng một hàng */
     margin-top: 20px;
+  }
+
+  .pagination {
+    display: flex;
+    align-items: center;
+    margin: 0;
   }
 
   .pagination .page-item.active .page-link {
@@ -210,6 +249,7 @@ const customStyles = `
     width: 70px;
     height: 38px;
     border-radius: 8px;
+    border: 1px solid #ced4da;
     font-size: 0.95rem;
   }
 
@@ -220,6 +260,7 @@ const customStyles = `
     padding: 0 15px;
     background: linear-gradient(135deg, #007bff, #0056b3);
     border: none;
+    color: #fff;
   }
 
   .modal-content {
@@ -325,10 +366,13 @@ const customStyles = `
       top: 0;
       z-index: 1000;
       display: none;
+      max-height: calc(100vh - 60px); /* Giới hạn chiều cao của Sidebar để không che footer */
+      overflow-y: auto;
     }
     .main-content {
       padding: 15px;
-      padding-top: 60px;
+      padding-top: 100px;
+      padding-bottom: 15px;
     }
     .page-title {
       font-size: 1.5rem;
@@ -383,6 +427,10 @@ const customStyles = `
     .filter-button {
       font-size: 0.8rem;
       padding: 6px;
+    }
+    .pagination-container {
+      flex-wrap: wrap; /* Cho phép xuống hàng trên màn hình nhỏ */
+      justify-content: center;
     }
   }
 `;
@@ -472,7 +520,7 @@ const calculateAreaRange = (areaRange) => {
 };
 
 // eslint-disable-next-line react/prop-types
-const AdminPostsPage = ({ user, handleLogout }) => {
+const AdminPostsPage = ({ user, setUser, handleLogin, handleLogout }) => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -688,34 +736,19 @@ const AdminPostsPage = ({ user, handleLogout }) => {
 
   // Render phân trang
   const renderPaginationItems = () => {
-    const items = [];
-    const maxPagesToShow = 5;
-    const halfPagesToShow = Math.floor(maxPagesToShow / 2);
+    const pageItems = [];
+    const maxVisiblePages = 5;
+    const ellipsis = <Pagination.Ellipsis disabled />;
 
-    let startPage = Math.max(0, currentPage - halfPagesToShow);
-    let endPage = Math.min(totalPages - 1, startPage + maxPagesToShow - 1);
+    let startPage = Math.max(0, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages - 1, startPage + maxVisiblePages - 1);
 
-    if (endPage - startPage + 1 < maxPagesToShow) {
-      startPage = Math.max(0, endPage - maxPagesToShow + 1);
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(0, endPage - maxVisiblePages + 1);
     }
 
-    items.push(
-      <Pagination.First
-        key="first"
-        onClick={() => paginate(0)}
-        disabled={currentPage === 0}
-      />
-    );
-    items.push(
-      <Pagination.Prev
-        key="prev"
-        onClick={() => paginate(currentPage - 1)}
-        disabled={currentPage === 0}
-      />
-    );
-
     for (let number = startPage; number <= endPage; number++) {
-      items.push(
+      pageItems.push(
         <Pagination.Item
           key={number}
           active={number === currentPage}
@@ -726,35 +759,29 @@ const AdminPostsPage = ({ user, handleLogout }) => {
       );
     }
 
+    if (startPage > 0) {
+      pageItems.unshift(
+        <Pagination.Item key={0} onClick={() => paginate(0)}>
+          1
+        </Pagination.Item>
+      );
+      if (startPage > 1) {
+        pageItems.splice(1, 0, ellipsis);
+      }
+    }
+
     if (endPage < totalPages - 1) {
-      items.push(<Pagination.Ellipsis key="ellipsis" />);
-      items.push(
-        <Pagination.Item
-          key={totalPages - 1}
-          active={totalPages - 1 === currentPage}
-          onClick={() => paginate(totalPages - 1)}
-        >
+      if (endPage < totalPages - 2) {
+        pageItems.push(ellipsis);
+      }
+      pageItems.push(
+        <Pagination.Item key={totalPages - 1} onClick={() => paginate(totalPages - 1)}>
           {totalPages}
         </Pagination.Item>
       );
     }
 
-    items.push(
-      <Pagination.Next
-        key="next"
-        onClick={() => paginate(currentPage + 1)}
-        disabled={currentPage === totalPages - 1}
-      />
-    );
-    items.push(
-      <Pagination.Last
-        key="last"
-        onClick={() => paginate(totalPages - 1)}
-        disabled={currentPage === totalPages - 1}
-      />
-    );
-
-    return items;
+    return pageItems;
   };
 
   return (
@@ -765,6 +792,9 @@ const AdminPostsPage = ({ user, handleLogout }) => {
       <style>{customStyles}</style>
       <Sidebar user={user} handleLogout={handleLogout} />
       <div className="content-wrapper">
+        <div className="admin-header">
+          <AdminHeader user={user} setUser={setUser} handleLogin={handleLogin} handleLogout={handleLogout} />
+        </div>
         <div className="main-content">
           <Container className="custom-container">
             <motion.div
@@ -1158,11 +1188,21 @@ const AdminPostsPage = ({ user, handleLogout }) => {
                   {/* Phân trang */}
                   {totalPages > 1 && (
                     <div className="pagination-container">
-                      <Pagination>{renderPaginationItems()}</Pagination>
-                      <Form
-                        onSubmit={handlePageInputSubmit}
-                        className="d-flex align-items-center gap-2"
-                      >
+                      <Pagination>
+                        <Pagination.First onClick={() => paginate(0)} disabled={currentPage === 0} />
+                        <Pagination.Prev onClick={() => paginate(currentPage - 1)} disabled={currentPage === 0} />
+                        {renderPaginationItems()}
+                        <Pagination.Next
+                          onClick={() => paginate(currentPage + 1)}
+                          disabled={currentPage === totalPages - 1}
+                        />
+                        <Pagination.Last
+                          onClick={() => paginate(totalPages - 1)}
+                          disabled={currentPage === totalPages - 1}
+                        />
+                      </Pagination>
+
+                      <Form onSubmit={handlePageInputSubmit} className="d-flex align-items-center gap-2 ms-3">
                         <Form.Control
                           type="number"
                           value={pageInput}
@@ -1172,10 +1212,7 @@ const AdminPostsPage = ({ user, handleLogout }) => {
                           max={totalPages}
                           className="pagination-input"
                         />
-                        <Button
-                          className="pagination-go-button"
-                          onClick={handlePageInputSubmit}
-                        >
+                        <Button type="submit" className="pagination-go-button">
                           Đi
                         </Button>
                       </Form>
@@ -1186,6 +1223,7 @@ const AdminPostsPage = ({ user, handleLogout }) => {
             </motion.div>
           </Container>
         </div>
+        <AdminFooter />
       </div>
     </div>
   );

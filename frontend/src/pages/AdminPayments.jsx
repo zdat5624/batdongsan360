@@ -15,32 +15,65 @@ import { useNavigate } from "react-router-dom";
 import { FaSearch, FaInfoCircle } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { Helmet } from "react-helmet";
+import AdminHeader from "../components/AdminHeader";
 import Sidebar from "../components/Sidebar";
 import apiServices from "../services/apiServices";
 
-// CSS tùy chỉnh (giữ nguyên, không thay đổi)
+// AdminFooter component (tái sử dụng từ AdminUsers)
+const AdminFooter = () => {
+  return (
+    <footer style={{ backgroundColor: '#343a40', color: '#fff', padding: '10px 0', textAlign: 'center' }}>
+      <Container>
+        <p style={{ margin: 0 }}>THÔNG TIN</p>
+      </Container>
+    </footer>
+  );
+};
+
+// CSS tùy chỉnh
 const customStyles = `
   .layout {
     display: grid;
     grid-template-columns: minmax(250px, 250px) 1fr;
     min-height: 100vh;
-    background: #f0f4f8;
+    background-color: #f0f8ff;
   }
 
   .content-wrapper {
     display: flex;
     flex-direction: column;
+    min-height: 100vh;
   }
 
   .main-content {
     flex: 1;
     padding: 20px;
-    padding-top: 60px; /* Khoảng cách 60px từ đỉnh trang */
-    background: #f0f4f8;
+    padding-top: 50px; /* Tăng padding-top để không bị AdminHeader che khuất */
+    padding-bottom: 20px; /* Đảm bảo khoảng cách tự nhiên với footer */
+    background-color: #f0f8ff;
+    overflow-y: auto;
+  }
+
+  .admin-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 2000;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  footer {
+    background-color: #343a40;
+    color: #fff;
+    padding: 10px 0;
+    text-align: center;
+    width: 100%;
   }
 
   .custom-container {
-    padding: 20px;
+    padding: 20px;  
   }
 
   .page-title {
@@ -100,8 +133,14 @@ const customStyles = `
     align-items: center;
     justify-content: center;
     gap: 10px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap; /* Đảm bảo các phần tử nằm trên cùng một hàng */
     margin-top: 20px;
+  }
+
+  .pagination {
+    display: flex;
+    align-items: center;
+    margin: 0;
   }
 
   .pagination .page-item.active .page-link {
@@ -125,6 +164,7 @@ const customStyles = `
     width: 70px;
     height: 38px;
     border-radius: 8px;
+    border: 1px solid #ced4da;
     font-size: 0.95rem;
   }
 
@@ -135,6 +175,7 @@ const customStyles = `
     padding: 0 15px;
     background: linear-gradient(135deg, #007bff, #0056b3);
     border: none;
+    color: #fff;
   }
 
   .badge {
@@ -160,10 +201,13 @@ const customStyles = `
       top: 0;
       z-index: 1000;
       display: none;
+      max-height: calc(100vh - 60px); /* Giới hạn chiều cao của Sidebar để không che footer */
+      overflow-y: auto;
     }
     .main-content {
       padding: 15px;
-      padding-top: 60px;
+      padding-top: 100px;
+      padding-bottom: 15px;
     }
     .page-title {
       font-size: 1.5rem;
@@ -186,10 +230,14 @@ const customStyles = `
       flex-direction: column;
       align-items: stretch;
     }
+    .pagination-container {
+      flex-wrap: wrap; /* Cho phép xuống hàng trên màn hình nhỏ */
+      justify-content: center;
+    }
   }
 `;
 
-const AdminPayments = ({ user, handleLogout }) => {
+const AdminPayments = ({ user, setUser, handleLogin, handleLogout }) => {
   const navigate = useNavigate();
   const [payments, setPayments] = useState([]);
   const [error, setError] = useState(null);
@@ -222,7 +270,7 @@ const AdminPayments = ({ user, handleLogout }) => {
 
       if (response.data.statusCode === 200) {
         const transactions = response.data.data.content.map((txn) => ({
-          id: txn.id, // Vẫn giữ id trong dữ liệu để sử dụng cho key
+          id: txn.id,
           transactionId: txn.txnId || `PT${txn.id}`,
           userId: txn.user.id,
           amount: Math.abs(txn.amount),
@@ -257,48 +305,35 @@ const AdminPayments = ({ user, handleLogout }) => {
   const paginate = (pageNumber) => {
     if (pageNumber >= 1 && pageNumber <= totalPages) {
       setCurrentPage(pageNumber);
+      setGoToPage("");
     }
   };
 
-  const handleGoToPage = () => {
+  const handleGoToPage = (e) => {
+    e.preventDefault();
     const pageNumber = parseInt(goToPage, 10);
     if (!isNaN(pageNumber) && pageNumber >= 1 && pageNumber <= totalPages) {
-      setCurrentPage(pageNumber);
-      setGoToPage("");
+      paginate(pageNumber);
     } else {
-      alert("Vui lòng nhập số trang hợp lệ!");
+      alert(`Vui lòng nhập số trang hợp lệ từ 1 đến ${totalPages}`);
+      setGoToPage("");
     }
   };
 
   const renderPaginationItems = () => {
-    const items = [];
-    const maxPagesToShow = 5;
-    const halfPagesToShow = Math.floor(maxPagesToShow / 2);
+    const pageItems = [];
+    const maxVisiblePages = 5;
+    const ellipsis = <Pagination.Ellipsis disabled />;
 
-    let startPage = Math.max(1, currentPage - halfPagesToShow);
-    let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
-    if (endPage - startPage + 1 < maxPagesToShow) {
-      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
 
-    items.push(
-      <Pagination.First
-        key="first"
-        onClick={() => paginate(1)}
-        disabled={currentPage === 1}
-      />
-    );
-    items.push(
-      <Pagination.Prev
-        key="prev"
-        onClick={() => paginate(currentPage - 1)}
-        disabled={currentPage === 1}
-      />
-    );
-
     for (let number = startPage; number <= endPage; number++) {
-      items.push(
+      pageItems.push(
         <Pagination.Item
           key={number}
           active={number === currentPage}
@@ -309,35 +344,29 @@ const AdminPayments = ({ user, handleLogout }) => {
       );
     }
 
+    if (startPage > 1) {
+      pageItems.unshift(
+        <Pagination.Item key={1} onClick={() => paginate(1)}>
+          1
+        </Pagination.Item>
+      );
+      if (startPage > 2) {
+        pageItems.splice(1, 0, ellipsis);
+      }
+    }
+
     if (endPage < totalPages) {
-      items.push(<Pagination.Ellipsis key="ellipsis" />);
-      items.push(
-        <Pagination.Item
-          key={totalPages}
-          active={totalPages === currentPage}
-          onClick={() => paginate(totalPages)}
-        >
+      if (endPage < totalPages - 1) {
+        pageItems.push(ellipsis);
+      }
+      pageItems.push(
+        <Pagination.Item key={totalPages} onClick={() => paginate(totalPages)}>
           {totalPages}
         </Pagination.Item>
       );
     }
 
-    items.push(
-      <Pagination.Next
-        key="next"
-        onClick={() => paginate(currentPage + 1)}
-        disabled={currentPage === totalPages}
-      />
-    );
-    items.push(
-      <Pagination.Last
-        key="last"
-        onClick={() => paginate(totalPages)}
-        disabled={currentPage === totalPages}
-      />
-    );
-
-    return items;
+    return pageItems;
   };
 
   return (
@@ -348,6 +377,9 @@ const AdminPayments = ({ user, handleLogout }) => {
       <style>{customStyles}</style>
       <Sidebar user={user} handleLogout={handleLogout} />
       <div className="content-wrapper">
+        <div className="admin-header">
+          <AdminHeader user={user} setUser={setUser} handleLogin={handleLogin} handleLogout={handleLogout} />
+        </div>
         <div className="main-content">
           <Container className="custom-container">
             <motion.div
@@ -466,14 +498,21 @@ const AdminPayments = ({ user, handleLogout }) => {
                   </Table>
 
                   <div className="pagination-container">
-                    <Pagination>{renderPaginationItems()}</Pagination>
-                    <Form
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        handleGoToPage();
-                      }}
-                      className="d-flex align-items-center gap-2"
-                    >
+                    <Pagination>
+                      <Pagination.First onClick={() => paginate(1)} disabled={currentPage === 1} />
+                      <Pagination.Prev onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} />
+                      {renderPaginationItems()}
+                      <Pagination.Next
+                        onClick={() => paginate(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                      />
+                      <Pagination.Last
+                        onClick={() => paginate(totalPages)}
+                        disabled={currentPage === totalPages}
+                      />
+                    </Pagination>
+
+                    <Form onSubmit={handleGoToPage} className="d-flex align-items-center gap-2 ms-3">
                       <Form.Control
                         type="number"
                         value={goToPage}
@@ -483,10 +522,7 @@ const AdminPayments = ({ user, handleLogout }) => {
                         max={totalPages}
                         className="pagination-input"
                       />
-                      <Button
-                        className="pagination-go-button"
-                        onClick={handleGoToPage}
-                      >
+                      <Button type="submit" className="pagination-go-button">
                         Đi
                       </Button>
                     </Form>
@@ -496,6 +532,7 @@ const AdminPayments = ({ user, handleLogout }) => {
             </motion.div>
           </Container>
         </div>
+        <AdminFooter />
       </div>
     </div>
   );

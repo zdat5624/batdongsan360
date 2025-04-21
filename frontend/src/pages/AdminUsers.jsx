@@ -17,240 +17,162 @@ import { useNavigate } from "react-router-dom";
 import { FaSearch, FaInfoCircle, FaTrash, FaLock, FaExclamationTriangle } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { Helmet } from "react-helmet";
+import AdminHeader from "../components/AdminHeader";
 import Sidebar from "../components/Sidebar";
 import apiServices from "../services/apiServices";
 
+// AdminFooter component
+const AdminFooter = () => {
+  return (
+    <footer style={{ backgroundColor: '#343a40', color: '#fff', padding: '10px 0', textAlign: 'center' }}>
+      <Container>
+        <p style={{ margin: 0 }}>THÔNG TIN</p>
+      </Container>
+    </footer>
+  );
+};
+
 // CSS tùy chỉnh
 const customStyles = `
+.layout {
+  display: grid;
+  grid-template-columns: minmax(200px, 250px) 1fr;
+  min-height: 100vh;
+  background-color: #f0f8ff;
+}
+
+.content-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+  padding-top: 90px;
+  padding-bottom: 20px; /* Đảm bảo khoảng cách tự nhiên với footer */
+  overflow-y: auto;
+}
+
+.admin-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 2000;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+footer {
+  background-color: #343a40;
+  color: #fff;
+  padding: 10px 0;
+  text-align: center;
+  width: 100%;
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.pagination-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+  margin-top: 20px;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  margin: 0;
+}
+
+.pagination .page-item.active .page-link {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  border-color: #007bff;
+  color: #fff;
+}
+
+.pagination .page-link {
+  color: #007bff;
+  border-radius: 8px;
+  margin: 0 2px;
+  transition: all 0.2s ease;
+}
+
+.pagination .page-link:hover {
+  background-color: #e6f0ff;
+}
+
+.pagination-input {
+  width: 70px;
+  height: 38px;
+  border-radius: 8px;
+  border: 1px solid #ced4da;
+  font-size: 0.95rem;
+}
+
+.pagination-go-button {
+  height: 38px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  padding: 0 15px;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  border: none;
+  color: #fff;
+}
+
+@media (max-width: 768px) {
   .layout {
-    display: grid;
-    grid-template-columns: minmax(200px, 250px) 1fr;
-    min-height: 100vh;
-    background: #f0f4f8;
+    grid-template-columns: 1fr;
   }
-
-  .content-wrapper {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .main-content {
-    flex: 1;
-    padding: 20px;
-    overflow-y: auto;
-    margin-top:60px;
-  }
-
-  .page-title {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #007bff;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 1.5rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    background: linear-gradient(135deg, #007bff, #0056b3);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  .admin-table {
-    background-color: #fff;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    overflow: hidden;
-  }
-
-  .admin-table thead {
-    position: sticky;
+  .sidebar {
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
     top: 0;
-    z-index: 1;
-    background: linear-gradient(135deg, #007bff, #0056b3);
-    color: #fff;
+    left: 0;
+    display: none;
+    max-height: calc(100vh - 60px); /* Giới hạn chiều cao của Sidebar, để lại khoảng trống cho footer */
+    overflow-y: auto; /* Nếu Sidebar dài, cho phép cuộn */
   }
-
-  .admin-table tbody tr {
-    transition: background-color 0.2s ease;
+  .main-content {
+    padding: 15px;
+    padding-top: 100px;
+    padding-bottom: 15px;
   }
-
-  .admin-table tbody tr:hover {
-    background-color: #e6f0ff;
+  .page-title {
+    font-size: 1.5rem;
   }
+}
 
-  .admin-table tbody tr:nth-child(odd) {
-    background-color: #f8f9fa;
-  }
-
-  .search-input {
-    border-radius: 25px;
-    border: 1px solid #ced4da;
-    transition: all 0.3s ease;
-  }
-
-  .search-input:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 8px rgba(0, 123, 255, 0.2);
-  }
-
+@media (max-width: 576px) {
   .pagination-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
     flex-wrap: wrap;
-    margin-top: 20px;
+    justify-content: center;
   }
-
-  .pagination .page-item.active .page-link {
-    background: linear-gradient(135deg, #007bff, #0056b3);
-    border-color: #007bff;
-    color: #fff;
+  .page-title {
+    font-size: 1.25rem;
   }
-
-  .pagination .page-link {
-    color: #007bff;
-    border-radius: 8px;
-    margin: 0 2px;
-    transition: all 0.2s ease;
-  }
-
-  .pagination .page-link:hover {
-    background-color: #e6f0ff;
-  }
-
-  .pagination-input {
-    width: 70px;
-    height: 38px;
-    border-radius: 8px;
-    font-size: 0.95rem;
-  }
-
-  .pagination-go-button {
-    height: 38px;
-    border-radius: 8px;
-    font-size: 0.95rem;
-    padding: 0 15px;
-    background: linear-gradient(135deg, #007bff, #0056b3);
-    border: none;
-  }
-
-  .modal-content {
-    border-radius: 12px;
-    border: none;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  }
-
-  .modal-header {
-    background: linear-gradient(135deg, #1a1a1a, #2c3e50);
-    color: #fff;
-    border-top-left-radius: 12px;
-    border-top-right-radius: 12px;
-    padding: 15px 25px;
-  }
-
-  .modal-title {
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .modal-body {
-    padding: 25px;
-    font-size: 1rem;
-    color: #333;
-    max-height: 60vh;
-    overflow-y: auto;
-  }
-
-  .modal-footer {
-    padding: 15px 25px;
-    border-top: none;
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-  }
-
-  .modal-footer .btn {
-    flex: 1;
-    border-radius: 25px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-  }
-
-  .modal-footer .btn-secondary {
-    background-color: #6c757d;
-    border: none;
-  }
-
-  .modal-footer .btn-secondary:hover {
-    background-color: #5a6268;
-  }
-
-  .modal-footer .btn-primary {
-    background: linear-gradient(135deg, #007bff, #0056b3);
-    border: none;
-  }
-
-  .modal-footer .btn-primary:hover {
-    background: linear-gradient(135deg, #0056b3, #003d80);
-  }
-
-  .action-button {
-    border-radius: 25px;
-    padding: 6px 12px;
-    font-size: 0.9rem;
-    transition: background-color 0.2s ease;
-  }
-
-  .badge {
-    padding: 6px 12px;
-    border-radius: 12px;
-    font-size: 0.85rem;
-  }
-
-  @media (max-width: 768px) {
-    .layout {
-      grid-template-columns: 1fr;
-    }
-    .sidebar {
-      position: fixed;
-      width: 100%;
-      z-index: 1000;
-      top: 0;
-      left: 0;
-      display: none;
-    }
-    .main-content {
-      padding: 15px;
-    }
-    .admin-table th:nth-child(5),
-    .admin-table td:nth-child(5) {
-      display: none;
-    }
-    .page-title {
-      font-size: 1.5rem;
-    }
-  }
-
-  @media (max-width: 576px) {
-    .admin-table th:nth-child(4),
-    .admin-table td:nth-child(4) {
-      display: none;
-    }
-    .action-button {
-      padding: 5px 8px;
-      font-size: 0.8rem;
-    }
-    .page-title {
-      font-size: 1.25rem;
-    }
-  }
+}
 `;
 
-const AdminUsers = ({ user, handleLogout }) => {
+const AdminUsers = ({ user, setUser, handleLogin, handleLogout }) => {
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [error, setError] = useState(null);
@@ -388,6 +310,9 @@ const AdminUsers = ({ user, handleLogout }) => {
       <style>{customStyles}</style>
       <Sidebar user={user} handleLogout={handleLogout} />
       <div className="content-wrapper">
+        <div className="admin-header">
+          <AdminHeader user={user} setUser={setUser} handleLogin={handleLogin} handleLogout={handleLogout} />
+        </div>
         <div className="main-content">
           <Container>
             <motion.div
@@ -396,15 +321,15 @@ const AdminUsers = ({ user, handleLogout }) => {
               transition={{ duration: 0.5 }}
             >
               <h2 className="page-title">
-                <FaInfoCircle /> Quản lý Người dùng
+                <FaInfoCircle /> Quản Lý Người Dùng
               </h2>
+
               {error && (
                 <Alert variant="danger" dismissible onClose={() => setError(null)}>
                   {error}
                 </Alert>
               )}
 
-              {/* Thanh tìm kiếm */}
               <div className="d-flex justify-content-start mb-4">
                 <InputGroup style={{ maxWidth: "350px" }}>
                   <InputGroup.Text style={{ background: "#fff", borderRadius: "25px 0 0 25px" }}>
@@ -424,7 +349,6 @@ const AdminUsers = ({ user, handleLogout }) => {
                 </InputGroup>
               </div>
 
-              {/* Modal xác nhận */}
               <Modal
                 show={showConfirm}
                 onHide={() => setShowConfirm(false)}
@@ -455,7 +379,6 @@ const AdminUsers = ({ user, handleLogout }) => {
                 </Modal.Footer>
               </Modal>
 
-              {/* Modal chi tiết người dùng */}
               <Modal show={showDetailModal} onHide={() => setShowDetailModal(false)} centered>
                 <Modal.Header closeButton>
                   <Modal.Title>
@@ -520,7 +443,6 @@ const AdminUsers = ({ user, handleLogout }) => {
                 </Modal.Footer>
               </Modal>
 
-              {/* Bảng người dùng */}
               <Table responsive className="admin-table">
                 <thead>
                   <tr>
@@ -535,7 +457,7 @@ const AdminUsers = ({ user, handleLogout }) => {
                 <tbody>
                   {loading ? (
                     <tr>
-                      <td colSpan="7" className="text-center py-4">
+                      <td colSpan="6" className="text-center py-4">
                         <Spinner animation="border" variant="primary" />
                         <span className="ms-2">Đang tải...</span>
                       </td>
@@ -591,7 +513,7 @@ const AdminUsers = ({ user, handleLogout }) => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="7" className="text-center py-4">
+                      <td colSpan="6" className="text-center py-4">
                         Không tìm thấy người dùng nào.
                       </td>
                     </tr>
@@ -599,12 +521,10 @@ const AdminUsers = ({ user, handleLogout }) => {
                 </tbody>
               </Table>
 
-              {/* Phân trang */}
               <div className="pagination-container">
                 <Pagination>
                   <Pagination.First onClick={() => paginate(1)} disabled={currentPage === 1} />
                   <Pagination.Prev onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} />
-
                   {(() => {
                     const pageItems = [];
                     const maxVisiblePages = 5;
@@ -653,7 +573,6 @@ const AdminUsers = ({ user, handleLogout }) => {
 
                     return pageItems;
                   })()}
-
                   <Pagination.Next
                     onClick={() => paginate(currentPage + 1)}
                     disabled={currentPage === totalPages}
@@ -664,7 +583,7 @@ const AdminUsers = ({ user, handleLogout }) => {
                   />
                 </Pagination>
 
-                <Form onSubmit={handlePageInputSubmit} className="d-flex align-items-center gap-2">
+                <Form onSubmit={handlePageInputSubmit} className="d-flex align-items-center gap-2 ms-3">
                   <Form.Control
                     type="number"
                     value={pageInput}
@@ -682,6 +601,7 @@ const AdminUsers = ({ user, handleLogout }) => {
             </motion.div>
           </Container>
         </div>
+        <AdminFooter />
       </div>
     </div>
   );

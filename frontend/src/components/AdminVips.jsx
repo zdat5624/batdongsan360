@@ -12,8 +12,20 @@ import {
 import { FaSyncAlt, FaEdit, FaInfoCircle } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { Helmet } from "react-helmet";
+import AdminHeader from "../components/AdminHeader";
 import Sidebar from "../components/Sidebar";
 import apiServices from "../services/apiServices";
+
+// AdminFooter component (tái sử dụng từ AdminUsers)
+const AdminFooter = () => {
+  return (
+    <footer style={{ backgroundColor: '#343a40', color: '#fff', padding: '10px 0', textAlign: 'center' }}>
+      <Container>
+        <p style={{ margin: 0 }}>THÔNG TIN</p>
+      </Container>
+    </footer>
+  );
+};
 
 // CSS tùy chỉnh
 const customStyles = `
@@ -27,17 +39,39 @@ const customStyles = `
   .content-wrapper {
     display: flex;
     flex-direction: column;
+    min-height: 100vh;
   }
 
   .main-content {
     flex: 1;
     padding: 20px;
-    padding-top: 60px; /* Khoảng cách 60px từ đỉnh trang */
-    background: #f0f4f8;
+    padding-top: 50px; /* Tăng padding-top để không bị AdminHeader che khuất */
+    padding-bottom: 20px; /* Đảm bảo khoảng cách tự nhiên với footer */
+    background-color: #f0f8ff;
+    overflow-y: auto;
+  }
+
+  .admin-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 2000;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  footer {
+    background-color: #343a40;
+    color: #fff;
+    padding: 10px 0;
+    text-align: center;
+    width: 100%;
   }
 
   .custom-container {
     padding: 20px;
+    
   }
 
   .page-title {
@@ -164,10 +198,13 @@ const customStyles = `
       top: 0;
       z-index: 1000;
       display: none;
+      max-height: calc(100vh - 60px); /* Giới hạn chiều cao của Sidebar để không che footer */
+      overflow-y: auto;
     }
     .main-content {
       padding: 15px;
-      padding-top: 60px;
+      padding-top: 100px;
+      padding-bottom: 15px;
     }
     .page-title {
       font-size: 1.5rem;
@@ -193,7 +230,7 @@ const customStyles = `
   }
 `;
 
-const AdminVips = ({ user, handleLogout }) => {
+const AdminVips = ({ user, setUser, handleLogin, handleLogout }) => {
   const [vips, setVips] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -288,6 +325,9 @@ const AdminVips = ({ user, handleLogout }) => {
       <style>{customStyles}</style>
       <Sidebar user={user} handleLogout={handleLogout} />
       <div className="content-wrapper">
+        <div className="admin-header">
+          <AdminHeader user={user} setUser={setUser} handleLogin={handleLogin} handleLogout={handleLogout} />
+        </div>
         <div className="main-content">
           <Container className="custom-container">
             <motion.div
@@ -412,6 +452,7 @@ const AdminVips = ({ user, handleLogout }) => {
             </motion.div>
           </Container>
         </div>
+        <AdminFooter />
       </div>
     </div>
   );
