@@ -2,6 +2,7 @@ package vn.thanhdattanphuoc.batdongsan360.util;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
+import org.springframework.core.io.Resource;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.http.server.ServletServerHttpResponse;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
 import jakarta.servlet.http.HttpServletResponse;
+import vn.thanhdattanphuoc.batdongsan360.util.annotation.ApiMessage;
 import vn.thanhdattanphuoc.batdongsan360.util.response.RestResponse;
 
 @ControllerAdvice
@@ -35,7 +37,7 @@ public class FormatRestResponse implements ResponseBodyAdvice<Object> {
 
         // case: success or error
 
-        if (body instanceof String) {
+        if (body instanceof String || body instanceof Resource) {
             return body;
         }
 
@@ -43,7 +45,8 @@ public class FormatRestResponse implements ResponseBodyAdvice<Object> {
             return body;
         } else {
             res.setData(body);
-            res.setMessage("CALL API SUCCESS");
+            ApiMessage message = returnType.getMethodAnnotation(ApiMessage.class);
+            res.setMessage(message != null ? message.value() : "CALL API SUCCESS");
         }
 
         return res;

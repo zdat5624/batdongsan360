@@ -16,7 +16,6 @@ const Sidebar = ({ user, handleLogout }) => {
       position: sticky !important; /* Giữ sidebar cố định */
       top: 0 !important;
       z-index: 100 !important; /* Đảm bảo không bị che */
-    
     }
     .sidebar .nav-link {
       padding: 15px 20px !important;
@@ -38,6 +37,20 @@ const Sidebar = ({ user, handleLogout }) => {
     <>
       <style>{sidebarStyles}</style>
       <Nav className="sidebar flex-column">
+      {/* Các mục mới dành cho người dùng */}
+      <Nav.Link as={NavLink} to="/profile">
+          <i className="fas fa-user me-2"></i> Thông tin cá nhân
+        </Nav.Link>
+        <Nav.Link as={NavLink} to="/payment">
+          <i className="fas fa-credit-card me-2"></i> Thanh toán
+        </Nav.Link>
+        <Nav.Link as={NavLink} to="/post-history">
+          <i className="fas fa-history me-2"></i> Lịch sử đăng tin
+        </Nav.Link>
+        <Nav.Link as={NavLink} to="/notifications">
+          <i className="fas fa-bell me-2"></i> Xem thông báo
+        </Nav.Link>
+        {/* Các mục dành cho quản trị viên */}
         <Nav.Link as={NavLink} to="/admin/users">
           <i className="fas fa-users me-2"></i> Quản lý người dùng
         </Nav.Link>
@@ -50,6 +63,8 @@ const Sidebar = ({ user, handleLogout }) => {
         <Nav.Link as={NavLink} to="/admin/posts">
           <i className="fas fa-home me-2"></i> Quản lý tin đăng
         </Nav.Link>
+
+        
       </Nav>
     </>
   );

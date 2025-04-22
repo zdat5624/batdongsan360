@@ -11,7 +11,11 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "wards")
 public class Ward {
@@ -36,61 +40,5 @@ public class Ward {
     @JoinColumn(name = "district_code")
     @JsonIgnore
     private District district;
-
-    public long getCode() {
-        return code;
-    }
-
-    public List<Post> getPost() {
-        return post;
-    }
-
-    public void setPost(List<Post> post) {
-        this.post = post;
-    }
-
-    public void setCode(long code) {
-        this.code = code;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getCodename() {
-        return codename;
-    }
-
-    public void setCodename(String codename) {
-        this.codename = codename;
-    }
-
-    public String getDivisionType() {
-        return divisionType;
-    }
-
-    public void setDivisionType(String divisionType) {
-        this.divisionType = divisionType;
-    }
-
-    public String getShortCodename() {
-        return shortCodename;
-    }
-
-    public void setShortCodename(String shortCodename) {
-        this.shortCodename = shortCodename;
-    }
-
-    public District getDistrict() {
-        return district;
-    }
-
-    public void setDistrict(District district) {
-        this.district = district;
-    }
 
 }

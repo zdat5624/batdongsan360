@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import vn.thanhdattanphuoc.batdongsan360.service.VNPAYService;
-import vn.thanhdattanphuoc.batdongsan360.util.error.IdInvalidException;
+import vn.thanhdattanphuoc.batdongsan360.util.error.InputInvalidException;
 import vn.thanhdattanphuoc.batdongsan360.util.request.CreatePaymentDTO;
 import vn.thanhdattanphuoc.batdongsan360.util.response.ResPaymentLinkDTO;
 
@@ -35,7 +35,7 @@ public class PaymentController {
 
     @PostMapping("/api/payment/create")
     public ResponseEntity<ResPaymentLinkDTO> createPayment(@RequestBody CreatePaymentDTO createPaymentDTO)
-            throws UnsupportedEncodingException, IdInvalidException {
+            throws UnsupportedEncodingException, InputInvalidException {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(this.vnpayService.createVNPayLink(createPaymentDTO.getAmount()));
@@ -43,7 +43,7 @@ public class PaymentController {
 
     @GetMapping("/api/payment/vnpay-payment-return")
     public void paymentCompleted(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, IdInvalidException {
+            throws IOException, InputInvalidException {
 
         int paymentStatus = this.vnpayService.handleOrderReturn(request);
 

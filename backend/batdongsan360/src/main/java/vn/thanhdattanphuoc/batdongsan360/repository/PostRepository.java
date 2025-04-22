@@ -36,4 +36,34 @@ public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificat
                         @Param("type") PostTypeEnum type,
                         @Param("provinceCode") Long provinceCode,
                         Pageable pageable);
+
+        @Query("SELECT " +
+                        "p.latitude, " +
+                        "p.longitude, " +
+                        "p.id as postId, " +
+                        "p.vip.id as vipId, " +
+                        "p.price " +
+                        "FROM Post p " +
+                        "WHERE (:minPrice IS NULL OR p.price >= :minPrice) " +
+                        "AND (:maxPrice IS NULL OR p.price <= :maxPrice) " +
+                        "AND (:minArea IS NULL OR p.area >= :minArea) " +
+                        "AND (:maxArea IS NULL OR p.area <= :maxArea) " +
+                        "AND (:categoryId IS NULL OR p.category.id = :categoryId) " +
+                        "AND (:type IS NULL OR p.type = :type) " +
+                        "AND (:provinceCode IS NULL OR p.province.code = :provinceCode) " +
+                        "AND (:districtCode IS NULL OR p.district.code = :districtCode) " +
+                        "AND (:wardCode IS NULL OR p.ward.code = :wardCode) " +
+                        "AND p.status IN ('APPROVED', 'REVIEW_LATER') " +
+                        "AND p.latitude IS NOT NULL AND p.longitude IS NOT NULL")
+        List<Object[]> findPostsForMap(
+                        @Param("minPrice") Long minPrice,
+                        @Param("maxPrice") Long maxPrice,
+                        @Param("minArea") Double minArea,
+                        @Param("maxArea") Double maxArea,
+                        @Param("categoryId") Long categoryId,
+                        @Param("type") PostTypeEnum type,
+                        @Param("provinceCode") Long provinceCode,
+                        @Param("districtCode") Long districtCode,
+                        @Param("wardCode") Long wardCode);
+
 }

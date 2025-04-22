@@ -2,6 +2,8 @@ package vn.thanhdattanphuoc.batdongsan360.controller;
 
 import jakarta.validation.Valid;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -20,9 +22,11 @@ import vn.thanhdattanphuoc.batdongsan360.domain.Post;
 import vn.thanhdattanphuoc.batdongsan360.service.PostService;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.PostStatusEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.PostTypeEnum;
-import vn.thanhdattanphuoc.batdongsan360.util.error.IdInvalidException;
+import vn.thanhdattanphuoc.batdongsan360.util.error.InputInvalidException;
 import vn.thanhdattanphuoc.batdongsan360.util.request.PostRequestDTO;
 import vn.thanhdattanphuoc.batdongsan360.util.request.UpdatePostStatusDTO;
+import vn.thanhdattanphuoc.batdongsan360.util.response.MapPostDTO;
+import vn.thanhdattanphuoc.batdongsan360.util.response.ResAddressDTO;
 
 @RestController
 public class PostController {
@@ -34,13 +38,13 @@ public class PostController {
     }
 
     @PostMapping("/api/posts")
-    public ResponseEntity<Post> createPost(@Valid @RequestBody PostRequestDTO requestDTO) throws IdInvalidException {
+    public ResponseEntity<Post> createPost(@Valid @RequestBody PostRequestDTO requestDTO) throws InputInvalidException {
         Post createdPost = postService.createPost(requestDTO.getPost(), requestDTO.getNumberOfDays());
         return ResponseEntity.status(HttpStatus.CREATED).body(createdPost);
     }
 
     @PutMapping("/api/posts")
-    public ResponseEntity<Post> updatePost(@Valid @RequestBody Post updatedPost) throws IdInvalidException {
+    public ResponseEntity<Post> updatePost(@Valid @RequestBody Post updatedPost) throws InputInvalidException {
 
         Post post = postService.updatePost(updatedPost);
         return ResponseEntity.status(HttpStatus.OK).body(post);
@@ -48,26 +52,26 @@ public class PostController {
     }
 
     @DeleteMapping("/api/posts/{id}")
-    public ResponseEntity<Void> deletePost(@PathVariable Long id) throws IdInvalidException {
+    public ResponseEntity<Void> deletePost(@PathVariable Long id) throws InputInvalidException {
         postService.deletePost(id);
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
     @PutMapping("/api/admin/posts/status")
     public ResponseEntity<Post> updatePostStatus(
-            @Valid @RequestBody UpdatePostStatusDTO dto) throws IdInvalidException {
+            @Valid @RequestBody UpdatePostStatusDTO dto) throws InputInvalidException {
         Post updatedPost = postService.updatePostStatus(dto.getPostId(), dto.getStatus(), dto.getMessage());
         return ResponseEntity.ok(updatedPost);
     }
 
     @DeleteMapping("/api/admin/posts/delete/{id}")
-    public ResponseEntity<Void> deletePostAdmin(@PathVariable Long id) throws IdInvalidException {
+    public ResponseEntity<Void> deletePostAdmin(@PathVariable Long id) throws InputInvalidException {
         postService.deletePostAdmin(id);
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
     @GetMapping("/api/posts/{id}")
-    public ResponseEntity<Post> getPostById(@PathVariable Long id) throws IdInvalidException {
+    public ResponseEntity<Post> getPostById(@PathVariable Long id) throws InputInvalidException {
         Post post = postService.getPostById(id);
         return ResponseEntity.status(HttpStatus.OK).body(post);
     }
@@ -117,9 +121,36 @@ public class PostController {
             @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
             @RequestParam(required = false) PostStatusEnum status,
             @RequestParam(required = false) PostTypeEnum type,
-            @RequestParam(required = false) Long provinceCode) throws IdInvalidException {
+            @RequestParam(required = false) Long provinceCode) throws InputInvalidException {
 
         Page<Post> posts = postService.getMyPosts(pageable, status, type, provinceCode);
         return ResponseEntity.ok(posts);
     }
+
+    @GetMapping("/api/posts/{postId}/address")
+    public ResponseEntity<ResAddressDTO> getFullAddress(@PathVariable Long postId) {
+        String fullAddress = postService.getFullAddressByPostId(postId);
+        ResAddressDTO addressDTO = new ResAddressDTO();
+        addressDTO.setFullAddress(fullAddress);
+        return ResponseEntity.ok(addressDTO);
+    }
+
+    @GetMapping("/api/posts/map")
+    public ResponseEntity<List<MapPostDTO>> getPostsForMap(
+            @RequestParam(required = false) Long minPrice,
+            @RequestParam(required = false) Long maxPrice,
+            @RequestParam(required = false) Double minArea,
+            @RequestParam(required = false) Double maxArea,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = true) PostTypeEnum type,
+            @RequestParam(required = false) Long provinceCode,
+            @RequestParam(required = false) Long districtCode,
+            @RequestParam(required = false) Long wardCode) {
+
+        List<MapPostDTO> result = postService.getPostsForMap(minPrice, maxPrice, minArea, maxArea,
+                categoryId, type, provinceCode, districtCode, wardCode);
+        System.out.println(">>> Count list MapPostDTO: " + result.size());
+        return ResponseEntity.ok(result);
+    }
+
 }

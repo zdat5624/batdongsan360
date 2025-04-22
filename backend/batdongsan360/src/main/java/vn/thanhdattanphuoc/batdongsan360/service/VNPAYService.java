@@ -4,7 +4,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
-
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,21 +30,37 @@ import vn.thanhdattanphuoc.batdongsan360.repository.UserRepository;
 import vn.thanhdattanphuoc.batdongsan360.util.SecurityUtil;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.NotificationType;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.TransStatusEnum;
-import vn.thanhdattanphuoc.batdongsan360.util.error.IdInvalidException;
+import vn.thanhdattanphuoc.batdongsan360.util.error.InputInvalidException;
 import vn.thanhdattanphuoc.batdongsan360.util.response.ResPaymentLinkDTO;
 
 @Service
 public class VNPAYService {
 
-    TransactionRepository transactionRepository;
-    UserRepository userRepository;
+    private final TransactionRepository transactionRepository;
+    private final UserRepository userRepository;
+    private final EmailService emailService;
 
-    public VNPAYService(TransactionRepository transactionRepository, UserRepository userRepository) {
+    @Value("${vnp.PayUrl}")
+    private String vnp_PayUrl;
+
+    @Value("${vnp.ReturnUrl.backend}")
+    private String vnp_ReturnUrl;
+
+    @Value("${vnp.TmnCode}")
+    private String vnp_TmnCode;
+
+    @Value("${vnp.secretKey")
+    private String secretKey;
+
+    public VNPAYService(TransactionRepository transactionRepository, UserRepository userRepository,
+            EmailService emailService) {
         this.transactionRepository = transactionRepository;
         this.userRepository = userRepository;
+        this.emailService = emailService;
     }
 
-    public ResPaymentLinkDTO createVNPayLink(long inputAmount) throws UnsupportedEncodingException, IdInvalidException {
+    public ResPaymentLinkDTO createVNPayLink(long inputAmount)
+            throws UnsupportedEncodingException, InputInvalidException {
 
         String vnp_Version = "2.1.0";
         String vnp_Command = "pay";
@@ -58,16 +76,14 @@ public class VNPAYService {
 
         // Lấy user hiện tại từ SecurityUtil
         String userEmail = SecurityUtil.getCurrentUserLogin()
-                .orElseThrow(() -> new IdInvalidException("Chưa đăng nhập"));
+                .orElseThrow(() -> new InputInvalidException("Chưa đăng nhập"));
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new IdInvalidException("Không tìm thấy người dùng"));
+                .orElseThrow(() -> new InputInvalidException("Không tìm thấy người dùng"));
 
         String vnp_TxnRef = ConfigVNPAY.getRandomNumber(10);
 
         String vnp_IpAddr = "127.0.0.1";
         // String vnp_IpAddr = Config.getIpAddress(req);
-
-        String vnp_TmnCode = ConfigVNPAY.vnp_TmnCode;
 
         Map<String, String> vnp_Params = new HashMap<>();
         vnp_Params.put("vnp_Version", vnp_Version);
@@ -92,7 +108,7 @@ public class VNPAYService {
         // } else {
         // vnp_Params.put("vnp_Locale", "vn");
         // }
-        vnp_Params.put("vnp_ReturnUrl", ConfigVNPAY.vnp_ReturnUrl);
+        vnp_Params.put("vnp_ReturnUrl", vnp_ReturnUrl);
         vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
 
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
@@ -130,7 +146,7 @@ public class VNPAYService {
         String queryUrl = query.toString();
         String vnp_SecureHash = ConfigVNPAY.hmacSHA512(ConfigVNPAY.secretKey, hashData.toString());
         queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
-        String paymentUrl = ConfigVNPAY.vnp_PayUrl + "?" + queryUrl;
+        String paymentUrl = vnp_PayUrl + "?" + queryUrl;
 
         // Tạo giao dịch mới
         Transaction transaction = new Transaction();
@@ -148,7 +164,7 @@ public class VNPAYService {
     }
 
     @Transactional
-    public int handleOrderReturn(HttpServletRequest request) throws IdInvalidException {
+    public int handleOrderReturn(HttpServletRequest request) throws InputInvalidException {
         // Begin process return from VNPAY
         Map fields = new HashMap();
         for (Enumeration params = request.getParameterNames(); params.hasMoreElements();) {
@@ -180,11 +196,11 @@ public class VNPAYService {
         String transactionStatus = request.getParameter("vnp_TransactionStatus");
 
         if (txnId == null) {
-            throw new IdInvalidException("Không tìm thấy mã giao dịch.");
+            throw new InputInvalidException("Không tìm thấy mã giao dịch.");
         }
 
         Transaction transaction = transactionRepository.findByTxnId(txnId)
-                .orElseThrow(() -> new IdInvalidException("Giao dịch không tồn tại"));
+                .orElseThrow(() -> new InputInvalidException("Giao dịch không tồn tại"));
 
         String description;
         TransStatusEnum status;
@@ -193,6 +209,10 @@ public class VNPAYService {
             case "00":
                 status = TransStatusEnum.SUCCESS;
                 description = "Giao dịch nạp tiền thành công";
+                break;
+            case "02":
+                status = TransStatusEnum.FAILED;
+                description = "Người dùng hủy giao dịch";
                 break;
             case "07":
                 status = TransStatusEnum.FAILED;
@@ -264,6 +284,11 @@ public class VNPAYService {
                 notification.setRead(false);
                 notification.setType(NotificationType.TRANSACTION);
                 notification.setMessage(description + ", tài khoản cộng " + transaction.getAmount());
+
+                // send mail
+                String transactionTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
+                this.emailService.sendDepositSuccessEmail(user.getEmail(), user.getName(), transaction.getAmount(),
+                        transactionTime);
                 return 1;
             } else {
                 return 0;

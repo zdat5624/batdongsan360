@@ -14,12 +14,18 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import vn.thanhdattanphuoc.batdongsan360.domain.User;
+import vn.thanhdattanphuoc.batdongsan360.service.ForgotPasswordService;
 import vn.thanhdattanphuoc.batdongsan360.service.UserService;
 import vn.thanhdattanphuoc.batdongsan360.util.SecurityUtil;
+import vn.thanhdattanphuoc.batdongsan360.util.annotation.ApiMessage;
+import vn.thanhdattanphuoc.batdongsan360.util.constant.GenderEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.RoleEnum;
-import vn.thanhdattanphuoc.batdongsan360.util.error.IdInvalidException;
+import vn.thanhdattanphuoc.batdongsan360.util.error.InputInvalidException;
+import vn.thanhdattanphuoc.batdongsan360.util.request.EmailRequest;
 import vn.thanhdattanphuoc.batdongsan360.util.request.LoginDTO;
 import vn.thanhdattanphuoc.batdongsan360.util.request.RegisterDTO;
+import vn.thanhdattanphuoc.batdongsan360.util.request.ResetPasswordRequest;
+import vn.thanhdattanphuoc.batdongsan360.util.response.MessageDTO;
 import vn.thanhdattanphuoc.batdongsan360.util.response.ResCreateUserDTO;
 import vn.thanhdattanphuoc.batdongsan360.util.response.ResLoginDTO;
 
@@ -30,13 +36,15 @@ public class AuthController {
     final private SecurityUtil securityService;
     final private UserService userService;
     private final PasswordEncoder passwordEncoder;
+    private final ForgotPasswordService forgotPasswordService;
 
     public AuthController(AuthenticationManagerBuilder authenticationManagerBuilder, SecurityUtil securityService,
-            UserService userService, PasswordEncoder passwordEncoder) {
+            UserService userService, PasswordEncoder passwordEncoder, ForgotPasswordService forgotPasswordService) {
         this.authenticationManagerBuilder = authenticationManagerBuilder;
         this.securityService = securityService;
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
+        this.forgotPasswordService = forgotPasswordService;
     }
 
     @PostMapping("/api/auth/login")
@@ -61,9 +69,14 @@ public class AuthController {
                     currentUserDB.getId(),
                     currentUserDB.getEmail(),
                     currentUserDB.getName(),
-                    currentUserDB.getRole());
+                    currentUserDB.getRole(),
+                    currentUserDB.getAvatar(),
+                    currentUserDB.getBalance(),
+                    currentUserDB.getGender(),
+                    currentUserDB.getPhone());
             res.setUser(userLogin);
         }
+
         return ResponseEntity.ok().body(res);
     }
 
@@ -82,6 +95,10 @@ public class AuthController {
             userLogin.setEmail(currentUserDB.getEmail());
             userLogin.setName(currentUserDB.getName());
             userLogin.setRole(currentUserDB.getRole());
+            userLogin.setAvatar(currentUserDB.getAvatar());
+            userLogin.setBalance(currentUserDB.getBalance());
+            userLogin.setGender(currentUserDB.getGender());
+            userLogin.setPhone(currentUserDB.getPhone());
         }
 
         return ResponseEntity.ok().body(userLogin);
@@ -89,10 +106,10 @@ public class AuthController {
 
     @PostMapping("/api/auth/register")
     public ResponseEntity<ResCreateUserDTO> register(@Valid @RequestBody RegisterDTO registerDTO)
-            throws IdInvalidException {
+            throws InputInvalidException {
         boolean isEmailExist = this.userService.isEmailExist(registerDTO.getEmail());
         if (isEmailExist) {
-            throw new IdInvalidException(
+            throw new InputInvalidException(
                     "Email " + registerDTO.getEmail() + " đã tồn tại, vui lòng sử dụng email khác.");
         }
 
@@ -118,6 +135,22 @@ public class AuthController {
         res.setCreatedBy(currentUserDB.getCreatedBy());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(res);
+    }
+
+    @ApiMessage("Mã xác nhận đã được gửi đến email của bạn.")
+    @PostMapping("/api/auth/forgot-password")
+    public ResponseEntity<Void> requestPasswordReset(@RequestBody EmailRequest request)
+            throws InputInvalidException {
+        forgotPasswordService.requestPasswordReset(request.getEmail());
+        return ResponseEntity.ok(null);
+    }
+
+    @ApiMessage("Đổi mật khẩu thành công")
+    @PostMapping("/api/auth/reset-password")
+    public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request)
+            throws InputInvalidException {
+        forgotPasswordService.resetPassword(request.getEmail(), request.getCode(), request.getNewPassword());
+        return ResponseEntity.ok(null);
     }
 
 }

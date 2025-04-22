@@ -12,14 +12,16 @@ import vn.thanhdattanphuoc.batdongsan360.util.constant.NotificationType;
 
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
-    boolean existsByMessage(String message);
+        boolean existsByMessage(String message);
 
-    @Query("SELECT n FROM Notification n WHERE n.user.id = :userId "
-            + "AND (:isRead IS NULL OR n.isRead = :isRead) "
-            + "AND (:type IS NULL OR n.type = :type)")
-    Page<Notification> findByUserAndFilters(
-            @Param("userId") Long userId,
-            @Param("isRead") Boolean isRead,
-            @Param("type") NotificationType type,
-            Pageable pageable);
+        long countByUserIdAndIsReadFalse(Long userId);
+
+        @Query("SELECT n FROM Notification n WHERE n.user.id = :userId "
+                        + "AND (:isRead IS NULL OR n.isRead = :isRead) "
+                        + "AND (:type IS NULL OR n.type = :type)")
+        Page<Notification> findByUserAndFilters(
+                        @Param("userId") Long userId,
+                        @Param("isRead") Boolean isRead,
+                        @Param("type") NotificationType type,
+                        Pageable pageable);
 }

@@ -34,7 +34,7 @@ public class GlobalException {
     @ExceptionHandler(value = {
             UsernameNotFoundException.class,
             BadCredentialsException.class,
-            IdInvalidException.class,
+            InputInvalidException.class,
             RuntimeException.class
 
     })
@@ -90,7 +90,7 @@ public class GlobalException {
         RestResponse<Object> res = new RestResponse<Object>();
         res.setStatusCode(HttpStatus.BAD_REQUEST.value());
         res.setMessage(ex.getMessage());
-        res.setError("Exception upload file...");
+        res.setError("Lỗi upload file...");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
     }
 

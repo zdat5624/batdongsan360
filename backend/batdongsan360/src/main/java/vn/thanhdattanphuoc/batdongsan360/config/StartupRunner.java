@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 import org.springframework.boot.CommandLineRunner;
@@ -29,6 +30,7 @@ import vn.thanhdattanphuoc.batdongsan360.repository.*;
 import vn.thanhdattanphuoc.batdongsan360.repository.address.DistrictRepository;
 import vn.thanhdattanphuoc.batdongsan360.repository.address.ProvinceRepository;
 import vn.thanhdattanphuoc.batdongsan360.repository.address.WardRepository;
+import vn.thanhdattanphuoc.batdongsan360.service.MapboxGeocodeService;
 import vn.thanhdattanphuoc.batdongsan360.service.UserService;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.GenderEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.NotificationType;
@@ -54,12 +56,13 @@ public class StartupRunner implements CommandLineRunner {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final TransactionRepository transactionRepository;
+    private final MapboxGeocodeService mapboxGeocodeService;
 
     public StartupRunner(VipRepository vipRepository, ProvinceRepository provinceRepository,
             DistrictRepository districtRepository, WardRepository wardRepository, PasswordEncoder passwordEncoder,
             CategoryRepository categoryRepository, UserService userService, PostRepository postRepository,
             UserRepository userRepository, TransactionRepository transactionRepository,
-            NotificationRepository notificationRepository) {
+            NotificationRepository notificationRepository, MapboxGeocodeService mapboxGeocodeService) {
         this.vipRepository = vipRepository;
         this.provinceRepository = provinceRepository;
         this.districtRepository = districtRepository;
@@ -71,6 +74,7 @@ public class StartupRunner implements CommandLineRunner {
         this.userRepository = userRepository;
         this.transactionRepository = transactionRepository;
         this.notificationRepository = notificationRepository;
+        this.mapboxGeocodeService = mapboxGeocodeService;
     }
 
     @Override
@@ -235,7 +239,7 @@ public class StartupRunner implements CommandLineRunner {
 
         List<Post> posts = new ArrayList<>();
 
-        for (int i = 1; i <= 10000; i++) {
+        for (int i = 1; i <= 1000; i++) {
             Post post = new Post();
             Category selectedCategory = categories.get(random.nextInt(categories.size()));
             Vip selectedVip = vips.get(random.nextInt(vips.size()));
@@ -265,6 +269,13 @@ public class StartupRunner implements CommandLineRunner {
             String fullAddress = detailAddress + (selectedWard != null ? selectedWard.getName() : "") +
                     (selectedDistrict != null ? ", " + selectedDistrict.getName() : "") +
                     ", " + selectedProvince.getName();
+
+            Optional<double[]> latLng = mapboxGeocodeService.getLatLngFromAddress(fullAddress);
+            if (latLng.isPresent()) {
+                double[] coords = latLng.get();
+                post.setLongitude(coords[0]);
+                post.setLatitude(coords[1]);
+            }
 
             String title = "";
             String description = "";
@@ -391,8 +402,7 @@ public class StartupRunner implements CommandLineRunner {
                             roundedArea, fullAddress);
                     sampleImageUrls = Arrays.asList(
                             "batdongsankhac (1).jpg", "batdongsankhac (2).jpg", "batdongsankhac (3).jpg",
-                            "batdongsankhac (4).jpg", "batdongsankhac (5).jpg", "bdskhac (1).jpg", "bdskhac (2).jpg",
-                            "bdskhac (3).jpg", "bdskhac (4).jpg", "bdskhac (5).jpg", "bdskhac (6).jpg");
+                            "batdongsankhac (4).jpg", "batdongsankhac (5).jpg");
                     break;
 
                 case "Bán căn hộ chung cư":
@@ -636,7 +646,7 @@ public class StartupRunner implements CommandLineRunner {
             }
             post.setImages(images);
 
-            post.setView(10500 - i);
+            post.setView(random.nextInt(1000) + 100);
 
             posts.add(post);
         }
@@ -659,7 +669,7 @@ public class StartupRunner implements CommandLineRunner {
                 TransStatusEnum.FAILED);
 
         // Tạo 200 giao dịch mẫu
-        for (int i = 1; i <= 5000; i++) {
+        for (int i = 1; i <= 100; i++) {
             Transaction transaction = new Transaction();
 
             // Gán user ngẫu nhiên
@@ -743,7 +753,7 @@ public class StartupRunner implements CommandLineRunner {
         List<Transaction> transactions = transactionRepository.findAll();
         List<Notification> notifications = new ArrayList<>();
 
-        for (int i = 1; i <= 5000; i++) {
+        for (int i = 1; i <= 100; i++) {
             Notification notification = new Notification();
 
             User selectedUser = users.get(random.nextInt(users.size()));
