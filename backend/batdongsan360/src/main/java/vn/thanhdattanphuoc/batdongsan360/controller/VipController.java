@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import vn.thanhdattanphuoc.batdongsan360.domain.Vip;
 import vn.thanhdattanphuoc.batdongsan360.service.VipService;
-import vn.thanhdattanphuoc.batdongsan360.util.error.IdInvalidException;
+import vn.thanhdattanphuoc.batdongsan360.util.error.InputInvalidException;
 
 @RestController
 public class VipController {
@@ -29,7 +29,7 @@ public class VipController {
 
     @PutMapping("api/admin/vips/{id}/price")
     public ResponseEntity<Vip> updateVipPrice(@PathVariable Long id, @RequestParam long newPrice)
-            throws IdInvalidException {
+            throws InputInvalidException {
         Vip updatedVip = vipService.updateVipPrice(id, newPrice);
         return ResponseEntity.ok(updatedVip);
     }

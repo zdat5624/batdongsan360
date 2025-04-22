@@ -34,7 +34,7 @@ import vn.thanhdattanphuoc.batdongsan360.util.constant.PostStatusEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.PostTypeEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.RoleEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.TransStatusEnum;
-import vn.thanhdattanphuoc.batdongsan360.util.error.IdInvalidException;
+import vn.thanhdattanphuoc.batdongsan360.util.error.InputInvalidException;
 import vn.thanhdattanphuoc.batdongsan360.util.response.MapPostDTO;
 
 import java.time.Instant;
@@ -77,46 +77,46 @@ public class PostService {
         this.mapboxGeocodeService = mapboxGeocodeService;
     }
 
-    public Post createPost(Post post, int numberOfDays) throws IdInvalidException {
+    public Post createPost(Post post, int numberOfDays) throws InputInvalidException {
         // Lấy user hiện tại từ SecurityUtil (giả định đã đăng nhập)
         String userEmail = SecurityUtil.getCurrentUserLogin()
-                .orElseThrow(() -> new IdInvalidException("Chưa đăng nhập"));
+                .orElseThrow(() -> new InputInvalidException("Chưa đăng nhập"));
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new IdInvalidException("Không tìm thấy người dùng"));
+                .orElseThrow(() -> new InputInvalidException("Không tìm thấy người dùng"));
 
         // Tìm category
         Category category = categoryRepository.findById(post.getCategory().getId())
-                .orElseThrow(() -> new IdInvalidException("Không tìm thấy danh mục"));
+                .orElseThrow(() -> new InputInvalidException("Không tìm thấy danh mục"));
 
         if (post.getImages() == null || post.getImages().isEmpty()) {
-            throw new IdInvalidException("Ảnh không được để trống");
+            throw new InputInvalidException("Ảnh không được để trống");
         }
 
         if (post.getType() != category.getType()) {
-            throw new IdInvalidException("Kiểu của bài đăng và kiểu của danh mục không khớp");
+            throw new InputInvalidException("Kiểu của bài đăng và kiểu của danh mục không khớp");
         }
 
         // Xử lý địa chỉ
         if (post.getProvince() != null) {
             Province province = provinceRepository.findById(post.getProvince().getCode())
-                    .orElseThrow(() -> new IdInvalidException("Không tìm thấy tỉnh/thành phố"));
+                    .orElseThrow(() -> new InputInvalidException("Không tìm thấy tỉnh/thành phố"));
             post.setProvince(province);
         }
 
         if (post.getDistrict() != null) {
             District district = districtRepository.findById(post.getDistrict().getCode())
-                    .orElseThrow(() -> new IdInvalidException("Không tìm thấy quận/huyện"));
+                    .orElseThrow(() -> new InputInvalidException("Không tìm thấy quận/huyện"));
             if (post.getProvince() != null && !(district.getProvince().getCode() == post.getProvince().getCode())) {
-                throw new IdInvalidException("Quận/huyện không thuộc tỉnh/thành phố đã chọn");
+                throw new InputInvalidException("Quận/huyện không thuộc tỉnh/thành phố đã chọn");
             }
             post.setDistrict(district);
         }
 
         if (post.getWard() != null) {
             Ward ward = wardRepository.findById(post.getWard().getCode())
-                    .orElseThrow(() -> new IdInvalidException("Không tìm thấy phường/xã"));
+                    .orElseThrow(() -> new InputInvalidException("Không tìm thấy phường/xã"));
             if (post.getDistrict() != null && !(ward.getDistrict().getCode() == post.getDistrict().getCode())) {
-                throw new IdInvalidException("Phường/xã không thuộc quận/huyện đã chọn");
+                throw new InputInvalidException("Phường/xã không thuộc quận/huyện đã chọn");
             }
             post.setWard(ward);
         }
@@ -145,7 +145,7 @@ public class PostService {
         Vip vip = new Vip();
         if (post.getVip() != null && post.getVip().getId() > 0) {
             vip = vipRepository.findById(post.getVip().getId())
-                    .orElseThrow(() -> new IdInvalidException("Không tìm thấy VIP"));
+                    .orElseThrow(() -> new InputInvalidException("Không tìm thấy VIP"));
             post.setVip(vip);
         }
 
@@ -168,7 +168,7 @@ public class PostService {
         long totalCost = numberOfDays * costPerDay;
 
         if (user.getBalance() < totalCost) {
-            throw new IdInvalidException("Số dư không đủ để thực hiện giao dịch");
+            throw new InputInvalidException("Số dư không đủ để thực hiện giao dịch");
         }
 
         user.setBalance((long) (user.getBalance() - totalCost));
@@ -199,20 +199,20 @@ public class PostService {
         return post;
     }
 
-    public void deletePost(Long postId) throws IdInvalidException {
+    public void deletePost(Long postId) throws InputInvalidException {
         // Lấy user hiện tại
         String userEmail = SecurityUtil.getCurrentUserLogin()
-                .orElseThrow(() -> new IdInvalidException("Chưa đăng nhập"));
+                .orElseThrow(() -> new InputInvalidException("Chưa đăng nhập"));
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new IdInvalidException("Không tìm thấy người dùng"));
+                .orElseThrow(() -> new InputInvalidException("Không tìm thấy người dùng"));
 
         // Tìm bài đăng
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IdInvalidException("Không tìm thấy bài đăng"));
+                .orElseThrow(() -> new InputInvalidException("Không tìm thấy bài đăng"));
 
         // Kiểm tra quyền sở hữu hoặc quyền admin
         if (!post.getUser().getEmail().equals(userEmail) && !user.getRole().equals(RoleEnum.ADMIN)) {
-            throw new IdInvalidException("Bạn không có quyền xóa bài đăng này");
+            throw new InputInvalidException("Bạn không có quyền xóa bài đăng này");
         }
 
         // Xóa mềm (Soft Delete)
@@ -220,20 +220,20 @@ public class PostService {
         postRepository.save(post);
     }
 
-    public void deletePostAdmin(Long postId) throws IdInvalidException {
+    public void deletePostAdmin(Long postId) throws InputInvalidException {
         // Lấy user hiện tại
         String userEmail = SecurityUtil.getCurrentUserLogin()
-                .orElseThrow(() -> new IdInvalidException("Chưa đăng nhập"));
+                .orElseThrow(() -> new InputInvalidException("Chưa đăng nhập"));
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new IdInvalidException("Không tìm thấy người dùng"));
+                .orElseThrow(() -> new InputInvalidException("Không tìm thấy người dùng"));
 
         // Tìm bài đăng
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IdInvalidException("Không tìm thấy bài đăng"));
+                .orElseThrow(() -> new InputInvalidException("Không tìm thấy bài đăng"));
 
         // Kiểm tra quyền sở hữu hoặc quyền admin
         if (!post.getUser().getEmail().equals(userEmail) && !user.getRole().equals(RoleEnum.ADMIN)) {
-            throw new IdInvalidException("Bạn không có quyền xóa bài đăng này");
+            throw new InputInvalidException("Bạn không có quyền xóa bài đăng này");
         }
         Notification notification = new Notification();
         notification.setUser(post.getUser());
@@ -245,13 +245,13 @@ public class PostService {
         this.postRepository.delete(post);
     }
 
-    public Post updatePost(Post updatedPost) throws IdInvalidException {
+    public Post updatePost(Post updatedPost) throws InputInvalidException {
         if (updatedPost.getId() == 0) {
-            throw new IdInvalidException("ID của bài đăng không được để trống");
+            throw new InputInvalidException("ID của bài đăng không được để trống");
         }
 
         Post existingPost = postRepository.findById(updatedPost.getId())
-                .orElseThrow(() -> new IdInvalidException("Không tìm thấy bài đăng"));
+                .orElseThrow(() -> new InputInvalidException("Không tìm thấy bài đăng"));
 
         // Cập nhật các thông tin cơ bản
         if (updatedPost.getTitle() != null) {
@@ -273,31 +273,31 @@ public class PostService {
         // Cập nhật danh mục
         if (updatedPost.getCategory() != null && updatedPost.getCategory().getId() > 0) {
             Category category = categoryRepository.findById(updatedPost.getCategory().getId())
-                    .orElseThrow(() -> new IdInvalidException("Không tìm thấy danh mục"));
+                    .orElseThrow(() -> new InputInvalidException("Không tìm thấy danh mục"));
             existingPost.setCategory(category);
         }
 
         // Cập nhật địa chỉ
         if (updatedPost.getProvince() != null) {
             Province province = provinceRepository.findById(updatedPost.getProvince().getCode())
-                    .orElseThrow(() -> new IdInvalidException("Không tìm thấy tỉnh/thành phố"));
+                    .orElseThrow(() -> new InputInvalidException("Không tìm thấy tỉnh/thành phố"));
             existingPost.setProvince(province);
         }
         if (updatedPost.getDistrict() != null) {
             District district = districtRepository.findById(updatedPost.getDistrict().getCode())
-                    .orElseThrow(() -> new IdInvalidException("Không tìm thấy quận/huyện"));
+                    .orElseThrow(() -> new InputInvalidException("Không tìm thấy quận/huyện"));
             if (updatedPost.getProvince() != null
                     && !(district.getProvince().getCode() == existingPost.getProvince().getCode())) {
-                throw new IdInvalidException("Quận/huyện không thuộc tỉnh/thành phố đã chọn");
+                throw new InputInvalidException("Quận/huyện không thuộc tỉnh/thành phố đã chọn");
             }
             existingPost.setDistrict(district);
         }
         if (updatedPost.getWard() != null) {
             Ward ward = wardRepository.findById(updatedPost.getWard().getCode())
-                    .orElseThrow(() -> new IdInvalidException("Không tìm thấy phường/xã"));
+                    .orElseThrow(() -> new InputInvalidException("Không tìm thấy phường/xã"));
             if (updatedPost.getDistrict() != null
                     && !(ward.getDistrict().getCode() == existingPost.getDistrict().getCode())) {
-                throw new IdInvalidException("Phường/xã không thuộc quận/huyện đã chọn");
+                throw new InputInvalidException("Phường/xã không thuộc quận/huyện đã chọn");
             }
             existingPost.setWard(ward);
         }
@@ -305,7 +305,7 @@ public class PostService {
         // Cập nhật VIP
         if (updatedPost.getVip() != null && updatedPost.getVip().getId() > 0) {
             Vip vip = vipRepository.findById(updatedPost.getVip().getId())
-                    .orElseThrow(() -> new IdInvalidException("Không tìm thấy VIP"));
+                    .orElseThrow(() -> new InputInvalidException("Không tìm thấy VIP"));
             existingPost.setVip(vip);
         }
 
@@ -332,9 +332,9 @@ public class PostService {
         return postRepository.save(existingPost);
     }
 
-    public Post updatePostStatus(Long postId, PostStatusEnum newStatus, String message) throws IdInvalidException {
+    public Post updatePostStatus(Long postId, PostStatusEnum newStatus, String message) throws InputInvalidException {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IdInvalidException("Không tìm thấy bài đăng"));
+                .orElseThrow(() -> new InputInvalidException("Không tìm thấy bài đăng"));
 
         // Cập nhật trạng thái
         post.setStatus(newStatus);
@@ -358,10 +358,10 @@ public class PostService {
         return post;
     }
 
-    public Post getPostById(Long id) throws IdInvalidException {
+    public Post getPostById(Long id) throws InputInvalidException {
 
         Post post = postRepository.findById(id).orElseThrow(
-                () -> new IdInvalidException("Có lỗi xảy ra: không tìm thấy bài đăng id: " + id + ", ..."));
+                () -> new InputInvalidException("Có lỗi xảy ra: không tìm thấy bài đăng id: " + id + ", ..."));
 
         if (post.isNotifyOnView() && SecurityUtil.getCurrentUserLogin().isPresent()) {
 
@@ -374,12 +374,12 @@ public class PostService {
                     if (user.getGender().equals(GenderEnum.FEMALE) || user.getGender().equals(GenderEnum.MALE)
                             || user.getGender().equals(GenderEnum.OTHER)) {
 
-                        notification.setMessage("Người dùng [" + user.getName() + ", phone="
-                                + user.getPhone() + ", gender=" + user.getGender() + "] đã xem bài đăng " + post.getId()
+                        notification.setMessage("Người dùng '" + user.getName() + " - "
+                                + user.getPhone() + user.getGender() + "' đã xem bài đăng " + post.getId()
                                 + " của bạn.");
                     } else {
-                        notification.setMessage("Người dùng [" + user.getName() + ", phone="
-                                + user.getPhone() + "] đã xem bài đăng " + post.getId()
+                        notification.setMessage("Người dùng '" + user.getName() + " - "
+                                + user.getPhone() + "' đã xem bài đăng " + post.getId()
                                 + " của bạn.");
                     }
 
@@ -434,11 +434,11 @@ public class PostService {
     }
 
     public Page<Post> getMyPosts(Pageable pageable, PostStatusEnum status, PostTypeEnum type,
-            Long provinceCode) throws IdInvalidException {
+            Long provinceCode) throws InputInvalidException {
         String userEmail = SecurityUtil.getCurrentUserLogin()
-                .orElseThrow(() -> new IdInvalidException("Chưa đăng nhập"));
+                .orElseThrow(() -> new InputInvalidException("Chưa đăng nhập"));
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new IdInvalidException("Không tìm thấy người dùng"));
+                .orElseThrow(() -> new InputInvalidException("Không tìm thấy người dùng"));
 
         return postRepository.findMyPosts(user.getEmail(), status, type, provinceCode,
                 pageable);

@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 import vn.thanhdattanphuoc.batdongsan360.domain.User;
 import vn.thanhdattanphuoc.batdongsan360.service.UserService;
-import vn.thanhdattanphuoc.batdongsan360.util.error.IdInvalidException;
+import vn.thanhdattanphuoc.batdongsan360.util.error.InputInvalidException;
 import vn.thanhdattanphuoc.batdongsan360.util.request.CreateUserDTO;
 import vn.thanhdattanphuoc.batdongsan360.util.request.UserFilterRequest;
 import vn.thanhdattanphuoc.batdongsan360.util.request.UserUpdateDTO;
@@ -37,11 +37,11 @@ public class UserController {
 
     @PostMapping("/api/admin/users")
     public ResponseEntity<ResCreateUserDTO> createNewUser(@Valid @RequestBody CreateUserDTO createUserDTO)
-            throws IdInvalidException {
+            throws InputInvalidException {
 
         boolean isEmailExist = this.userService.isEmailExist(createUserDTO.getEmail());
         if (isEmailExist) {
-            throw new IdInvalidException(
+            throw new InputInvalidException(
                     "Email " + createUserDTO.getEmail() + " đã tồn tại, vui lòng sử dụng email khác.");
         }
 
@@ -53,10 +53,10 @@ public class UserController {
     }
 
     @DeleteMapping("/api/admin/users/{id}")
-    public ResponseEntity<Void> deleteUserById(@PathVariable("id") long id) throws IdInvalidException {
+    public ResponseEntity<Void> deleteUserById(@PathVariable("id") long id) throws InputInvalidException {
 
         if (this.userService.fetchUserById(id) == null) {
-            throw new IdInvalidException("Id không hợp lệ: không tìm thấy user id " + id + ", ...");
+            throw new InputInvalidException("Id không hợp lệ: không tìm thấy user id " + id + ", ...");
         }
 
         this.userService.handleDeleteUser(id);
@@ -65,30 +65,30 @@ public class UserController {
     }
 
     @GetMapping("/api/users/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable("id") long id) throws IdInvalidException {
+    public ResponseEntity<User> getUserById(@PathVariable("id") long id) throws InputInvalidException {
 
         User fetchUser = this.userService.fetchUserById(id);
 
         if (fetchUser == null)
-            throw new IdInvalidException("Id không hợp lệ: không tìm thấy user id " + id + ", ...");
+            throw new InputInvalidException("Id không hợp lệ: không tìm thấy user id " + id + ", ...");
 
         return ResponseEntity.status(HttpStatus.OK).body(fetchUser);
     }
 
     @PutMapping("/api/users")
     public ResponseEntity<ResUpdateUserDTO> updateUser(@RequestBody UserUpdateDTO userUpdateDTO)
-            throws IdInvalidException {
+            throws InputInvalidException {
 
         boolean isEmailExist = this.userService.isEmailExist(userUpdateDTO.getEmail());
         User currentUser = this.userService.fetchUserById(userUpdateDTO.getId());
         if (isEmailExist && !currentUser.getEmail().equals(userUpdateDTO.getEmail())) {
-            throw new IdInvalidException(
+            throw new InputInvalidException(
                     "Email " + userUpdateDTO.getEmail() + " đã tồn tại, vui lòng sử dụng email khác.");
         }
 
         User newUser = this.userService.handleUpdateUser(userUpdateDTO);
         if (newUser == null) {
-            throw new IdInvalidException(
+            throw new InputInvalidException(
                     "User id " + userUpdateDTO.getId() + " không tồn tại.");
         }
         return ResponseEntity.status(HttpStatus.OK).body(new ResUpdateUserDTO(newUser));

@@ -34,7 +34,7 @@ public class GlobalException {
     @ExceptionHandler(value = {
             UsernameNotFoundException.class,
             BadCredentialsException.class,
-            IdInvalidException.class,
+            InputInvalidException.class,
             RuntimeException.class
 
     })

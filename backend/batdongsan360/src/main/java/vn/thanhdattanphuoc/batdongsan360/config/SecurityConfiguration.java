@@ -55,7 +55,7 @@ public class SecurityConfiguration {
                                 .requestMatchers("/api/vips/test").hasRole("ADMIN")
 
                                 .requestMatchers(HttpMethod.GET, "/api/posts/my-posts").authenticated()
-
+                                .requestMatchers("/ws/**").permitAll()
                                 .requestMatchers(
                                         "/",
                                         "/uploads/**",

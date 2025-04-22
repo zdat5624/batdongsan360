@@ -14,18 +14,37 @@ import java.util.Random;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 
+@Component
 public class ConfigVNPAY {
 
-    public static String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
+    @Value("${vnp.PayUrl}")
+    private String vnp_PayUrl;
 
-    public static String vnp_ReturnUrl = "http://localhost:8080/api/payment/vnpay-payment-return";
+    @Value("${vnp.ReturnUrl.backend}")
+    private String vnp_ReturnUrl;
 
-    public static String vnp_TmnCode = "YLDNUK5C";
-    public static String secretKey = "XA81V4B3D68CDFIJIBFZ9L38XVZRADYP";
+    @Value("${vnp.TmnCode}")
+    private String vnp_TmnCode;
 
-    public static String vnp_ApiUrl = "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction";
+    @Value("${vnp.secretKey}")
+    private String secretKeyInstance;
+
+    @Value("${vnp.ApiUrl")
+    private String vnp_ApiUrl;
+
+    public static String secretKey;
+
+    @PostConstruct
+    public void init() {
+        ConfigVNPAY.secretKey = secretKeyInstance;
+
+    }
 
     public static String md5(String message) {
         String digest = null;
