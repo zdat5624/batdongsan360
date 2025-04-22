@@ -79,12 +79,15 @@ public class UserController {
     public ResponseEntity<ResUpdateUserDTO> updateUser(@RequestBody UserUpdateDTO userUpdateDTO)
             throws InputInvalidException {
 
-        boolean isEmailExist = this.userService.isEmailExist(userUpdateDTO.getEmail());
-        User currentUser = this.userService.fetchUserById(userUpdateDTO.getId());
-        if (isEmailExist && !currentUser.getEmail().equals(userUpdateDTO.getEmail())) {
-            throw new InputInvalidException(
-                    "Email " + userUpdateDTO.getEmail() + " đã tồn tại, vui lòng sử dụng email khác.");
-        }
+        // boolean isEmailExist =
+        // this.userService.isEmailExist(userUpdateDTO.getEmail());
+        // User currentUser = this.userService.fetchUserById(userUpdateDTO.getId());
+        // if (isEmailExist && !currentUser.getEmail().equals(userUpdateDTO.getEmail()))
+        // {
+        // throw new InputInvalidException(
+        // "Email " + userUpdateDTO.getEmail() + " đã tồn tại, vui lòng sử dụng email
+        // khác.");
+        // }
 
         User newUser = this.userService.handleUpdateUser(userUpdateDTO);
         if (newUser == null) {

@@ -69,10 +69,8 @@ public class UserService {
         User currentUser = fetchUserById(userUpdateDTO.getId());
         if (currentUser != null) {
             currentUser.setName(userUpdateDTO.getName());
-            currentUser.setEmail(userUpdateDTO.getEmail());
             currentUser.setRole(userUpdateDTO.getRole());
             currentUser.setGender(userUpdateDTO.getGender());
-            currentUser.setBalance(userUpdateDTO.getBalance());
             currentUser.setAvatar(userUpdateDTO.getAvatar());
             currentUser.setPhone(userUpdateDTO.getPhone());
             currentUser.setAddress(userUpdateDTO.getAddress());
