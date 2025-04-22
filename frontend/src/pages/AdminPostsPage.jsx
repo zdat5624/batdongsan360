@@ -32,9 +32,21 @@ import {
 } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { Carousel } from "react-bootstrap";
+import AdminHeader from "../components/AdminHeader";
 import Sidebar from "../components/Sidebar";
 import apiServices from "../services/apiServices";
 import { Helmet } from "react-helmet";
+
+// AdminFooter component (tái sử dụng từ AdminUsers)
+const AdminFooter = () => {
+  return (
+    <footer style={{ backgroundColor: '#343a40', color: '#fff', padding: '10px 0', textAlign: 'center' }}>
+      <Container>
+        <p style={{ margin: 0 }}>THÔNG TIN</p>
+      </Container>
+    </footer>
+  );
+};
 
 // CSS tùy chỉnh
 const customStyles = `
@@ -48,13 +60,34 @@ const customStyles = `
   .content-wrapper {
     display: flex;
     flex-direction: column;
+    min-height: 100vh;
   }
 
   .main-content {
     flex: 1;
     padding: 20px;
-    padding-top: 60px; /* Khoảng cách 60px từ đỉnh trang */
-    background: #f0f4f8;
+    padding-top: 50px; /* Tăng padding-top để không bị AdminHeader che khuất */
+    padding-bottom: 20px; /* Đảm bảo khoảng cách tự nhiên với footer */
+    background-color: #f0f8ff;
+    overflow-y: auto;
+  }
+
+  .admin-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 2000;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  footer {
+    background-color: #343a40;
+    color: #fff;
+    padding: 10px 0;
+    text-align: center;
+    width: 100%;
   }
 
   .custom-container {
@@ -110,6 +143,36 @@ const customStyles = `
     margin-bottom: 2rem;
   }
 
+  .status-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 1rem;
+  }
+
+  .status-tab {
+    border-radius: 50px; /* Rounded buttons */
+    padding: 6px 16px;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    border: 1px solid #007bff;
+    background-color: transparent;
+    color: #007bff;
+  }
+
+  .status-tab:hover {
+    background-color: #e6f0ff;
+  }
+
+  .status-tab.active,
+  .status-tab:focus,
+  .status-tab:active,
+  .btn-primary.status-tab {
+    background-color: #007bff;
+    color: #fff;
+    border-color: #007bff;
+  }
+
   .filter-group {
     display: flex;
     flex-wrap: wrap;
@@ -121,13 +184,33 @@ const customStyles = `
     border-radius: 8px;
     font-size: 0.9rem;
     padding: 8px;
+    border: 1px solid #ced4da;
   }
 
   .filter-button {
-    border-radius: 25px;
+    border-radius: 50px; /* Rounded buttons */
     font-size: 0.9rem;
-    padding: 8px 16px;
+    padding: 6px 16px;
     transition: all 0.2s ease;
+    height: 38px; /* Match height with select inputs */
+  }
+
+  .filter-button.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+  }
+
+  .filter-button.btn-outline-secondary {
+    border-color: #ced4da;
+    color: #6c757d;
+  }
+
+  .filter-button.btn-outline-secondary:hover {
+    background-color: #f8f9fa;
+  }
+
+  .align-self-end {
+    align-self: flex-end;
   }
 
   .pagination-container {
@@ -135,8 +218,14 @@ const customStyles = `
     align-items: center;
     justify-content: center;
     gap: 10px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap; /* Đảm bảo các phần tử nằm trên cùng một hàng */
     margin-top: 20px;
+  }
+
+  .pagination {
+    display: flex;
+    align-items: center;
+    margin: 0;
   }
 
   .pagination .page-item.active .page-link {
@@ -160,6 +249,7 @@ const customStyles = `
     width: 70px;
     height: 38px;
     border-radius: 8px;
+    border: 1px solid #ced4da;
     font-size: 0.95rem;
   }
 
@@ -170,6 +260,7 @@ const customStyles = `
     padding: 0 15px;
     background: linear-gradient(135deg, #007bff, #0056b3);
     border: none;
+    color: #fff;
   }
 
   .modal-content {
@@ -275,10 +366,13 @@ const customStyles = `
       top: 0;
       z-index: 1000;
       display: none;
+      max-height: calc(100vh - 60px); /* Giới hạn chiều cao của Sidebar để không che footer */
+      overflow-y: auto;
     }
     .main-content {
       padding: 15px;
-      padding-top: 60px;
+      padding-top: 100px;
+      padding-bottom: 15px;
     }
     .page-title {
       font-size: 1.5rem;
@@ -287,12 +381,20 @@ const customStyles = `
     .admin-table td:nth-child(4) {
       display: none; /* Ẩn cột Diện tích */
     }
-    .filter-group {
-      flex-direction: column;
-      align-items: stretch;
+    .status-tabs {
+      gap: 8px;
     }
+    .status-tab {
+      padding: 5px 12px;
+      font-size: 0.85rem;
+    }
+    .filter-group {
+      flex-direction: row;
+      gap: 8px;
+    }
+    .filter-select,
     .filter-button {
-      width: 100%;
+      font-size: 0.85rem;
     }
   }
 
@@ -310,6 +412,25 @@ const customStyles = `
     }
     .carousel-img {
       height: 200px;
+    }
+    .status-tabs {
+      gap: 6px;
+    }
+    .status-tab {
+      padding: 4px 10px;
+      font-size: 0.8rem;
+    }
+    .filter-group {
+      gap: 6px;
+    }
+    .filter-select,
+    .filter-button {
+      font-size: 0.8rem;
+      padding: 6px;
+    }
+    .pagination-container {
+      flex-wrap: wrap; /* Cho phép xuống hàng trên màn hình nhỏ */
+      justify-content: center;
     }
   }
 `;
@@ -399,7 +520,7 @@ const calculateAreaRange = (areaRange) => {
 };
 
 // eslint-disable-next-line react/prop-types
-const AdminPostsPage = ({ user, handleLogout }) => {
+const AdminPostsPage = ({ user, setUser, handleLogin, handleLogout }) => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -615,34 +736,19 @@ const AdminPostsPage = ({ user, handleLogout }) => {
 
   // Render phân trang
   const renderPaginationItems = () => {
-    const items = [];
-    const maxPagesToShow = 5;
-    const halfPagesToShow = Math.floor(maxPagesToShow / 2);
+    const pageItems = [];
+    const maxVisiblePages = 5;
+    const ellipsis = <Pagination.Ellipsis disabled />;
 
-    let startPage = Math.max(0, currentPage - halfPagesToShow);
-    let endPage = Math.min(totalPages - 1, startPage + maxPagesToShow - 1);
+    let startPage = Math.max(0, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages - 1, startPage + maxVisiblePages - 1);
 
-    if (endPage - startPage + 1 < maxPagesToShow) {
-      startPage = Math.max(0, endPage - maxPagesToShow + 1);
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(0, endPage - maxVisiblePages + 1);
     }
 
-    items.push(
-      <Pagination.First
-        key="first"
-        onClick={() => paginate(0)}
-        disabled={currentPage === 0}
-      />
-    );
-    items.push(
-      <Pagination.Prev
-        key="prev"
-        onClick={() => paginate(currentPage - 1)}
-        disabled={currentPage === 0}
-      />
-    );
-
     for (let number = startPage; number <= endPage; number++) {
-      items.push(
+      pageItems.push(
         <Pagination.Item
           key={number}
           active={number === currentPage}
@@ -653,35 +759,29 @@ const AdminPostsPage = ({ user, handleLogout }) => {
       );
     }
 
+    if (startPage > 0) {
+      pageItems.unshift(
+        <Pagination.Item key={0} onClick={() => paginate(0)}>
+          1
+        </Pagination.Item>
+      );
+      if (startPage > 1) {
+        pageItems.splice(1, 0, ellipsis);
+      }
+    }
+
     if (endPage < totalPages - 1) {
-      items.push(<Pagination.Ellipsis key="ellipsis" />);
-      items.push(
-        <Pagination.Item
-          key={totalPages - 1}
-          active={totalPages - 1 === currentPage}
-          onClick={() => paginate(totalPages - 1)}
-        >
+      if (endPage < totalPages - 2) {
+        pageItems.push(ellipsis);
+      }
+      pageItems.push(
+        <Pagination.Item key={totalPages - 1} onClick={() => paginate(totalPages - 1)}>
           {totalPages}
         </Pagination.Item>
       );
     }
 
-    items.push(
-      <Pagination.Next
-        key="next"
-        onClick={() => paginate(currentPage + 1)}
-        disabled={currentPage === totalPages - 1}
-      />
-    );
-    items.push(
-      <Pagination.Last
-        key="last"
-        onClick={() => paginate(totalPages - 1)}
-        disabled={currentPage === totalPages - 1}
-      />
-    );
-
-    return items;
+    return pageItems;
   };
 
   return (
@@ -692,6 +792,9 @@ const AdminPostsPage = ({ user, handleLogout }) => {
       <style>{customStyles}</style>
       <Sidebar user={user} handleLogout={handleLogout} />
       <div className="content-wrapper">
+        <div className="admin-header">
+          <AdminHeader user={user} setUser={setUser} handleLogin={handleLogin} handleLogout={handleLogout} />
+        </div>
         <div className="main-content">
           <Container className="custom-container">
             <motion.div
@@ -709,10 +812,34 @@ const AdminPostsPage = ({ user, handleLogout }) => {
                 </Alert>
               )}
 
-              {/* Bộ lọc */}
               <Card className="filter-card">
                 <Form onSubmit={handleFilterSubmit}>
                   <div className="filter-group">
+                    {/* Status Buttons */}
+                    {["PENDING", "REVIEW_LATER", "APPROVED", "REJECTED", "EXPIRED"].map((status) => (
+                      <Button
+                        key={status}
+                        variant={filters.status === status ? "primary" : "outline-primary"}
+                        onClick={() => {
+                          setFilters((prev) => ({ ...prev, status }));
+                          setCurrentPage(0);
+                          fetchPosts(0, { ...filters, status });
+                        }}
+                        className="status-tab me-2"
+                      >
+                        {status === "PENDING"
+                          ? "Chờ duyệt"
+                          : status === "REVIEW_LATER"
+                          ? "Xem sau"
+                          : status === "APPROVED"
+                          ? "Đã duyệt"
+                          : status === "REJECTED"
+                          ? "Từ chối"
+                          : "Hết hạn"}
+                      </Button>
+                    ))}
+
+                    {/* Bộ lọc giá */}
                     <Form.Group controlId="priceRange" style={{ maxWidth: "200px" }}>
                       <Form.Label>Khoảng giá</Form.Label>
                       <Form.Select
@@ -732,6 +859,8 @@ const AdminPostsPage = ({ user, handleLogout }) => {
                         <option value="above_15m">Trên 15 triệu</option>
                       </Form.Select>
                     </Form.Group>
+
+                    {/* Bộ lọc diện tích */}
                     <Form.Group controlId="areaRange" style={{ maxWidth: "200px" }}>
                       <Form.Label>Diện tích</Form.Label>
                       <Form.Select
@@ -749,21 +878,8 @@ const AdminPostsPage = ({ user, handleLogout }) => {
                         <option value="above_90m2">Trên 90m²</option>
                       </Form.Select>
                     </Form.Group>
-                    <Form.Group controlId="status" style={{ maxWidth: "200px" }}>
-                      <Form.Label>Trạng thái</Form.Label>
-                      <Form.Select
-                        name="status"
-                        value={filters.status}
-                        onChange={handleFilterChange}
-                        className="filter-select"
-                      >
-                        <option value="PENDING">Chờ duyệt</option>
-                        <option value="REVIEW_LATER">Xem sau</option>
-                        <option value="APPROVED">Đã duyệt</option>
-                        <option value="REJECTED">Từ chối</option>
-                        <option value="EXPIRED">Hết hạn</option>
-                      </Form.Select>
-                    </Form.Group>
+
+                    {/* Bộ lọc loại bài đăng */}
                     <Form.Group controlId="type" style={{ maxWidth: "200px" }}>
                       <Form.Label>Loại bài đăng</Form.Label>
                       <Form.Select
@@ -777,17 +893,19 @@ const AdminPostsPage = ({ user, handleLogout }) => {
                         <option value="SALE">Bán</option>
                       </Form.Select>
                     </Form.Group>
+
+                    {/* Nút áp dụng và đặt lại */}
                     <Button
                       variant="primary"
                       type="submit"
-                      className="filter-button"
+                      className="filter-button align-self-end me-2"
                     >
                       Áp dụng
                     </Button>
                     <Button
                       variant="outline-secondary"
                       onClick={resetFilters}
-                      className="filter-button"
+                      className="filter-button align-self-end"
                     >
                       Đặt lại
                     </Button>
@@ -806,7 +924,6 @@ const AdminPostsPage = ({ user, handleLogout }) => {
                   <Table responsive className="admin-table">
                     <thead>
                       <tr>
-                        <th>ID</th>
                         <th>Tiêu đề</th>
                         <th>Giá</th>
                         <th>Diện tích</th>
@@ -818,7 +935,6 @@ const AdminPostsPage = ({ user, handleLogout }) => {
                       {posts.length > 0 ? (
                         posts.map((post) => (
                           <tr key={post.id}>
-                            <td>{post.id}</td>
                             <td>{post.title}</td>
                             <td className="text-primary fw-bold">{post.price}</td>
                             <td>{post.area}</td>
@@ -1038,19 +1154,14 @@ const AdminPostsPage = ({ user, handleLogout }) => {
                             </li>
                           </ul>
                         </div>
-                      )}
-                    </Modal.Body>
-                    <Modal.Footer>
-                      <Button
-                        variant="secondary"
-                        onClick={handleCloseModal}
-                      >
-                        Đóng
-                      </Button>
-                    </Modal.Footer>
-                  </Modal>
+                      </Modal.Body>
+                      <Modal.Footer>
+                        <Button variant="secondary" onClick={handleCloseModal}>
+                          Đóng
+                        </Button>
+                      </Modal.Footer>
+                    </Modal>
                   )}
-
                   {/* Modal phóng to hình ảnh */}
                   <Modal
                     show={showImageModal}
@@ -1077,11 +1188,21 @@ const AdminPostsPage = ({ user, handleLogout }) => {
                   {/* Phân trang */}
                   {totalPages > 1 && (
                     <div className="pagination-container">
-                      <Pagination>{renderPaginationItems()}</Pagination>
-                      <Form
-                        onSubmit={handlePageInputSubmit}
-                        className="d-flex align-items-center gap-2"
-                      >
+                      <Pagination>
+                        <Pagination.First onClick={() => paginate(0)} disabled={currentPage === 0} />
+                        <Pagination.Prev onClick={() => paginate(currentPage - 1)} disabled={currentPage === 0} />
+                        {renderPaginationItems()}
+                        <Pagination.Next
+                          onClick={() => paginate(currentPage + 1)}
+                          disabled={currentPage === totalPages - 1}
+                        />
+                        <Pagination.Last
+                          onClick={() => paginate(totalPages - 1)}
+                          disabled={currentPage === totalPages - 1}
+                        />
+                      </Pagination>
+
+                      <Form onSubmit={handlePageInputSubmit} className="d-flex align-items-center gap-2 ms-3">
                         <Form.Control
                           type="number"
                           value={pageInput}
@@ -1091,10 +1212,7 @@ const AdminPostsPage = ({ user, handleLogout }) => {
                           max={totalPages}
                           className="pagination-input"
                         />
-                        <Button
-                          className="pagination-go-button"
-                          onClick={handlePageInputSubmit}
-                        >
+                        <Button type="submit" className="pagination-go-button">
                           Đi
                         </Button>
                       </Form>
@@ -1105,6 +1223,7 @@ const AdminPostsPage = ({ user, handleLogout }) => {
             </motion.div>
           </Container>
         </div>
+        <AdminFooter />
       </div>
     </div>
   );

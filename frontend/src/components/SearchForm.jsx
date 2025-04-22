@@ -4,7 +4,7 @@ import apiServices from "../services/apiServices";
 import "../assets/styles/SearchForm.css";
 
 const SearchForm = ({ onSearch, hideTransactionType, projects = [] }) => {
-  const [propertyTypes, setPropertyTypes] = useState({});
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null); // Thay propertyTypes bằng selectedCategoryId
   const [categories, setCategories] = useState([]);
   const [priceRange, setPriceRange] = useState([0, 50000000000000000]);
   const [areaRange, setAreaRange] = useState([0, 1000000000]);
@@ -21,7 +21,6 @@ const SearchForm = ({ onSearch, hideTransactionType, projects = [] }) => {
   const isRentPage = window.location.pathname.includes("/rent");
   const isHomePage = !isSellPage && !isRentPage;
 
-  // Lấy danh sách categories
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -29,28 +28,33 @@ const SearchForm = ({ onSearch, hideTransactionType, projects = [] }) => {
         const categoriesData = [];
         for (const type of types) {
           const response = await apiServices.get(`/api/categories?page=0&size=30&sort=id,asc&type=${type}`);
+          console.log(`Categories fetched for type ${type}:`, response.data);
           if (response.data.statusCode === 200) {
             categoriesData.push(...response.data.data.content);
+          } else {
+            console.error(`Lỗi khi lấy danh sách categories cho type ${type}:`, response.data.message);
           }
         }
+        if (categoriesData.length === 0) {
+          console.warn("Không có categories nào được tải. Kiểm tra API hoặc dữ liệu backend.");
+          alert("Không thể tải danh sách loại nhà đất. Vui lòng thử lại sau.");
+          return;
+        }
+        console.log("All categories loaded in SearchForm:", categoriesData);
         setCategories(categoriesData);
-        const initialPropertyTypes = {};
-        categoriesData.forEach((category) => {
-          initialPropertyTypes[category.id] = false;
-        });
-        setPropertyTypes(initialPropertyTypes);
       } catch (err) {
-        console.error("Lỗi khi lấy danh sách categories:", err);
+        console.error("Lỗi khi lấy danh sách categories:", err.response?.data || err.message);
+        alert("Có lỗi xảy ra khi tải danh sách loại nhà đất. Vui lòng thử lại sau.");
       }
     };
     fetchCategories();
   }, [isSellPage, isRentPage, isHomePage]);
 
-  // Lấy danh sách tỉnh
   useEffect(() => {
     const fetchProvinces = async () => {
       try {
         const response = await apiServices.get(`/api/address/provinces`);
+        console.log("Provinces fetched:", response.data);
         if (response.data.statusCode === 200) {
           setProvinces(response.data.data);
         }
@@ -61,12 +65,12 @@ const SearchForm = ({ onSearch, hideTransactionType, projects = [] }) => {
     fetchProvinces();
   }, []);
 
-  // Lấy danh sách quận/huyện khi provinceCode thay đổi
   useEffect(() => {
     const fetchDistricts = async () => {
       if (location.provinceCode) {
         try {
           const response = await apiServices.get(`/api/address/districts/${location.provinceCode}`);
+          console.log("Districts fetched:", response.data);
           if (response.data.statusCode === 200) {
             setDistricts(response.data.data);
             setLocation((prev) => ({ ...prev, districtCode: null, wardCode: null }));
@@ -84,12 +88,12 @@ const SearchForm = ({ onSearch, hideTransactionType, projects = [] }) => {
     fetchDistricts();
   }, [location.provinceCode]);
 
-  // Lấy danh sách phường/xã khi districtCode thay đổi
   useEffect(() => {
     const fetchWards = async () => {
       if (location.districtCode) {
         try {
           const response = await apiServices.get(`/api/address/wards/${location.districtCode}`);
+          console.log("Wards fetched:", response.data);
           if (response.data.statusCode === 200) {
             setWards(response.data.data);
             setLocation((prev) => ({ ...prev, wardCode: null }));
@@ -105,9 +109,10 @@ const SearchForm = ({ onSearch, hideTransactionType, projects = [] }) => {
     fetchWards();
   }, [location.districtCode]);
 
-  const handlePropertyTypeChange = (e) => {
-    const { name, checked } = e.target;
-    setPropertyTypes((prev) => ({ ...prev, [name]: checked }));
+  const handleCategoryChange = (e) => {
+    const { value } = e.target;
+    setSelectedCategoryId(value ? parseInt(value) : null);
+    console.log("Selected categoryId:", value ? parseInt(value) : null);
   };
 
   const handleLocationChange = (e) => {
@@ -117,23 +122,24 @@ const SearchForm = ({ onSearch, hideTransactionType, projects = [] }) => {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    const selectedCategoryIds = Object.keys(propertyTypes)
-      .filter((key) => propertyTypes[key])
-      .map((key) => parseInt(key, 10));
+    console.log("=== Starting handleSearch in SearchForm ===");
+    console.log("Selected categoryId before search:", selectedCategoryId);
 
     const searchData = {
-      minPrice: priceRange[0] || 0,
-      maxPrice: priceRange[1] || 50000000000000000,
-      minArea: areaRange[0] || 0,
-      maxArea: areaRange[1] || 1000000000,
+      minPrice: priceRange[0],
+      maxPrice: priceRange[1],
+      minArea: areaRange[0],
+      maxArea: areaRange[1],
       provinceCode: location.provinceCode || null,
       districtCode: location.districtCode || null,
       wardCode: location.wardCode || null,
-      categoryIds: selectedCategoryIds.length > 0 ? selectedCategoryIds : null, // Gửi danh sách categoryIds
+      categoryId: selectedCategoryId, // Gửi categoryId (số ít) thay vì categoryIds (mảng)
       type: isSellPage ? "SALE" : isRentPage ? "RENT" : "SALE",
     };
 
+    console.log("Search data prepared to send from SearchForm:", searchData);
     onSearch(searchData);
+    console.log("=== Finished handleSearch in SearchForm ===");
   };
 
   const handleReset = () => {
@@ -142,11 +148,7 @@ const SearchForm = ({ onSearch, hideTransactionType, projects = [] }) => {
     setLocation({ provinceCode: null, districtCode: null, wardCode: null });
     setDistricts([]);
     setWards([]);
-    const resetPropertyTypes = { ...propertyTypes };
-    Object.keys(resetPropertyTypes).forEach((key) => {
-      resetPropertyTypes[key] = false;
-    });
-    setPropertyTypes(resetPropertyTypes);
+    setSelectedCategoryId(null);
     onSearch({
       minPrice: 0,
       maxPrice: 50000000000000000,
@@ -155,8 +157,8 @@ const SearchForm = ({ onSearch, hideTransactionType, projects = [] }) => {
       provinceCode: null,
       districtCode: null,
       wardCode: null,
-      categoryIds: null,
-      type: "SALE",
+      categoryId: null,
+      type: isSellPage ? "SALE" : isRentPage ? "RENT" : "SALE",
     });
   };
 
@@ -226,15 +228,25 @@ const SearchForm = ({ onSearch, hideTransactionType, projects = [] }) => {
                 Loại nhà đất
               </Dropdown.Toggle>
               <Dropdown.Menu className="custom-dropdown">
+                <Form.Check
+                  type="radio"
+                  label="Tất cả loại nhà đất"
+                  name="categoryId"
+                  value=""
+                  checked={selectedCategoryId === null}
+                  onChange={handleCategoryChange}
+                  className="px-2 py-1"
+                />
                 {filteredCategories.length > 0 ? (
                   filteredCategories.map((category) => (
                     <Form.Check
                       key={category.id}
-                      type="checkbox"
+                      type="radio"
                       label={category.name}
-                      name={category.id.toString()}
-                      checked={propertyTypes[category.id] || false}
-                      onChange={handlePropertyTypeChange}
+                      name="categoryId"
+                      value={category.id.toString()}
+                      checked={selectedCategoryId === category.id}
+                      onChange={handleCategoryChange}
                       className="px-2 py-1"
                     />
                   ))

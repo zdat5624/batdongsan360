@@ -12,7 +12,6 @@ import {
 } from "react-bootstrap";
 import { FaBell } from "react-icons/fa";
 import apiServices from "../services/apiServices";
-import Sidebar from "../components/Sidebar";
 import Footer from "../components/Footer";
 
 // CSS tùy chỉnh
@@ -30,10 +29,12 @@ const customStyles = `
   }
   .main-content {
     flex: 1;
-    padding-top: 100px;
+    padding-top: 50px;
     padding-bottom: 150px;
     padding-left: 20px;
+    padding-right: 20px; /* Thêm padding-right để cân đối */
     background: rgb(240, 248, 255);
+    width: 100%; /* Đảm bảo chiếm toàn bộ chiều rộng */
   }
   .custom-container {
     padding: 20px;
@@ -86,16 +87,6 @@ const customStyles = `
     align-items: center;
     gap: 10px;
   }
-  .sidebar {
-    display: block !important;
-    width: 250px !important;
-    position: sticky !important;
-    top: 0 !important;
-    z-index: 100 !important;
-    min-height: calc(100vh - 70px) !important;
-    background: rgb(240, 248, 255) !important;
-    border-right: 1px solid #dee2e6 !important;
-  }
   .mark-read-button {
     border-radius: 15px;
     padding: 5px 10px;
@@ -103,7 +94,7 @@ const customStyles = `
   }
 `;
 
-const NotificationsPage = ({ user, handleLogout }) => {
+const NotificationsPage = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -155,10 +146,8 @@ const NotificationsPage = ({ user, handleLogout }) => {
   };
 
   useEffect(() => {
-    if (user) {
-      fetchNotifications();
-    }
-  }, [user, currentPage]);
+    fetchNotifications();
+  }, [currentPage]);
 
   const handleMarkAsRead = async (notificationId) => {
     try {
@@ -213,7 +202,6 @@ const NotificationsPage = ({ user, handleLogout }) => {
     <div className="layout">
       <style>{customStyles}</style>
       <div className="content-wrapper">
-        <Sidebar user={user} handleLogout={handleLogout} />
         <div className="main-content">
           <Container className="custom-container">
             <div className="d-flex justify-content-between align-items-center mb-4">
@@ -235,7 +223,6 @@ const NotificationsPage = ({ user, handleLogout }) => {
               <Table hover className="align-middle">
                 <thead>
                   <tr>
-                    <th className="p-3">ID</th>
                     <th className="p-3">Nội Dung</th>
                     <th className="p-3">Thời Gian</th>
                     <th className="p-3">Trạng Thái</th>
@@ -258,7 +245,6 @@ const NotificationsPage = ({ user, handleLogout }) => {
                         onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f8f9fa")}
                         onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = notification.read ? "#ffffff" : "#f8f9fa")}
                       >
-                        <td className="p-3">{notification.id}</td>
                         <td className="p-3">{notification.message || "Không có nội dung"}</td>
                         <td className="p-3">{getTimeAgo(notification.createdAt)}</td>
                         <td className="p-3">
@@ -374,7 +360,6 @@ const NotificationsPage = ({ user, handleLogout }) => {
           </Container>
         </div>
       </div>
-      <Footer />
     </div>
   );
 };

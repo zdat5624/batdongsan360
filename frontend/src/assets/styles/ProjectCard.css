@@ -14,4 +14,5 @@
     height: 200px; /* Đặt chiều cao cố định */
     object-fit: cover; /* Cắt ảnh để lấp đầy khung mà không bị méo */
     border-radius: 8px; /* Bo tròn nhẹ góc ảnh (tùy chỉnh) */
+    margin-bottom: 300px;
 }

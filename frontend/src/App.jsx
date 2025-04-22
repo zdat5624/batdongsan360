@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Spinner } from "react-bootstrap";
@@ -20,8 +20,8 @@ import AdminVips from "./components/AdminVips";
 import AdminPostsPage from "./pages/AdminPostsPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import apiServices from "./services/apiServices";
-import NotificationsPage from "./pages/NotificationsPage"
-import PaymentResult from "./components/PaymentResult"
+import NotificationsPage from "./pages/NotificationsPage";
+import PaymentResult from "./components/PaymentResult";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
@@ -30,6 +30,8 @@ const App = () => {
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState(undefined);
   const [isLoading, setIsLoading] = useState(true);
+  const location = useLocation();
+  const isAdminPage = location.pathname.startsWith("/admin");
 
   useEffect(() => {
     const verifyToken = async () => {
@@ -45,7 +47,6 @@ const App = () => {
               id: response.data.data.id,
               name: response.data.data.name,
               email: response.data.data.email,
-
               avatar: response.data.data.avatar || "https://i.pravatar.cc/150?u=" + response.data.data.email,
               role: response.data.data.role,
               accessToken: token,
@@ -96,83 +97,92 @@ const App = () => {
   }
 
   return (
-    <Router>
-      <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-        <Header user={user} setUser={setUser} handleLogin={handleLogin} handleLogout={handleLogout} />
-        <main style={{ flex: "1 0 auto" }}>
-          <Routes>
-            <Route path="/" element={<HomePage setLoading={setLoading} />} />
-            <Route path="/sell" element={<SellPage setLoading={setLoading} />} />
-            <Route path="/rent" element={<RentPage setLoading={setLoading} />} />
-            <Route path="/post/:id" element={<ProjectDetail />} />
-            <Route path="/post-ad" element={<PostAd />} />
-            <Route path="/notifications" element={<NotificationsPage user={user} handleLogout={handleLogout} />} />
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+      {/* Bọc Header trong div và ẩn toàn bộ vùng nếu là trang admin */}
+      {!isAdminPage && (
+        <div className="header-wrapper">
+          <Header user={user} setUser={setUser} handleLogin={handleLogin} handleLogout={handleLogout} />
+        </div>
+      )}
+      <main style={{ flex: "1 0 auto" }}>
+        <Routes>
+          <Route path="/" element={<HomePage setLoading={setLoading} />} />
+          <Route path="/sell" element={<SellPage setLoading={setLoading} />} />
+          <Route path="/rent" element={<RentPage setLoading={setLoading} />} />
+          <Route path="/post/:id" element={<ProjectDetail />} />
+          <Route path="/post-ad" element={<PostAd />} />
+          <Route path="/notifications" element={<NotificationsPage user={user} handleLogout={handleLogout} />} />
 
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute user={user}>
-                  <UserProfile user={user} setUser={setUser} />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/payment"
-              element={
-                <ProtectedRoute user={user}>
-                  <PaymentPage user={user} handleLogout={handleLogout} />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/payment/payment-result" element={<PaymentResult user={user} handleLogout={handleLogout} />} />
-            <Route
-              path="/post-history"
-              element={
-                <ProtectedRoute user={user}>
-                  <HistoryNew user={user} />
-                </ProtectedRoute>
-              }
-            />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute user={user}>
+                <UserProfile user={user} setUser={setUser} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/payment"
+            element={
+              <ProtectedRoute user={user}>
+                <PaymentPage user={user} handleLogout={handleLogout} />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/payment/payment-result" element={<PaymentResult user={user} handleLogout={handleLogout} />} />
+          <Route
+            path="/post-history"
+            element={
+              <ProtectedRoute user={user}>
+                <HistoryNew user={user} />
+              </ProtectedRoute>
+            }
+          />
 
-            <Route
-              path="/admin/users"
-              element={
-                <ProtectedRoute user={user} requireAdmin>
-                  <AdminUsers user={user} handleLogout={handleLogout} />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/payments"
-              element={
-                <ProtectedRoute user={user} requireAdmin>
-                  <AdminPayments user={user} handleLogout={handleLogout} />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/vips"
-              element={
-                <ProtectedRoute user={user} requireAdmin>
-                  <AdminVips user={user} handleLogout={handleLogout} />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/posts"
-              element={
-                <ProtectedRoute user={user} requireAdmin>
-                  <AdminPostsPage user={user} handleLogout={handleLogout} />
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
-        </main>
-        {!loading && <Footer />}
-        <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
-      </div>
-    </Router>
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute user={user}>
+                <AdminUsers user={user} setUser={setUser} handleLogin={handleLogin} handleLogout={handleLogout} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/payments"
+            element={
+              <ProtectedRoute user={user}>
+                <AdminPayments user={user} handleLogout={handleLogout} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/vips"
+            element={
+              <ProtectedRoute user={user}>
+                <AdminVips user={user} handleLogout={handleLogout} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/posts"
+            element={
+              <ProtectedRoute user={user}>
+                <AdminPostsPage user={user} handleLogout={handleLogout} />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </main>
+      {!loading && !isAdminPage && <Footer />}
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
+    </div>
   );
 };
 
-export default App;
+export default function AppWrapper() {
+  return (
+    <Router>
+      <App />
+    </Router>
+  );
+}
