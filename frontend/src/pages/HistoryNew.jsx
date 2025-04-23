@@ -11,7 +11,9 @@ import {
 } from "react-bootstrap";
 import { FaClock } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import apiServices from "../services/apiServices";
+import Sidebar from "../components/Sidebar"; // Thêm import Sidebar
 import "../assets/styles/HistoryNew.css";
 
 // Thêm CSS tùy chỉnh để thay đổi màu nền của trang và bố trí layout
@@ -21,11 +23,20 @@ const pageStyles = `
     min-height: 100vh;
     flex-direction: column;
   }
+  .content-wrapper {
+    display: grid;
+    grid-template-columns: minmax(200px, 250px) 1fr; /* Sidebar rộng 250px, nội dung chính chiếm phần còn lại */
+    flex: 1;
+    width: 100%;
+  }
   .main-content {
     flex: 1;
     padding-top: 70px; /* Tạo khoảng cách với Header */
     padding-bottom: 150px; /* Tránh bị che bởi Footer */
+    padding-left: 20px;
+    padding-right: 20px;
     background-color: #f0f8ff; /* Màu nền xanh nhạt cho nội dung chính */
+    width: 100%;
   }
   .custom-container {
     background-color: #f0f8ff; /* Màu nền xanh nhạt cho container */
@@ -129,10 +140,43 @@ const pageStyles = `
     border-radius: 10px;
     text-align: center;
   }
+  @media (max-width: 768px) {
+    .content-wrapper {
+      grid-template-columns: 1fr; /* Chỉ hiển thị nội dung chính, không có Sidebar */
+    }
+    .sidebar {
+      position: fixed;
+      width: 100%;
+      z-index: 1000;
+      top: 0;
+      left: 0;
+      display: none; /* Ẩn Sidebar trên thiết bị nhỏ */
+    }
+    .main-content {
+      padding: 15px;
+      padding-top: 50px;
+      padding-bottom: 100px;
+    }
+  }
+  @media (max-width: 576px) {
+    .post-title {
+      font-size: 1rem;
+    }
+    .post-meta {
+      font-size: 0.85rem;
+    }
+    .action-btn {
+      padding: 4px 10px;
+      font-size: 0.8rem;
+    }
+    .button-group {
+      gap: 5px;
+    }
+  }
 `;
 
 // eslint-disable-next-line react/prop-types
-const HistoryNew = ({ user, handleShowLogoutConfirm }) => {
+const HistoryNew = ({ user, handleLogout }) => { // Đổi tên prop thành handleLogout
   const navigate = useNavigate();
   const [activePosts, setActivePosts] = useState([]);
   const [expiredPosts, setExpiredPosts] = useState([]);
@@ -319,178 +363,187 @@ const HistoryNew = ({ user, handleShowLogoutConfirm }) => {
   return (
     <div className="layout">
       <style>{pageStyles}</style>
-      <div className="main-content">
-        <Container className="py-5 custom-container">
-          <Card className="border-0 shadow-sm history-card">
-            <Card.Header className="history-header d-flex align-items-center">
-              <FaClock className="me-2" />
-              <h4 className="mb-0">Lịch sử tin đăng</h4>
-            </Card.Header>
-            <Card.Body className="p-4">
-              {error && <div className="alert alert-danger alert-custom">{error}</div>}
-              {loading ? (
-                <div className="text-center py-5 loading-container">
-                  <div className="spinner-border text-primary spinner-custom" role="status">
-                    <span className="visually-hidden">Đang tải...</span>
-                  </div>
-                  <p className="mt-2 text-muted">Đang tải danh sách tin...</p>
-                </div>
-              ) : (
-                <Tabs
-                  defaultActiveKey="active"
-                  id="post-history-tabs"
-                  className="mb-4 custom-tabs"
-                  variant="tabs"
-                >
-                  <Tab
-                    eventKey="pending"
-                    title={
-                      <span className="tab-title">
-                        Tin đang chờ duyệt{" "}
-                        <Badge bg="warning" pill className="custom-badge">
-                          {pendingPosts.length}
-                        </Badge>
-                      </span>
-                    }
-                  >
-                    <ListGroup variant="flush" className="post-list">
-                      {pendingPosts.length > 0 ? (
-                        pendingPosts.map((post) => (
-                          <ListGroup.Item
-                            key={post.id}
-                            className="post-item d-flex justify-content-between align-items-center py-3"
-                          >
-                            <div>
-                              <strong className="post-title">{post.title}</strong>
-                              <p className="mb-0 post-meta">
-                                <small>
-                                  Đăng ngày: {post.date} | Lượt xem: {post.views}
-                                </small>
-                              </p>
-                            </div>
-                            <Button
-                              variant="outline-primary"
-                              size="sm"
-                              className="action-btn view-btn px-3"
-                              onClick={() => handleViewPostDetail(post.id)}
-                            >
-                              Xem chi tiết
-                            </Button>
-                          </ListGroup.Item>
-                        ))
-                      ) : (
-                        <ListGroup.Item className="text-center py-3 text-muted empty-message">
-                          <small>Chưa có tin đang chờ duyệt</small>
-                        </ListGroup.Item>
-                      )}
-                    </ListGroup>
-                  </Tab>
-
-                  <Tab
-                    eventKey="active"
-                    title={
-                      <span className="tab-title">
-                        Tin đang đăng{" "}
-                        <Badge bg="success" pill className="custom-badge">
-                          {activePosts.length}
-                        </Badge>
-                      </span>
-                    }
-                  >
-                    <ListGroup variant="flush" className="post-list">
-                      {activePosts.length > 0 ? (
-                        activePosts.map((post) => (
-                          <ListGroup.Item
-                            key={post.id}
-                            className="post-item d-flex justify-content-between align-items-center py-3"
-                          >
-                            <div>
-                              <strong className="post-title">{post.title}</strong>
-                              <p className="mb-0 post-meta">
-                                <small>
-                                  Đăng ngày: {post.date} | Lượt xem: {post.views} |{" "}
-                                  <span className="remaining-days">
-                                    Còn lại: {post.daysRemaining} ngày
-                                  </span>
-                                </small>
-                              </p>
-                            </div>
-                            <Button
-                              variant="outline-primary"
-                              size="sm"
-                              className="action-btn view-btn px-3"
-                              onClick={() => handleViewPostDetail(post.id)}
-                            >
-                              Xem chi tiết
-                            </Button>
-                          </ListGroup.Item>
-                        ))
-                      ) : (
-                        <ListGroup.Item className="text-center py-3 text-muted empty-message">
-                          <small>Chưa có tin đang đăng</small>
-                        </ListGroup.Item>
-                      )}
-                    </ListGroup>
-                  </Tab>
-
-                  <Tab
-                    eventKey="expired"
-                    title={
-                      <span className="tab-title">
-                        Tin hết hạn{" "}
-                        <Badge bg="danger" pill className="custom-badge">
-                          {expiredPosts.length}
-                        </Badge>
-                      </span>
-                    }
-                  >
-                    <ListGroup variant="flush" className="post-list">
-                      {expiredPosts.length > 0 ? (
-                        expiredPosts.map((post) => (
-                          <ListGroup.Item
-                            key={post.id}
-                            className="post-item d-flex justify-content-between align-items-center py-3"
-                          >
-                            <div>
-                              <strong className="post-title">{post.title}</strong>
-                              <p className="mb-0 post-meta">
-                                <small>
-                                  Hết hạn: {post.date} | Lượt xem: {post.views}
-                                </small>
-                              </p>
-                            </div>
-                            <div className="button-group">
-                              <Button
-                                variant="outline-success"
-                                size="sm"
-                                className="action-btn renew-btn px-3"
-                                onClick={() => handleRenewPost(post.id)}
+      <div className="content-wrapper">
+        <Sidebar user={user} handleLogout={handleLogout} /> {/* Thêm Sidebar */}
+        <div className="main-content">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <Container className="py-5 custom-container">
+              <Card className="border-0 shadow-sm history-card">
+                <Card.Header className="history-header d-flex align-items-center">
+                  <FaClock className="me-2" />
+                  <h4 className="mb-0">Lịch sử tin đăng</h4>
+                </Card.Header>
+                <Card.Body className="p-4">
+                  {error && <div className="alert alert-danger alert-custom">{error}</div>}
+                  {loading ? (
+                    <div className="text-center py-5 loading-container">
+                      <div className="spinner-border text-primary spinner-custom" role="status">
+                        <span className="visually-hidden">Đang tải...</span>
+                      </div>
+                      <p className="mt-2 text-muted">Đang tải danh sách tin...</p>
+                    </div>
+                  ) : (
+                    <Tabs
+                      defaultActiveKey="active"
+                      id="post-history-tabs"
+                      className="mb-4 custom-tabs"
+                      variant="tabs"
+                    >
+                      <Tab
+                        eventKey="pending"
+                        title={
+                          <span className="tab-title">
+                            Tin đang chờ duyệt{" "}
+                            <Badge bg="warning" pill className="custom-badge">
+                              {pendingPosts.length}
+                            </Badge>
+                          </span>
+                        }
+                      >
+                        <ListGroup variant="flush" className="post-list">
+                          {pendingPosts.length > 0 ? (
+                            pendingPosts.map((post) => (
+                              <ListGroup.Item
+                                key={post.id}
+                                className="post-item d-flex justify-content-between align-items-center py-3"
                               >
-                                Gia hạn
-                              </Button>
-                              <Button
-                                variant="outline-primary"
-                                size="sm"
-                                className="action-btn repost-btn px-3"
-                                onClick={() => handleRepost(post.id)}
+                                <div>
+                                  <strong className="post-title">{post.title}</strong>
+                                  <p className="mb-0 post-meta">
+                                    <small>
+                                      Đăng ngày: {post.date} | Lượt xem: {post.views}
+                                    </small>
+                                  </p>
+                                </div>
+                                <Button
+                                  variant="outline-primary"
+                                  size="sm"
+                                  className="action-btn view-btn px-3"
+                                  onClick={() => handleViewPostDetail(post.id)}
+                                >
+                                  Xem chi tiết
+                                </Button>
+                              </ListGroup.Item>
+                            ))
+                          ) : (
+                            <ListGroup.Item className="text-center py-3 text-muted empty-message">
+                              <small>Chưa có tin đang chờ duyệt</small>
+                            </ListGroup.Item>
+                          )}
+                        </ListGroup>
+                      </Tab>
+
+                      <Tab
+                        eventKey="active"
+                        title={
+                          <span className="tab-title">
+                            Tin đang đăng{" "}
+                            <Badge bg="success" pill className="custom-badge">
+                              {activePosts.length}
+                            </Badge>
+                          </span>
+                        }
+                      >
+                        <ListGroup variant="flush" className="post-list">
+                          {activePosts.length > 0 ? (
+                            activePosts.map((post) => (
+                              <ListGroup.Item
+                                key={post.id}
+                                className="post-item d-flex justify-content-between align-items-center py-3"
                               >
-                                Đăng lại
-                              </Button>
-                            </div>
-                          </ListGroup.Item>
-                        ))
-                      ) : (
-                        <ListGroup.Item className="text-center py-3 text-muted empty-message">
-                          <small>Chưa có tin hết hạn</small>
-                        </ListGroup.Item>
-                      )}
-                    </ListGroup>
-                  </Tab>
-                </Tabs>
-              )}
-            </Card.Body>
-          </Card>
-        </Container>
+                                <div>
+                                  <strong className="post-title">{post.title}</strong>
+                                  <p className="mb-0 post-meta">
+                                    <small>
+                                      Đăng ngày: {post.date} | Lượt xem: {post.views} |{" "}
+                                      <span className="remaining-days">
+                                        Còn lại: {post.daysRemaining} ngày
+                                      </span>
+                                    </small>
+                                  </p>
+                                </div>
+                                <Button
+                                  variant="outline-primary"
+                                  size="sm"
+                                  className="action-btn view-btn px-3"
+                                  onClick={() => handleViewPostDetail(post.id)}
+                                >
+                                  Xem chi tiết
+                                </Button>
+                              </ListGroup.Item>
+                            ))
+                          ) : (
+                            <ListGroup.Item className="text-center py-3 text-muted empty-message">
+                              <small>Chưa có tin đang đăng</small>
+                            </ListGroup.Item>
+                          )}
+                        </ListGroup>
+                      </Tab>
+
+                      <Tab
+                        eventKey="expired"
+                        title={
+                          <span className="tab-title">
+                            Tin hết hạn{" "}
+                            <Badge bg="danger" pill className="custom-badge">
+                              {expiredPosts.length}
+                            </Badge>
+                          </span>
+                        }
+                      >
+                        <ListGroup variant="flush" className="post-list">
+                          {expiredPosts.length > 0 ? (
+                            expiredPosts.map((post) => (
+                              <ListGroup.Item
+                                key={post.id}
+                                className="post-item d-flex justify-content-between align-items-center py-3"
+                              >
+                                <div>
+                                  <strong className="post-title">{post.title}</strong>
+                                  <p className="mb-0 post-meta">
+                                    <small>
+                                      Hết hạn: {post.date} | Lượt xem: {post.views}
+                                    </small>
+                                  </p>
+                                </div>
+                                <div className="button-group">
+                                  <Button
+                                    variant="outline-success"
+                                    size="sm"
+                                    className="action-btn renew-btn px-3"
+                                    onClick={() => handleRenewPost(post.id)}
+                                  >
+                                    Gia hạn
+                                  </Button>
+                                  <Button
+                                    variant="outline-primary"
+                                    size="sm"
+                                    className="action-btn repost-btn px-3"
+                                    onClick={() => handleRepost(post.id)}
+                                  >
+                                    Đăng lại
+                                  </Button>
+                                </div>
+                              </ListGroup.Item>
+                            ))
+                          ) : (
+                            <ListGroup.Item className="text-center py-3 text-muted empty-message">
+                              <small>Chưa có tin hết hạn</small>
+                            </ListGroup.Item>
+                          )}
+                        </ListGroup>
+                      </Tab>
+                    </Tabs>
+                  )}
+                </Card.Body>
+              </Card>
+            </Container>
+          </motion.div>
+        </div>
       </div>
     </div>
   );

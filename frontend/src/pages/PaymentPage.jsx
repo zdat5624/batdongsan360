@@ -19,6 +19,7 @@ import {
 } from "react-bootstrap";
 import apiServices from "../services/apiServices";
 import { motion } from "framer-motion";
+import Sidebar from "../components/Sidebar"; // Thêm import Sidebar
 
 // CSS tối ưu
 const customStyles = `
@@ -27,11 +28,19 @@ const customStyles = `
     min-height: 100vh;
     flex-direction: column;
   }
+  .content-wrapper {
+    display: grid;
+    grid-template-columns: minmax(200px, 250px) 1fr; /* Sidebar rộng 250px, nội dung chính chiếm phần còn lại */
+    flex: 1;
+    width: 100%;
+  }
   .main-content {
     flex: 1;
     padding: 20px;
     padding-top: 70px;
+    padding-bottom: 150px; /* Tránh bị che bởi Footer */
     background: #f0f4f8;
+    width: 100%;
   }
   .custom-tabs .nav-link {
     font-weight: bold;
@@ -81,6 +90,29 @@ const customStyles = `
   .pagination .page-link:hover {
     background: #e6f0ff;
   }
+  @media (max-width: 768px) {
+    .content-wrapper {
+      grid-template-columns: 1fr; /* Chỉ hiển thị nội dung chính, không có Sidebar */
+    }
+    .sidebar {
+      position: fixed;
+      width: 100%;
+      z-index: 1000;
+      top: 0;
+      left: 0;
+      display: none; /* Ẩn Sidebar trên thiết bị nhỏ */
+    }
+    .main-content {
+      padding: 15px;
+      padding-top: 50px;
+      padding-bottom: 100px;
+    }
+  }
+  @media (max-width: 576px) {
+    .balance-card {
+      max-width: 100%;
+    }
+  }
 `;
 
 const PaymentPage = ({ user, handleLogout }) => {
@@ -126,7 +158,7 @@ const PaymentPage = ({ user, handleLogout }) => {
     setLoading(true);
     try {
       const response = await apiServices.get(
-        `/api/payment/my-transactions?page=0&size=1000&sort=createdAt,desc`
+        `/api/payment/my-transactions?page=0&size=10&sort=createdAt,desc`
       );
       if (response.data.statusCode === 200) {
         const transactions = response.data.data.content || [];
@@ -324,161 +356,164 @@ const PaymentPage = ({ user, handleLogout }) => {
   return (
     <div className="layout">
       <style>{customStyles}</style>
-      <div className="main-content">
-        <Container>
+      <div className="content-wrapper">
+        <Sidebar user={user} handleLogout={handleLogout} /> {/* Thêm Sidebar */}
+        <div className="main-content">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <Row className="justify-content-center mb-5">
-              <Col xs={12} md={8} lg={6}>
-                <Card className="shadow-lg border-0 balance-card">
-                  <Card.Body className="p-4 d-flex flex-column align-items-center">
-                    <h3 className="fw-bold mb-3 text-white">Số dư tài khoản</h3>
-                    <Badge bg="light" className="py-2 px-4 text-dark shadow-sm mb-4">
-                      {balance.toLocaleString("vi-VN")} VNĐ
-                    </Badge>
-                    <Button
-                      variant="light"
-                      className="fw-bold shadow-sm"
-                      style={{ borderRadius: "25px" }}
-                      onClick={() => setShowModal(true)}
-                    >
-                      Nạp tiền ngay
-                    </Button>
-                  </Card.Body>
-                </Card>
-              </Col>
-            </Row>
+            <Container>
+              <Row className="justify-content-center mb-5">
+                <Col xs={12} md={8} lg={6}>
+                  <Card className="shadow-lg border-0 balance-card">
+                    <Card.Body className="p-4 d-flex flex-column align-items-center">
+                      <h3 className="fw-bold mb-3 text-white">Số dư tài khoản</h3>
+                      <Badge bg="light" className="py-2 px-4 text-dark shadow-sm mb-4">
+                        {balance.toLocaleString("vi-VN")} VNĐ
+                      </Badge>
+                      <Button
+                        variant="light"
+                        className="fw-bold shadow-sm"
+                        style={{ borderRadius: "25px" }}
+                        onClick={() => setShowModal(true)}
+                      >
+                        Nạp tiền ngay
+                      </Button>
+                    </Card.Body>
+                  </Card>
+                </Col>
+              </Row>
 
-            <Row>
-              <Col>
-                {error && <Alert variant="danger">{error}</Alert>}
-                {successMessage && <Alert variant="success">{successMessage}</Alert>}
+              <Row>
+                <Col>
+                  {error && <Alert variant="danger">{error}</Alert>}
+                  {successMessage && <Alert variant="success">{successMessage}</Alert>}
 
-                {loading ? (
-                  <div className="text-center py-5">
-                    <Spinner animation="border" variant="primary" />
-                    <p className="mt-3">Đang tải...</p>
-                  </div>
-                ) : (
-                  <Tabs defaultActiveKey="deposit" className="mb-4 custom-tabs" justify>
-                    <Tab eventKey="deposit" title="Lịch sử nạp tiền">
-                      <Card className="shadow-sm border-0">
-                        <Card.Body className="p-4">
-                          <h4 className="text-primary fw-bold mb-4">Lịch sử nạp tiền</h4>
-                          <Table hover>
-                            <thead>
-                              <tr>
-                                <th>Trạng thái</th>
-                                <th>Ngày nạp</th>
-                                <th>Số tiền</th>
-                                <th>Thực nhận</th>
-                                <th>Mã GD</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {depositHistory.length > 0 ? (
-                                depositHistory.map((item) => (
-                                  <tr key={item.id}>
-                                    <td>
-                                      <Badge bg={getStatusColor(item.status)}>{item.status}</Badge>
-                                    </td>
-                                    <td>{item.depositDate}</td>
-                                    <td className={item.status === "Thất bại" ? "text-danger" : "text-success"}>
-                                      {item.depositAmount}
-                                    </td>
-                                    <td>{item.netAmount}</td>
-                                    <td>{item.transactionId}</td>
-                                  </tr>
-                                ))
-                              ) : (
+                  {loading ? (
+                    <div className="text-center py-5">
+                      <Spinner animation="border" variant="primary" />
+                      <p className="mt-3">Đang tải...</p>
+                    </div>
+                  ) : (
+                    <Tabs defaultActiveKey="deposit" className="mb-4 custom-tabs" justify>
+                      <Tab eventKey="deposit" title="Lịch sử nạp tiền">
+                        <Card className="shadow-sm border-0">
+                          <Card.Body className="p-4">
+                            <h4 className="text-primary fw-bold mb-4">Lịch sử nạp tiền</h4>
+                            <Table hover>
+                              <thead>
                                 <tr>
-                                  <td colSpan="5" className="text-center py-4">
-                                    Chưa có lịch sử nạp tiền
-                                  </td>
+                                  <th>Trạng thái</th>
+                                  <th>Ngày nạp</th>
+                                  <th>Số tiền</th>
+                                  <th>Thực nhận</th>
+                                  <th>Mã GD</th>
                                 </tr>
-                              )}
-                            </tbody>
-                          </Table>
-                          {totalDepositPages > 1 && (
-                            renderPagination(currentDepositPage, totalDepositPages, setCurrentDepositPage)
-                          )}
-                        </Card.Body>
-                      </Card>
-                    </Tab>
-                    <Tab eventKey="payment" title="Lịch sử thanh toán">
-                      <Card className="shadow-sm border-0">
-                        <Card.Body className="p-4">
-                          <h4 className="text-primary fw-bold mb-4">Lịch sử thanh toán</h4>
-                          <Table hover>
-                            <thead>
-                              <tr>
-                                <th>Thời gian</th>
-                                <th>Phí</th>
-                                <th>Hoạt động</th>
-                                <th>Mã tin</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {paymentHistory.length > 0 ? (
-                                paymentHistory.map((item) => (
-                                  <tr key={item.id}>
-                                    <td>{item.time}</td>
-                                    <td className="text-danger">{item.fee}</td>
-                                    <td>{item.activityType}</td>
-                                    <td>{item.postId}</td>
+                              </thead>
+                              <tbody>
+                                {depositHistory.length > 0 ? (
+                                  depositHistory.map((item) => (
+                                    <tr key={item.id}>
+                                      <td>
+                                        <Badge bg={getStatusColor(item.status)}>{item.status}</Badge>
+                                      </td>
+                                      <td>{item.depositDate}</td>
+                                      <td className={item.status === "Thất bại" ? "text-danger" : "text-success"}>
+                                        {item.depositAmount}
+                                      </td>
+                                      <td>{item.netAmount}</td>
+                                      <td>{item.transactionId}</td>
+                                    </tr>
+                                  ))
+                                ) : (
+                                  <tr>
+                                    <td colSpan="5" className="text-center py-4">
+                                      Chưa có lịch sử nạp tiền
+                                    </td>
                                   </tr>
-                                ))
-                              ) : (
+                                )}
+                              </tbody>
+                            </Table>
+                            {totalDepositPages > 1 && (
+                              renderPagination(currentDepositPage, totalDepositPages, setCurrentDepositPage)
+                            )}
+                          </Card.Body>
+                        </Card>
+                      </Tab>
+                      <Tab eventKey="payment" title="Lịch sử thanh toán">
+                        <Card className="shadow-sm border-0">
+                          <Card.Body className="p-4">
+                            <h4 className="text-primary fw-bold mb-4">Lịch sử thanh toán</h4>
+                            <Table hover>
+                              <thead>
                                 <tr>
-                                  <td colSpan="4" className="text-center py-4">
-                                    Chưa có lịch sử thanh toán
-                                  </td>
+                                  <th>Thời gian</th>
+                                  <th>Phí</th>
+                                  <th>Hoạt động</th>
+                                  <th>Mã tin</th>
                                 </tr>
-                              )}
-                            </tbody>
-                          </Table>
-                          {totalPaymentPages > 1 && (
-                            renderPagination(currentPaymentPage, totalPaymentPages, setCurrentPaymentPage)
-                          )}
-                        </Card.Body>
-                      </Card>
-                    </Tab>
-                  </Tabs>
-                )}
-              </Col>
-            </Row>
+                              </thead>
+                              <tbody>
+                                {paymentHistory.length > 0 ? (
+                                  paymentHistory.map((item) => (
+                                    <tr key={item.id}>
+                                      <td>{item.time}</td>
+                                      <td className="text-danger">{item.fee}</td>
+                                      <td>{item.activityType}</td>
+                                      <td>{item.postId}</td>
+                                    </tr>
+                                  ))
+                                ) : (
+                                  <tr>
+                                    <td colSpan="4" className="text-center py-4">
+                                      Chưa có lịch sử thanh toán
+                                    </td>
+                                  </tr>
+                                )}
+                              </tbody>
+                            </Table>
+                            {totalPaymentPages > 1 && (
+                              renderPagination(currentPaymentPage, totalPaymentPages, setCurrentPaymentPage)
+                            )}
+                          </Card.Body>
+                        </Card>
+                      </Tab>
+                    </Tabs>
+                  )}
+                </Col>
+              </Row>
 
-            <Modal show={showModal} onHide={() => setShowModal(false)} centered dialogClassName="modal-custom">
-              <Modal.Header closeButton style={{ background: "linear-gradient(45deg, #007bff, #00b4d8)" }}>
-                <Modal.Title className="text-white">Nạp tiền vào tài khoản</Modal.Title>
-              </Modal.Header>
-              <Modal.Body className="p-4">
-                <Form>
-                  <Form.Group>
-                    <Form.Label className="fw-bold">Số tiền (VNĐ)</Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={depositAmount ? formatNumber(depositAmount) : ""}
-                      onChange={handleAmountChange}
-                      placeholder="Nhập số tiền, ví dụ: 100000"
-                    />
-                  </Form.Group>
-                </Form>
-              </Modal.Body>
-              <Modal.Footer>
-                <Button variant="outline-secondary" onClick={() => setShowModal(false)}>
-                  Hủy
-                </Button>
-                <Button variant="success" onClick={handleDeposit}>
-                  Nạp tiền
-                </Button>
-              </Modal.Footer>
-            </Modal>
+              <Modal show={showModal} onHide={() => setShowModal(false)} centered dialogClassName="modal-custom">
+                <Modal.Header closeButton style={{ background: "linear-gradient(45deg, #007bff, #00b4d8)" }}>
+                  <Modal.Title className="text-white">Nạp tiền vào tài khoản</Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="p-4">
+                  <Form>
+                    <Form.Group>
+                      <Form.Label className="fw-bold">Số tiền (VNĐ)</Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={depositAmount ? formatNumber(depositAmount) : ""}
+                        onChange={handleAmountChange}
+                        placeholder="Nhập số tiền, ví dụ: 100000"
+                      />
+                    </Form.Group>
+                  </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                  <Button variant="outline-secondary" onClick={() => setShowModal(false)}>
+                    Hủy
+                  </Button>
+                  <Button variant="success" onClick={handleDeposit}>
+                    Nạp tiền
+                  </Button>
+                </Modal.Footer>
+              </Modal>
+            </Container>
           </motion.div>
-        </Container>
+        </div>
       </div>
     </div>
   );
