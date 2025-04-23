@@ -36,4 +36,8 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
                         Pageable pageable);
 
         Page<Transaction> findByUserId(Long userId, Pageable pageable);
+
+        Page<Transaction> findByUserIdAndAmountGreaterThan(Long userId, long amount, Pageable pageable);
+
+        Page<Transaction> findByUserIdAndAmountLessThan(Long userId, long amount, Pageable pageable);
 }

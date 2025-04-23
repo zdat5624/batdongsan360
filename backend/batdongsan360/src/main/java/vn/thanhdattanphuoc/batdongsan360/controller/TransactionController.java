@@ -14,6 +14,7 @@ import org.springframework.data.domain.Sort;
 import vn.thanhdattanphuoc.batdongsan360.domain.Transaction;
 import vn.thanhdattanphuoc.batdongsan360.service.TransactionService;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.TransStatusEnum;
+import vn.thanhdattanphuoc.batdongsan360.util.constant.TransactionFilterType;
 
 @RestController
 public class TransactionController {
@@ -39,8 +40,9 @@ public class TransactionController {
 
     @GetMapping("/api/payment/my-transactions")
     public ResponseEntity<Page<Transaction>> getMyTransactions(
-            @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<Transaction> transactions = transactionService.getCurrentUserTransactions(pageable);
+            @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+            @RequestParam(value = "type", defaultValue = "ALL") TransactionFilterType type) {
+        Page<Transaction> transactions = transactionService.getCurrentUserTransactions(pageable, type);
         return ResponseEntity.ok(transactions);
     }
 }

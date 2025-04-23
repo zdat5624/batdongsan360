@@ -13,6 +13,7 @@ import vn.thanhdattanphuoc.batdongsan360.repository.TransactionRepository;
 import vn.thanhdattanphuoc.batdongsan360.repository.UserRepository;
 import vn.thanhdattanphuoc.batdongsan360.util.SecurityUtil;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.TransStatusEnum;
+import vn.thanhdattanphuoc.batdongsan360.util.constant.TransactionFilterType;
 
 @Service
 public class TransactionService {
@@ -33,7 +34,7 @@ public class TransactionService {
         return transactionRepository.findByUserId(userId, pageable);
     }
 
-    public Page<Transaction> getCurrentUserTransactions(Pageable pageable) {
+    public Page<Transaction> getCurrentUserTransactions(Pageable pageable, TransactionFilterType type) {
         Optional<String> currentUserLogin = SecurityUtil.getCurrentUserLogin();
         if (currentUserLogin.isEmpty()) {
             throw new IllegalStateException("User not authenticated");
@@ -44,6 +45,14 @@ public class TransactionService {
             throw new IllegalStateException("User not found");
         }
 
-        return transactionRepository.findByUserId(user.get().getId(), pageable);
+        switch (type) {
+            case DEPOSIT:
+                return transactionRepository.findByUserIdAndAmountGreaterThan(user.get().getId(), 0, pageable);
+            case PAYMENT:
+                return transactionRepository.findByUserIdAndAmountLessThan(user.get().getId(), 0, pageable);
+            case ALL:
+            default:
+                return transactionRepository.findByUserId(user.get().getId(), pageable);
+        }
     }
 }

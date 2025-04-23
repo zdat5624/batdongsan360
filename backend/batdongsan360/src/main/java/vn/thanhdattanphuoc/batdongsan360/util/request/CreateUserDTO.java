@@ -3,9 +3,13 @@ package vn.thanhdattanphuoc.batdongsan360.util.request;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.*;
+import lombok.Getter;
+import lombok.Setter;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.GenderEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.RoleEnum;
 
+@Getter
+@Setter
 public class CreateUserDTO {
 
     @NotBlank(message = "Username không được để trống")
@@ -32,51 +36,6 @@ public class CreateUserDTO {
     @Enumerated(EnumType.STRING)
     private GenderEnum gender;
 
-    public GenderEnum getGender() {
-        return gender;
-    }
+    private String address;
 
-    public void setGender(GenderEnum gender) {
-        this.gender = gender;
-    }
-
-    public RoleEnum getRole() {
-        return role;
-    }
-
-    public void setRole(RoleEnum role) {
-        this.role = role;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 }

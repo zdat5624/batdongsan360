@@ -2,10 +2,14 @@ package vn.thanhdattanphuoc.batdongsan360.util.response;
 
 import java.time.Instant;
 
+import lombok.Getter;
+import lombok.Setter;
 import vn.thanhdattanphuoc.batdongsan360.domain.User;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.GenderEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.RoleEnum;
 
+@Setter
+@Getter
 public class ResCreateUserDTO {
     private long id;
     private String name;
@@ -27,80 +31,9 @@ public class ResCreateUserDTO {
         this.setRole(user.getRole());
         this.setPhone(user.getPhone());
         this.setGender(user.getGender());
+        this.setAddress(user.getAddress());
         this.setCreatedAt(user.getCreatedAt());
         this.setCreatedBy(user.getCreatedBy());
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public RoleEnum getRole() {
-        return role;
-    }
-
-    public void setRole(RoleEnum role) {
-        this.role = role;
-    }
-
-    public GenderEnum getGender() {
-        return gender;
-    }
-
-    public void setGender(GenderEnum gender) {
-        this.gender = gender;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public String getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
     }
 
 }

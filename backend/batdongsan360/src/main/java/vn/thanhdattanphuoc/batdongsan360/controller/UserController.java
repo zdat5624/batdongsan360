@@ -77,7 +77,7 @@ public class UserController {
     }
 
     @PutMapping("/api/admin/users")
-    public ResponseEntity<ResUpdateUserDTO> updateUser(@RequestBody UserUpdateDTO userUpdateDTO)
+    public ResponseEntity<ResUpdateUserDTO> updateUser(@Valid @RequestBody UserUpdateDTO userUpdateDTO)
             throws InputInvalidException {
 
         User newUser = this.userService.handleUpdateUser(userUpdateDTO);
@@ -89,7 +89,7 @@ public class UserController {
     }
 
     @PutMapping("/api/users/update-profile")
-    public ResponseEntity<ResUpdateUserDTO> updateProfile(@RequestBody UpdateProfileDTO userUpdateDTO)
+    public ResponseEntity<ResUpdateUserDTO> updateProfile(@Valid @RequestBody UpdateProfileDTO userUpdateDTO)
             throws InputInvalidException {
 
         User newUser = this.userService.handleUpdateProfile(userUpdateDTO);
