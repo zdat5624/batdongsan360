@@ -50,4 +50,8 @@ public class NotificationService {
     public long getUnreadNotificationCount(Long userId) {
         return notificationRepository.countByUserIdAndIsReadFalse(userId);
     }
+
+    public boolean existsByMessage(String message) {
+        return this.notificationRepository.existsByMessage(message);
+    }
 }

@@ -52,7 +52,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(
                         authz -> authz
 
-                                .requestMatchers("/api/vips/test").hasRole("ADMIN")
+                                .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
                                 .requestMatchers(HttpMethod.GET, "/api/posts/my-posts").authenticated()
                                 .requestMatchers("/ws/**").permitAll()
@@ -108,7 +108,7 @@ public class SecurityConfiguration {
                 getSecretKey()).macAlgorithm(SecurityUtil.JWT_ALGORITHM).build();
         return token -> {
             try {
-                System.out.println("jwt decode:" + jwtDecoder.decode(token));
+                // System.out.println("jwt decode:" + jwtDecoder.decode(token));
                 return jwtDecoder.decode(token);
             } catch (Exception e) {
                 System.out.println(">>> JWT error: " + e.getMessage());

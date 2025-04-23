@@ -55,14 +55,14 @@ public class PostService {
     private final ProvinceRepository provinceRepository;
     private final DistrictRepository districtRepository;
     private final WardRepository wardRepository;
-    private final NotificationRepository notificationRepository;
+    private final NotificationService notificationService;
     private final TransactionRepository transactionRepository;
     private final MapboxGeocodeService mapboxGeocodeService;
 
     public PostService(PostRepository postRepository, UserRepository userRepository,
             CategoryRepository categoryRepository, VipRepository vipRepository, ImageRepository imageRepository,
             ProvinceRepository provinceRepository, DistrictRepository districtRepository, WardRepository wardRepository,
-            NotificationRepository notificationRepository, TransactionRepository transactionRepository,
+            NotificationService notificationService, TransactionRepository transactionRepository,
             MapboxGeocodeService mapboxGeocodeService) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
@@ -72,7 +72,7 @@ public class PostService {
         this.provinceRepository = provinceRepository;
         this.districtRepository = districtRepository;
         this.wardRepository = wardRepository;
-        this.notificationRepository = notificationRepository;
+        this.notificationService = notificationService;
         this.transactionRepository = transactionRepository;
         this.mapboxGeocodeService = mapboxGeocodeService;
     }
@@ -240,7 +240,7 @@ public class PostService {
         notification.setRead(false);
         notification.setMessage("Bài đăng " + post.getId() + "của bạn đã bị quản trị viên xóa vĩnh viễn");
         notification.setType(NotificationType.POST);
-        notificationRepository.save(notification);
+        this.notificationService.createNotification(notification);
 
         this.postRepository.delete(post);
     }
@@ -354,7 +354,7 @@ public class PostService {
             notification.setMessage(message);
         }
 
-        this.notificationRepository.save(notification);
+        this.notificationService.createNotification(notification);
         return post;
     }
 
@@ -375,19 +375,19 @@ public class PostService {
                             || user.getGender().equals(GenderEnum.OTHER)) {
 
                         notification.setMessage("Người dùng '" + user.getName() + " - "
-                                + user.getPhone() + user.getGender() + "' đã xem bài đăng " + post.getId()
+                                + user.getPhone() + "' đã xem bài đăng mã" + post.getId()
                                 + " của bạn.");
                     } else {
                         notification.setMessage("Người dùng '" + user.getName() + " - "
-                                + user.getPhone() + "' đã xem bài đăng " + post.getId()
+                                + user.getPhone() + "' đã xem bài đăng mã" + post.getId()
                                 + " của bạn.");
                     }
 
-                    if (!this.notificationRepository.existsByMessage(notification.getMessage())) {
+                    if (!this.notificationService.existsByMessage(notification.getMessage())) {
                         notification.setUser(post.getUser());
                         notification.setRead(false);
                         notification.setType(NotificationType.POST);
-                        notificationRepository.save(notification);
+                        this.notificationService.createNotification(notification);
                     }
 
                 }

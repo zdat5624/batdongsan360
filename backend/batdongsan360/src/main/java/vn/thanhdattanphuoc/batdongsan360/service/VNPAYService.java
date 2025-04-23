@@ -39,6 +39,7 @@ public class VNPAYService {
     private final TransactionRepository transactionRepository;
     private final UserRepository userRepository;
     private final EmailService emailService;
+    private final NotificationService notificationService;
 
     @Value("${vnp.PayUrl}")
     private String vnp_PayUrl;
@@ -53,10 +54,11 @@ public class VNPAYService {
     private String secretKey;
 
     public VNPAYService(TransactionRepository transactionRepository, UserRepository userRepository,
-            EmailService emailService) {
+            EmailService emailService, NotificationService notificationService) {
         this.transactionRepository = transactionRepository;
         this.userRepository = userRepository;
         this.emailService = emailService;
+        this.notificationService = notificationService;
     }
 
     public ResPaymentLinkDTO createVNPayLink(long inputAmount)
@@ -283,8 +285,8 @@ public class VNPAYService {
                 notification.setUser(transaction.getUser());
                 notification.setRead(false);
                 notification.setType(NotificationType.TRANSACTION);
-                notification.setMessage(description + ", tài khoản cộng " + transaction.getAmount());
-
+                notification.setMessage(description + ", tài khoản của bạn cộng " + transaction.getAmount() + "VNĐ");
+                this.notificationService.createNotification(notification);
                 // send mail
                 String transactionTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
                 this.emailService.sendDepositSuccessEmail(user.getEmail(), user.getName(), transaction.getAmount(),

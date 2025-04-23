@@ -18,6 +18,7 @@ import vn.thanhdattanphuoc.batdongsan360.domain.User;
 import vn.thanhdattanphuoc.batdongsan360.service.UserService;
 import vn.thanhdattanphuoc.batdongsan360.util.error.InputInvalidException;
 import vn.thanhdattanphuoc.batdongsan360.util.request.CreateUserDTO;
+import vn.thanhdattanphuoc.batdongsan360.util.request.UpdateProfileDTO;
 import vn.thanhdattanphuoc.batdongsan360.util.request.UserFilterRequest;
 import vn.thanhdattanphuoc.batdongsan360.util.request.UserUpdateDTO;
 import vn.thanhdattanphuoc.batdongsan360.util.response.ResCreateUserDTO;
@@ -75,21 +76,23 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(fetchUser);
     }
 
-    @PutMapping("/api/users")
+    @PutMapping("/api/admin/users")
     public ResponseEntity<ResUpdateUserDTO> updateUser(@RequestBody UserUpdateDTO userUpdateDTO)
             throws InputInvalidException {
 
-        // boolean isEmailExist =
-        // this.userService.isEmailExist(userUpdateDTO.getEmail());
-        // User currentUser = this.userService.fetchUserById(userUpdateDTO.getId());
-        // if (isEmailExist && !currentUser.getEmail().equals(userUpdateDTO.getEmail()))
-        // {
-        // throw new InputInvalidException(
-        // "Email " + userUpdateDTO.getEmail() + " đã tồn tại, vui lòng sử dụng email
-        // khác.");
-        // }
-
         User newUser = this.userService.handleUpdateUser(userUpdateDTO);
+        if (newUser == null) {
+            throw new InputInvalidException(
+                    "User id " + userUpdateDTO.getId() + " không tồn tại.");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(new ResUpdateUserDTO(newUser));
+    }
+
+    @PutMapping("/api/users/update-profile")
+    public ResponseEntity<ResUpdateUserDTO> updateProfile(@RequestBody UpdateProfileDTO userUpdateDTO)
+            throws InputInvalidException {
+
+        User newUser = this.userService.handleUpdateProfile(userUpdateDTO);
         if (newUser == null) {
             throw new InputInvalidException(
                     "User id " + userUpdateDTO.getId() + " không tồn tại.");

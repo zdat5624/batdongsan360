@@ -63,6 +63,7 @@ public class NotificationController {
         Notification notification = new Notification();
         User user = new User();
         user.setId(request.userId);
+
         notification.setUser(user);
         notification.setMessage(request.message);
         notification.setType(request.type);
@@ -75,7 +76,7 @@ public class NotificationController {
 
     public static class CreateNotificationRequest {
         public Long userId;
-        private String message;
+        public String message;
         public NotificationType type;
     }
 }

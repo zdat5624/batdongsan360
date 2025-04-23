@@ -12,6 +12,7 @@ import vn.thanhdattanphuoc.batdongsan360.domain.User;
 import vn.thanhdattanphuoc.batdongsan360.repository.UserRepository;
 import vn.thanhdattanphuoc.batdongsan360.service.specification.UserSpecification;
 import vn.thanhdattanphuoc.batdongsan360.util.request.CreateUserDTO;
+import vn.thanhdattanphuoc.batdongsan360.util.request.UpdateProfileDTO;
 import vn.thanhdattanphuoc.batdongsan360.util.request.UserFilterRequest;
 import vn.thanhdattanphuoc.batdongsan360.util.request.UserUpdateDTO;
 import vn.thanhdattanphuoc.batdongsan360.util.response.UserDTO;
@@ -70,6 +71,19 @@ public class UserService {
         if (currentUser != null) {
             currentUser.setName(userUpdateDTO.getName());
             currentUser.setRole(userUpdateDTO.getRole());
+            currentUser.setGender(userUpdateDTO.getGender());
+            currentUser.setAvatar(userUpdateDTO.getAvatar());
+            currentUser.setPhone(userUpdateDTO.getPhone());
+            currentUser.setAddress(userUpdateDTO.getAddress());
+            return currentUser = this.userRepository.save(currentUser);
+        }
+        return null;
+    }
+
+    public User handleUpdateProfile(UpdateProfileDTO userUpdateDTO) {
+        User currentUser = fetchUserById(userUpdateDTO.getId());
+        if (currentUser != null) {
+            currentUser.setName(userUpdateDTO.getName());
             currentUser.setGender(userUpdateDTO.getGender());
             currentUser.setAvatar(userUpdateDTO.getAvatar());
             currentUser.setPhone(userUpdateDTO.getPhone());

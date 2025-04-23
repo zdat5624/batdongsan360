@@ -770,8 +770,8 @@ public class StartupRunner implements CommandLineRunner {
                         continue;
                     Post viewedPost = posts.get(random.nextInt(posts.size()));
                     User viewer = users.get(random.nextInt(users.size()));
-                    message = "Người dùng [" + viewer.getName() + ", phone=" + viewer.getPhone() +
-                            ", gender=" + viewer.getGender() + "] đã xem bài đăng " + viewedPost.getId() + " của bạn.";
+                    message = "Người dùng '" + viewer.getName() + " - " + viewer.getPhone() +
+                            " đã xem bài đăng mã" + viewedPost.getId() + " của bạn.";
                     type = NotificationType.POST;
                     notification.setUser(viewedPost.getUser());
                     break;
@@ -780,7 +780,7 @@ public class StartupRunner implements CommandLineRunner {
                     if (posts.isEmpty())
                         continue;
                     Post approvedPost = posts.get(random.nextInt(posts.size()));
-                    message = "Bài đăng '" + approvedPost.getId() + "' của bạn đã được kiểm duyệt viên chấp nhận.";
+                    message = "Bài đăng mã '" + approvedPost.getId() + "' của bạn đã được kiểm duyệt viên chấp nhận.";
                     type = NotificationType.SYSTEM_ALERT;
                     notification.setUser(approvedPost.getUser());
                     break;
@@ -789,7 +789,7 @@ public class StartupRunner implements CommandLineRunner {
                     if (posts.isEmpty())
                         continue;
                     Post rejectedPost = posts.get(random.nextInt(posts.size()));
-                    message = "Bài đăng '" + rejectedPost.getId() + "' của bạn đã bị kiểm duyệt viên từ chối.";
+                    message = "Bài đăng mã'" + rejectedPost.getId() + "' của bạn đã bị kiểm duyệt viên từ chối.";
                     type = NotificationType.SYSTEM_ALERT;
                     notification.setUser(rejectedPost.getUser());
                     break;
@@ -803,7 +803,8 @@ public class StartupRunner implements CommandLineRunner {
                             .orElse(null);
                     if (successfulTransaction == null)
                         continue;
-                    message = "Giao dịch nạp tiền thành công, tài khoản cộng " + successfulTransaction.getAmount();
+                    message = "Giao dịch nạp tiền thành công, tài khoản của bạn cộng "
+                            + successfulTransaction.getAmount() + " VNĐ";
                     type = NotificationType.TRANSACTION;
                     notification.setUser(successfulTransaction.getUser());
                     break;
