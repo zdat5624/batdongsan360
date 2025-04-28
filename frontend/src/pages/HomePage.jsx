@@ -6,7 +6,7 @@ import { FaPhone, FaStar, FaBed, FaBath } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import SearchForm from "../components/SearchForm";
 import apiServices from "../services/apiServices";
-import { GoogleMap, LoadScript, Marker, InfoWindow } from "@react-google-maps/api";
+// import { GoogleMap, LoadScript, Marker, InfoWindow } from "@react-google-maps/api";
 
 // Hàm tính thời gian đã đăng (phút, giờ, ngày trước)
 const getTimeAgo = (createdAt) => {
@@ -543,8 +543,8 @@ const HomePage = ({ setLoading }) => {
         return {
           ...prev,
           [projectId]: projectsData.sell.find(p => p.id === projectId)?.phone ||
-                       projectsData.rent.find(p => p.id === projectId)?.phone ||
-                       projectsData.projects.find(p => p.id === projectId)?.phone,
+            projectsData.rent.find(p => p.id === projectId)?.phone ||
+            projectsData.projects.find(p => p.id === projectId)?.phone,
         };
       }
     });
@@ -578,7 +578,7 @@ const HomePage = ({ setLoading }) => {
         </Row>
 
         {/* Section Bản Đồ */}
-        <section className="project-section mb-5">
+        {/* <section className="project-section mb-5">
           <Row className="mb-4">
             <Col>
               <h2>Bản Đồ Bất Động Sản</h2>
@@ -640,7 +640,7 @@ const HomePage = ({ setLoading }) => {
               </div>
             </Col>
           </Row>
-        </section>
+        </section> */}
 
         {projectsData.sell.length === 0 && projectsData.rent.length === 0 && projectsData.projects.length === 0 && !error ? (
           <Row className="justify-content-center align-items-center" style={{ minHeight: "50vh" }}>
