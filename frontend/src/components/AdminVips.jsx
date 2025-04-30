@@ -13,7 +13,7 @@ import { FaSyncAlt, FaEdit, FaInfoCircle } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { Helmet } from "react-helmet";
 import AdminHeader from "../components/AdminHeader";
-import Sidebar from "../components/Sidebar";
+import AdminSidebar from "../components/AdminSidebar";
 import apiServices from "../services/apiServices";
 
 // AdminFooter component (tái sử dụng từ AdminUsers)
@@ -323,7 +323,7 @@ const AdminVips = ({ user, setUser, handleLogin, handleLogout }) => {
         <title>Quản lý Gói VIP - Admin Panel</title>
       </Helmet>
       <style>{customStyles}</style>
-      <Sidebar user={user} handleLogout={handleLogout} />
+      <AdminSidebar user={user} handleLogout={handleLogout} />
       <div className="content-wrapper">
         <div className="admin-header">
           <AdminHeader user={user} setUser={setUser} handleLogin={handleLogin} handleLogout={handleLogout} />

@@ -18,7 +18,7 @@ import { FaSearch, FaInfoCircle, FaTrash, FaLock, FaExclamationTriangle } from "
 import { motion } from "framer-motion";
 import { Helmet } from "react-helmet";
 import AdminHeader from "../components/AdminHeader";
-import Sidebar from "../components/Sidebar";
+import AdminSidebar from "../components/AdminSidebar";
 import apiServices from "../services/apiServices";
 
 // AdminFooter component
@@ -308,7 +308,7 @@ const AdminUsers = ({ user, setUser, handleLogin, handleLogout }) => {
         <title>Quản lý Người dùng - Admin Panel</title>
       </Helmet>
       <style>{customStyles}</style>
-      <Sidebar user={user} handleLogout={handleLogout} />
+      <AdminSidebar user={user} handleLogout={handleLogout} />
       <div className="content-wrapper">
         <div className="admin-header">
           <AdminHeader user={user} setUser={setUser} handleLogin={handleLogin} handleLogout={handleLogout} />
@@ -475,9 +475,8 @@ const AdminUsers = ({ user, setUser, handleLogin, handleLogout }) => {
                         <td>{user.joinedDate}</td>
                         <td>
                           <span
-                            className={`badge ${
-                              user.status === "Active" ? "bg-success" : user.status === "Locked" ? "bg-danger" : "bg-secondary"
-                            }`}
+                            className={`badge ${user.status === "Active" ? "bg-success" : user.status === "Locked" ? "bg-danger" : "bg-secondary"
+                              }`}
                           >
                             {user.status}
                           </span>

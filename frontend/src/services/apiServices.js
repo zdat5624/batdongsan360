@@ -9,10 +9,10 @@ apiServices.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('accessToken');
     console.log('Request URL:', config.url); // Log URL
-    console.log('Token:', token); // Log token
+    // console.log('Token:', token); // Log token
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
-      console.log('Authorization Header:', config.headers['Authorization']); // Log header
+      // console.log('Authorization Header:', config.headers['Authorization']); // Log header
     } else {
       console.log('No token found in localStorage');
     }

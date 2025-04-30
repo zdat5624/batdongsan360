@@ -3,18 +3,20 @@
 import React, { useState, useEffect } from "react";
 import { Container, Card, Button, Row, Col, Nav, Form, Image, InputGroup, Modal } from "react-bootstrap";
 import apiServices from "../services/apiServices";
+import Sidebar from "../components/Sidebar";
 
 const customStyles = `
   .layout {
     display: flex;
     min-height: 100vh;
-    flex-direction: column;
+    flex-direction: row; /* Thay đổi thành row để chứa sidebar và nội dung chính */
   }
   .main-content {
     flex: 1;
-    padding-top: 70px;
+    padding-top: 90px; /* Tăng padding-top để tránh bị che bởi header cố định */
     padding-bottom: 50px;
     background-color: #f0f8ff;
+    overflow-y: auto; /* Cho phép cuộn nếu nội dung dài */
   }
   .profile-card {
     max-width: 1000px;
@@ -271,6 +273,7 @@ const UserProfile = ({ user, setUser, handleLogout }) => {
   return (
     <div className="layout">
       <style>{customStyles}</style>
+      <Sidebar user={user} handleLogout={handleLogout} />
       <div className="main-content">
         <Container>
           <Card className="profile-card p-4">

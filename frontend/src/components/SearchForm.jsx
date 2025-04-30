@@ -1,10 +1,47 @@
 import React, { useState, useEffect } from "react";
-import { Dropdown, Form, Button, Container, Row, Col } from "react-bootstrap";
+import { Dropdown, Form, Button, Container, Row, Col, Modal, InputGroup } from "react-bootstrap";
+import { FaSearch, FaFilter } from "react-icons/fa";
 import apiServices from "../services/apiServices";
 import "../assets/styles/SearchForm.css";
 
+// CSS tùy chỉnh
+const customStyles = `
+  .custom-check-row {
+    display: flex;
+    align-items: center;
+    padding: 4px 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  .custom-check-row:hover {
+    background-color: rgba(207, 220, 255, 0.93);
+  }
+  .custom-check-row input[type="radio"] {
+    margin-right: 8px;
+    cursor: pointer;
+  }
+  .custom-check-row label {
+    flex: 1;
+    margin-bottom: 0;
+    cursor: pointer;
+  }
+  .filter-modal .modal-dialog {
+    max-width: 450px; /* Thu nhỏ chiều ngang modal */
+  }
+  .filter-modal .modal-content {
+    border-radius: 8px;
+  }
+  .filter-modal .modal-header {
+    border-bottom: 1px solid #e0e0e0;
+  }
+  .filter-modal .modal-footer {
+    border-top: 1px solid #e0e0e0;
+  }
+`;
+
 const SearchForm = ({ onSearch, hideTransactionType, projects = [] }) => {
-  const [selectedCategoryId, setSelectedCategoryId] = useState(null); // Thay propertyTypes bằng selectedCategoryId
+  const [showModal, setShowModal] = useState(false);
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [categories, setCategories] = useState([]);
   const [priceRange, setPriceRange] = useState([0, 50000000000000000]);
   const [areaRange, setAreaRange] = useState([0, 1000000000]);
@@ -16,6 +53,11 @@ const SearchForm = ({ onSearch, hideTransactionType, projects = [] }) => {
   const [provinces, setProvinces] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [wards, setWards] = useState([]);
+  const [categoryLabel, setCategoryLabel] = useState("Loại nhà đất");
+  const [priceLabel, setPriceLabel] = useState("Mức giá");
+  const [areaLabel, setAreaLabel] = useState("Diện tích");
+  const [locationLabel, setLocationLabel] = useState("Vị trí");
+  const [searchText, setSearchText] = useState("");
 
   const isSellPage = window.location.pathname.includes("/sell");
   const isRentPage = window.location.pathname.includes("/rent");
@@ -28,22 +70,13 @@ const SearchForm = ({ onSearch, hideTransactionType, projects = [] }) => {
         const categoriesData = [];
         for (const type of types) {
           const response = await apiServices.get(`/api/categories?page=0&size=30&sort=id,asc&type=${type}`);
-          console.log(`Categories fetched for type ${type}:`, response.data);
           if (response.data.statusCode === 200) {
             categoriesData.push(...response.data.data.content);
-          } else {
-            console.error(`Lỗi khi lấy danh sách categories cho type ${type}:`, response.data.message);
           }
         }
-        if (categoriesData.length === 0) {
-          console.warn("Không có categories nào được tải. Kiểm tra API hoặc dữ liệu backend.");
-          alert("Không thể tải danh sách loại nhà đất. Vui lòng thử lại sau.");
-          return;
-        }
-        console.log("All categories loaded in SearchForm:", categoriesData);
         setCategories(categoriesData);
       } catch (err) {
-        console.error("Lỗi khi lấy danh sách categories:", err.response?.data || err.message);
+        console.error("Lỗi khi lấy danh sách categories:", err);
         alert("Có lỗi xảy ra khi tải danh sách loại nhà đất. Vui lòng thử lại sau.");
       }
     };
@@ -54,7 +87,6 @@ const SearchForm = ({ onSearch, hideTransactionType, projects = [] }) => {
     const fetchProvinces = async () => {
       try {
         const response = await apiServices.get(`/api/address/provinces`);
-        console.log("Provinces fetched:", response.data);
         if (response.data.statusCode === 200) {
           setProvinces(response.data.data);
         }
@@ -70,11 +102,12 @@ const SearchForm = ({ onSearch, hideTransactionType, projects = [] }) => {
       if (location.provinceCode) {
         try {
           const response = await apiServices.get(`/api/address/districts/${location.provinceCode}`);
-          console.log("Districts fetched:", response.data);
           if (response.data.statusCode === 200) {
             setDistricts(response.data.data);
             setLocation((prev) => ({ ...prev, districtCode: null, wardCode: null }));
             setWards([]);
+            const selectedProvince = provinces.find((p) => p.code === location.provinceCode);
+            setLocationLabel(selectedProvince ? selectedProvince.name : "Vị trí");
           }
         } catch (err) {
           console.error("Lỗi khi lấy danh sách quận/huyện:", err);
@@ -83,20 +116,22 @@ const SearchForm = ({ onSearch, hideTransactionType, projects = [] }) => {
         setDistricts([]);
         setWards([]);
         setLocation((prev) => ({ ...prev, districtCode: null, wardCode: null }));
+        setLocationLabel("Vị trí");
       }
     };
     fetchDistricts();
-  }, [location.provinceCode]);
+  }, [location.provinceCode, provinces]);
 
   useEffect(() => {
     const fetchWards = async () => {
       if (location.districtCode) {
         try {
           const response = await apiServices.get(`/api/address/wards/${location.districtCode}`);
-          console.log("Wards fetched:", response.data);
           if (response.data.statusCode === 200) {
             setWards(response.data.data);
             setLocation((prev) => ({ ...prev, wardCode: null }));
+            const selectedDistrict = districts.find((d) => d.code === location.districtCode);
+            setLocationLabel(selectedDistrict ? selectedDistrict.name : "Vị trí");
           }
         } catch (err) {
           console.error("Lỗi khi lấy danh sách phường/xã:", err);
@@ -104,27 +139,87 @@ const SearchForm = ({ onSearch, hideTransactionType, projects = [] }) => {
       } else {
         setWards([]);
         setLocation((prev) => ({ ...prev, wardCode: null }));
+        const selectedProvince = provinces.find((p) => p.code === location.provinceCode);
+        setLocationLabel(selectedProvince ? selectedProvince.name : "Vị trí");
       }
     };
     fetchWards();
-  }, [location.districtCode]);
+  }, [location.districtCode, districts]);
 
-  const handleCategoryChange = (e) => {
-    const { value } = e.target;
-    setSelectedCategoryId(value ? parseInt(value) : null);
-    console.log("Selected categoryId:", value ? parseInt(value) : null);
+  useEffect(() => {
+    // Check if any filters are applied
+    const hasCategory = categoryLabel !== "Loại nhà đất";
+    const hasPrice = priceLabel !== "Mức giá" && priceLabel !== "Tất cả mức giá";
+    const hasArea = areaLabel !== "Diện tích" && areaLabel !== "Tất cả diện tích";
+    const hasLocation = locationLabel !== "Vị trí";
+
+    // Collect applied filter labels, converting to lowercase
+    const filters = [];
+    if (hasPrice) filters.push(priceLabel.toLowerCase());
+    if (hasArea) filters.push(areaLabel.replace("Diện tích: ", "").toLowerCase()); // Remove "Diện tích: " prefix
+    if (hasLocation) filters.push(locationLabel.toLowerCase());
+
+    // Determine base text based on page type and filters
+    let baseText = "";
+    if (!hasCategory && !hasPrice && !hasArea && !hasLocation) {
+      if (isSellPage) {
+        baseText = "Tìm tất cả tin bán bất động sản";
+      } else if (isRentPage) {
+        baseText = "Tìm tất cả tin cho thuê bất động sản";
+      }
+    } else {
+      const transactionType = isSellPage ? "bán" : "cho thuê";
+      if (hasCategory) {
+        baseText = `Tìm tin ${transactionType}: ${categoryLabel.toLowerCase()}`;
+        if (filters.length > 0) {
+          baseText += `, ${filters.join(", ")}`;
+        }
+      } else {
+        baseText = `Tìm tin ${transactionType}: ${filters.join(", ")}`;
+      }
+    }
+
+    setSearchText(baseText || "Tìm kiếm bất động sản");
+  }, [categoryLabel, priceLabel, areaLabel, locationLabel, isSellPage, isRentPage]);
+
+  const handleCategoryChange = (categoryId) => {
+    const id = categoryId ? parseInt(categoryId) : null;
+    setSelectedCategoryId(id);
+    const selectedCategory = categories.find((c) => c.id === id);
+    setCategoryLabel(selectedCategory ? selectedCategory.name : "Loại nhà đất");
+  };
+
+  const handlePriceOptionChange = (option) => {
+    setPriceRange([option.min, option.max]);
+    setPriceLabel(option.label);
+  };
+
+  const handleAreaOptionChange = (option) => {
+    setAreaRange([option.min, option.max]);
+    setAreaLabel(`Diện tích: ${option.label}`);
   };
 
   const handleLocationChange = (e) => {
     const { name, value } = e.target;
-    setLocation((prev) => ({ ...prev, [name]: value ? parseInt(value) : null }));
+    const newLocation = { ...location, [name]: value ? parseInt(value) : null };
+    setLocation(newLocation);
+
+    if (name === "wardCode" && value) {
+      const selectedWard = wards.find((w) => w.code === parseInt(value));
+      setLocationLabel(selectedWard ? selectedWard.name : "Vị trí");
+    } else if (name === "districtCode" && value) {
+      const selectedDistrict = districts.find((d) => d.code === parseInt(value));
+      setLocationLabel(selectedDistrict ? selectedDistrict.name : "Vị trí");
+    } else if (name === "provinceCode" && value) {
+      const selectedProvince = provinces.find((p) => p.code === parseInt(value));
+      setLocationLabel(selectedProvince ? selectedProvince.name : "Vị trí");
+    } else {
+      setLocationLabel("Vị trí");
+    }
   };
 
   const handleSearch = (e) => {
-    e.preventDefault();
-    console.log("=== Starting handleSearch in SearchForm ===");
-    console.log("Selected categoryId before search:", selectedCategoryId);
-
+    if (e) e.preventDefault();
     const searchData = {
       minPrice: priceRange[0],
       maxPrice: priceRange[1],
@@ -133,13 +228,10 @@ const SearchForm = ({ onSearch, hideTransactionType, projects = [] }) => {
       provinceCode: location.provinceCode || null,
       districtCode: location.districtCode || null,
       wardCode: location.wardCode || null,
-      categoryId: selectedCategoryId, // Gửi categoryId (số ít) thay vì categoryIds (mảng)
+      categoryId: selectedCategoryId,
       type: isSellPage ? "SALE" : isRentPage ? "RENT" : "SALE",
     };
-
-    console.log("Search data prepared to send from SearchForm:", searchData);
     onSearch(searchData);
-    console.log("=== Finished handleSearch in SearchForm ===");
   };
 
   const handleReset = () => {
@@ -149,6 +241,10 @@ const SearchForm = ({ onSearch, hideTransactionType, projects = [] }) => {
     setDistricts([]);
     setWards([]);
     setSelectedCategoryId(null);
+    setCategoryLabel("Loại nhà đất");
+    setPriceLabel("Mức giá");
+    setAreaLabel("Diện tích");
+    setLocationLabel("Vị trí");
     onSearch({
       minPrice: 0,
       maxPrice: 50000000000000000,
@@ -160,6 +256,29 @@ const SearchForm = ({ onSearch, hideTransactionType, projects = [] }) => {
       categoryId: null,
       type: isSellPage ? "SALE" : isRentPage ? "RENT" : "SALE",
     });
+    setShowModal(false);
+  };
+
+  const resetCategory = () => {
+    setSelectedCategoryId(null);
+    setCategoryLabel("Loại nhà đất");
+  };
+
+  const resetPrice = () => {
+    setPriceRange([0, 50000000000000000]);
+    setPriceLabel("Mức giá");
+  };
+
+  const resetArea = () => {
+    setAreaRange([0, 1000000000]);
+    setAreaLabel("Diện tích");
+  };
+
+  const resetLocation = () => {
+    setLocation({ provinceCode: null, districtCode: null, wardCode: null });
+    setDistricts([]);
+    setWards([]);
+    setLocationLabel("Vị trí");
   };
 
   const allPriceOptions = {
@@ -195,8 +314,8 @@ const SearchForm = ({ onSearch, hideTransactionType, projects = [] }) => {
   const priceOptions = isSellPage
     ? allPriceOptions.sell
     : isRentPage
-    ? allPriceOptions.rent
-    : [...allPriceOptions.sell, ...allPriceOptions.rent];
+      ? allPriceOptions.rent
+      : [...allPriceOptions.sell, ...allPriceOptions.rent];
 
   const areaOptions = [
     { label: "Tất cả diện tích", min: 0, max: 1000000000 },
@@ -220,177 +339,224 @@ const SearchForm = ({ onSearch, hideTransactionType, projects = [] }) => {
 
   return (
     <Container className="search-form-container">
-      <Form onSubmit={handleSearch}>
-        <Row className="g-2 align-items-center">
-          <Col xs={12} md={3}>
-            <Dropdown>
-              <Dropdown.Toggle variant="outline-secondary" className="w-100 custom-dropdown-toggle">
-                Loại nhà đất
-              </Dropdown.Toggle>
-              <Dropdown.Menu className="custom-dropdown">
-                <Form.Check
-                  type="radio"
-                  label="Tất cả loại nhà đất"
-                  name="categoryId"
-                  value=""
-                  checked={selectedCategoryId === null}
-                  onChange={handleCategoryChange}
-                  className="px-2 py-1"
-                />
-                {filteredCategories.length > 0 ? (
-                  filteredCategories.map((category) => (
-                    <Form.Check
-                      key={category.id}
-                      type="radio"
-                      label={category.name}
-                      name="categoryId"
-                      value={category.id.toString()}
-                      checked={selectedCategoryId === category.id}
-                      onChange={handleCategoryChange}
-                      className="px-2 py-1"
-                    />
-                  ))
-                ) : (
-                  <Dropdown.Item>Không có loại nhà đất nào phù hợp.</Dropdown.Item>
-                )}
-                <div className="d-flex justify-content-end p-2 button-container">
-                  <Button variant="outline-secondary" onClick={handleReset} size="sm" className="me-2">
-                    Đặt lại
-                  </Button>
-                  <Button variant="primary" onClick={handleSearch} size="sm">
-                    Áp dụng
-                  </Button>
-                </div>
-              </Dropdown.Menu>
-            </Dropdown>
-          </Col>
-          <Col xs={12} md={3}>
-            <Dropdown>
-              <Dropdown.Toggle variant="outline-secondary" className="w-100 custom-dropdown-toggle">
-                Mức giá
-              </Dropdown.Toggle>
-              <Dropdown.Menu className="custom-dropdown">
-                {priceOptions.map((option, index) => (
-                  <Form.Check
-                    key={index}
-                    type="radio"
-                    label={option.label}
-                    name="priceOption"
-                    onChange={() => setPriceRange([option.min, option.max])}
-                    checked={priceRange[0] === option.min && priceRange[1] === option.max}
-                    className="px-2 py-1"
-                  />
-                ))}
-                <div className="d-flex justify-content-end p-2 button-container">
-                  <Button variant="outline-secondary" onClick={handleReset} size="sm" className="me-2">
-                    Đặt lại
-                  </Button>
-                  <Button variant="primary" onClick={handleSearch} size="sm">
-                    Áp dụng
-                  </Button>
-                </div>
-              </Dropdown.Menu>
-            </Dropdown>
-          </Col>
-          <Col xs={12} md={3}>
-            <Dropdown>
-              <Dropdown.Toggle variant="outline-secondary" className="w-100 custom-dropdown-toggle">
-                Diện tích
-              </Dropdown.Toggle>
-              <Dropdown.Menu className="custom-dropdown">
-                {areaOptions.map((option, index) => (
-                  <Form.Check
-                    key={index}
-                    type="radio"
-                    label={option.label}
-                    name="areaOption"
-                    onChange={() => setAreaRange([option.min, option.max])}
-                    checked={areaRange[0] === option.min && areaRange[1] === option.max}
-                    className="px-2 py-1"
-                  />
-                ))}
-                <div className="d-flex justify-content-end p-2 button-container">
-                  <Button variant="outline-secondary" onClick={handleReset} size="sm" className="me-2">
-                    Đặt lại
-                  </Button>
-                  <Button variant="primary" onClick={handleSearch} size="sm">
-                    Áp dụng
-                  </Button>
-                </div>
-              </Dropdown.Menu>
-            </Dropdown>
-          </Col>
-          <Col xs={12} md={3}>
-            <Dropdown>
-              <Dropdown.Toggle variant="outline-secondary" className="w-100 custom-dropdown-toggle">
-                Vị trí
-              </Dropdown.Toggle>
-              <Dropdown.Menu className="custom-dropdown">
-                <Form.Group className="px-2 py-1">
-                  <Form.Label>Tỉnh/Thành phố</Form.Label>
-                  <Form.Select
-                    name="provinceCode"
-                    value={location.provinceCode || ""}
-                    onChange={handleLocationChange}
-                  >
-                    <option value="">Chọn tỉnh/thành phố</option>
-                    {provinces.map((province) => (
-                      <option key={province.code} value={province.code}>
-                        {province.name}
-                      </option>
-                    ))}
-                  </Form.Select>
+      <style>{customStyles}</style>
+      <InputGroup className="search-form-group">
+        <Button variant="outline-primary" className="search-button" onClick={handleSearch}>
+          <FaSearch />
+        </Button>
+        <Form.Control
+          type="text"
+          value={searchText}
+          readOnly
+          className="search-input"
+          onClick={() => setShowModal(true)}
+        />
+        <Button variant="outline-primary" className="filter-button" onClick={() => setShowModal(true)}>
+          <FaFilter /> Lọc
+        </Button>
+      </InputGroup>
+
+      <Modal
+        show={showModal}
+        onHide={() => {
+          setShowModal(false);
+          handleSearch();
+        }}
+        className="filter-modal"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Bộ lọc tìm kiếm</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Row className="g-3">
+              <Col xs={12}>
+                <Form.Group>
+                  <Form.Label>Loại nhà đất</Form.Label>
+                  <Dropdown>
+                    <Dropdown.Toggle variant="outline-secondary" className="w-100 custom-dropdown-toggle">
+                      {categoryLabel}
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu className="custom-dropdown">
+                      <div className="custom-check-row" onClick={() => handleCategoryChange(null)}>
+                        <Form.Check
+                          type="radio"
+                          label="Tất cả loại nhà đất"
+                          name="categoryId"
+                          value=""
+                          checked={selectedCategoryId === null}
+                          onChange={() => handleCategoryChange(null)}
+                        />
+                      </div>
+                      {filteredCategories.length > 0 ? (
+                        filteredCategories.map((category) => (
+                          <div
+                            key={category.id}
+                            className="custom-check-row"
+                            onClick={() => handleCategoryChange(category.id.toString())}
+                          >
+                            <Form.Check
+                              type="radio"
+                              label={category.name}
+                              name="categoryId"
+                              value={category.id.toString()}
+                              checked={selectedCategoryId === category.id}
+                              onChange={() => handleCategoryChange(category.id.toString())}
+                            />
+                          </div>
+                        ))
+                      ) : (
+                        <Dropdown.Item>Không có loại nhà đất nào phù hợp.</Dropdown.Item>
+                      )}
+                      <div className="d-flex justify-content-end p-2 button-container">
+                        <Button variant="outline-secondary" onClick={resetCategory} size="sm" className="me-2">
+                          Đặt lại
+                        </Button>
+                      </div>
+                    </Dropdown.Menu>
+                  </Dropdown>
                 </Form.Group>
-                <Form.Group className="px-2 py-1">
-                  <Form.Label>Quận/Huyện</Form.Label>
-                  <Form.Select
-                    name="districtCode"
-                    value={location.districtCode || ""}
-                    onChange={handleLocationChange}
-                    disabled={!location.provinceCode}
-                  >
-                    <option value="">Chọn quận/huyện</option>
-                    {districts.map((district) => (
-                      <option key={district.code} value={district.code}>
-                        {district.name}
-                      </option>
-                    ))}
-                  </Form.Select>
+              </Col>
+              <Col xs={12}>
+                <Form.Group>
+                  <Form.Label>Mức giá</Form.Label>
+                  <Dropdown>
+                    <Dropdown.Toggle variant="outline-secondary" className="w-100 custom-dropdown-toggle">
+                      {priceLabel}
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu className="custom-dropdown">
+                      {priceOptions.map((option, index) => (
+                        <div
+                          key={index}
+                          className="custom-check-row"
+                          onClick={() => handlePriceOptionChange(option)}
+                        >
+                          <Form.Check
+                            type="radio"
+                            label={option.label}
+                            name="priceOption"
+                            onChange={() => handlePriceOptionChange(option)}
+                            checked={priceRange[0] === option.min && priceRange[1] === option.max}
+                          />
+                        </div>
+                      ))}
+                      <div className="d-flex justify-content-end p-2 button-container">
+                        <Button variant="outline-secondary" onClick={resetPrice} size="sm" className="me-2">
+                          Đặt lại
+                        </Button>
+                      </div>
+                    </Dropdown.Menu>
+                  </Dropdown>
                 </Form.Group>
-                <Form.Group className="px-2 py-1">
-                  <Form.Label>Phường/Xã</Form.Label>
-                  <Form.Select
-                    name="wardCode"
-                    value={location.wardCode || ""}
-                    onChange={handleLocationChange}
-                    disabled={!location.districtCode}
-                  >
-                    <option value="">Chọn phường/xã</option>
-                    {wards.map((ward) => (
-                      <option key={ward.code} value={ward.code}>
-                        {ward.name}
-                      </option>
-                    ))}
-                  </Form.Select>
+              </Col>
+              <Col xs={12}>
+                <Form.Group>
+                  <Form.Label>Diện tích</Form.Label>
+                  <Dropdown>
+                    <Dropdown.Toggle variant="outline-secondary" className="w-100 custom-dropdown-toggle">
+                      {areaLabel}
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu className="custom-dropdown">
+                      {areaOptions.map((option, index) => (
+                        <div
+                          key={index}
+                          className="custom-check-row"
+                          onClick={() => handleAreaOptionChange(option)}
+                        >
+                          <Form.Check
+                            type="radio"
+                            label={option.label}
+                            name="areaOption"
+                            onChange={() => handleAreaOptionChange(option)}
+                            checked={areaRange[0] === option.min && areaRange[1] === option.max}
+                          />
+                        </div>
+                      ))}
+                      <div className="d-flex justify-content-end p-2 button-container">
+                        <Button variant="outline-secondary" onClick={resetArea} size="sm" className="me-2">
+                          Đặt lại
+                        </Button>
+                      </div>
+                    </Dropdown.Menu>
+                  </Dropdown>
                 </Form.Group>
-                <div className="d-flex justify-content-end p-2 button-container">
-                  <Button variant="outline-secondary" onClick={handleReset} size="sm" className="me-2">
-                    Đặt lại
-                  </Button>
-                  <Button variant="primary" onClick={handleSearch} size="sm">
-                    Áp dụng
-                  </Button>
-                </div>
-              </Dropdown.Menu>
-            </Dropdown>
-          </Col>
-        </Row>
-        <div className="d-flex justify-content-start mt-2">
-          <Button variant="primary" type="submit" size="sm" className="custom-search-button">
-            Tìm kiếm
+              </Col>
+              <Col xs={12}>
+                <Form.Group>
+                  <Form.Label>Vị trí</Form.Label>
+                  <Dropdown>
+                    <Dropdown.Toggle variant="outline-secondary" className="w-100 custom-dropdown-toggle">
+                      {locationLabel}
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu className="custom-dropdown">
+                      <Form.Group className="px-2 py-1">
+                        <Form.Label>Tỉnh/Thành phố</Form.Label>
+                        <Form.Select
+                          name="provinceCode"
+                          value={location.provinceCode || ""}
+                          onChange={handleLocationChange}
+                        >
+                          <option value="">Chọn tỉnh/thành phố</option>
+                          {provinces.map((province) => (
+                            <option key={province.code} value={province.code}>
+                              {province.name}
+                            </option>
+                          ))}
+                        </Form.Select>
+                      </Form.Group>
+                      <Form.Group className="px-2 py-1">
+                        <Form.Label>Quận/Huyện</Form.Label>
+                        <Form.Select
+                          name="districtCode"
+                          value={location.districtCode || ""}
+                          onChange={handleLocationChange}
+                          disabled={!location.provinceCode}
+                        >
+                          <option value="">Chọn quận/huyện</option>
+                          {districts.map((district) => (
+                            <option key={district.code} value={district.code}>
+                              {district.name}
+                            </option>
+                          ))}
+                        </Form.Select>
+                      </Form.Group>
+                      <Form.Group className="px-2 py-1">
+                        <Form.Label>Phường/Xã</Form.Label>
+                        <Form.Select
+                          name="wardCode"
+                          value={location.wardCode || ""}
+                          onChange={handleLocationChange}
+                          disabled={!location.districtCode}
+                        >
+                          <option value="">Chọn phường/xã</option>
+                          {wards.map((ward) => (
+                            <option key={ward.code} value={ward.code}>
+                              {ward.name}
+                            </option>
+                          ))}
+                        </Form.Select>
+                      </Form.Group>
+                      <div className="d-flex justify-content-end p-2 button-container">
+                        <Button variant="outline-secondary" onClick={resetLocation} size="sm" className="me-2">
+                          Đặt lại
+                        </Button>
+                      </div>
+                    </Dropdown.Menu>
+                  </Dropdown>
+                </Form.Group>
+              </Col>
+            </Row>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="outline-secondary" onClick={handleReset}>
+            Đặt lại tất cả
           </Button>
-        </div>
-      </Form>
+          <Button variant="primary" onClick={handleSearch}>
+            Áp dụng
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 };

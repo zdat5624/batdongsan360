@@ -37,8 +37,8 @@ const Sidebar = ({ user, handleLogout }) => {
     <>
       <style>{sidebarStyles}</style>
       <Nav className="sidebar flex-column">
-      {/* Các mục mới dành cho người dùng */}
-      <Nav.Link as={NavLink} to="/profile">
+        {/* Các mục mới dành cho người dùng */}
+        <Nav.Link as={NavLink} to="/profile">
           <i className="fas fa-user me-2"></i> Thông tin cá nhân
         </Nav.Link>
         <Nav.Link as={NavLink} to="/payment">
@@ -50,21 +50,9 @@ const Sidebar = ({ user, handleLogout }) => {
         <Nav.Link as={NavLink} to="/notifications">
           <i className="fas fa-bell me-2"></i> Xem thông báo
         </Nav.Link>
-        {/* Các mục dành cho quản trị viên */}
-        <Nav.Link as={NavLink} to="/admin/users">
-          <i className="fas fa-users me-2"></i> Quản lý người dùng
-        </Nav.Link>
-        <Nav.Link as={NavLink} to="/admin/payments">
-          <i className="fas fa-money-bill-wave me-2"></i> Quản lý thanh toán
-        </Nav.Link>
-        <Nav.Link as={NavLink} to="/admin/vips">
-          <i className="fas fa-medal me-2"></i> Quản lý gói VIP
-        </Nav.Link>
-        <Nav.Link as={NavLink} to="/admin/posts">
-          <i className="fas fa-home me-2"></i> Quản lý tin đăng
-        </Nav.Link>
 
-        
+
+
       </Nav>
     </>
   );

@@ -105,6 +105,11 @@ const Header = ({ user, setUser, handleLogin, handleLogout }) => {
     setShowLogoutConfirm(false);
   };
 
+  const handleLogoutHeader = () => {
+    setShowLogoutConfirm(false);
+    handleLogout();
+  }
+
   return (
     <>
       <style>
@@ -128,7 +133,8 @@ const Header = ({ user, setUser, handleLogin, handleLogout }) => {
         `}
       </style>
 
-      <Navbar expand="lg" className="header py-2" style={{ position: "fixed", top: 0, width: "100%", zIndex: 1000 }}>
+      <Navbar expand="lg" className="header " bg="dark" variant="dark" style={{ position: "fixed", top: 0, width: "100%", zIndex: 1000 }}>
+
         <Container>
           <Navbar.Brand as={NavLink} to="/">
             <Image src={logo} alt="PropTech Logo" height="45" className="logo" />
@@ -148,15 +154,15 @@ const Header = ({ user, setUser, handleLogin, handleLogout }) => {
               <div className="d-flex align-items-center gap-3">
                 <Dropdown>
                   <Dropdown.Toggle
-                    variant="dark"
+                    variant="white"
                     id="dropdown-user"
                     className="dropdown-toggle-custom d-flex align-items-center text-white text-decoration-none"
                   >
                     <Image
-                      src={user.avatar || "https://via.placeholder.com/40"}
+                      src={`http://localhost:8080/uploads/${user.avatar}`}
                       alt="Avatar"
                       roundedCircle
-                      className="border border-light me-2"
+                      className=" me-2"
                       style={{ width: "40px", height: "40px" }}
                     />
                     <span className="fw-bold">{user.name}</span>
@@ -295,12 +301,13 @@ const Header = ({ user, setUser, handleLogin, handleLogout }) => {
             <div className="logout-confirm-body">
               <p>Bạn có chắc chắn muốn đăng xuất không?</p>
               <div className="logout-confirm-buttons">
+                <button className="btn-confirm" onClick={handleLogoutHeader}>
+                  Đăng xuất
+                </button>
                 <button className="btn-cancel" onClick={handleCloseLogoutConfirm}>
                   Hủy
                 </button>
-                <button className="btn-confirm" onClick={handleLogout}>
-                  Đăng xuất
-                </button>
+
               </div>
             </div>
           </div>

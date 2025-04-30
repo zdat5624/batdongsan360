@@ -16,7 +16,7 @@ import { FaSearch, FaInfoCircle } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { Helmet } from "react-helmet";
 import AdminHeader from "../components/AdminHeader";
-import Sidebar from "../components/Sidebar";
+import AdminSidebar from "../components/AdminSidebar";
 import apiServices from "../services/apiServices";
 
 // AdminFooter component (tái sử dụng từ AdminUsers)
@@ -263,8 +263,7 @@ const AdminPayments = ({ user, setUser, handleLogin, handleLogout }) => {
       const startDateFormatted = `${startDate}T00:00:00Z`;
       const endDateFormatted = `${endDate}T23:59:59Z`;
       const response = await apiServices.get(
-        `/api/admin/payment/transactions?page=${
-          currentPage - 1
+        `/api/admin/payment/transactions?page=${currentPage - 1
         }&size=${paymentsPerPage}&sort=createdAt&direction=DESC&status=${statusFilter}&startDate=${startDateFormatted}&endDate=${endDateFormatted}`
       );
 
@@ -375,7 +374,7 @@ const AdminPayments = ({ user, setUser, handleLogin, handleLogout }) => {
         <title>Quản lý Thanh Toán - Admin Panel</title>
       </Helmet>
       <style>{customStyles}</style>
-      <Sidebar user={user} handleLogout={handleLogout} />
+      <AdminSidebar user={user} handleLogout={handleLogout} />
       <div className="content-wrapper">
         <div className="admin-header">
           <AdminHeader user={user} setUser={setUser} handleLogin={handleLogin} handleLogout={handleLogout} />
@@ -469,19 +468,18 @@ const AdminPayments = ({ user, setUser, handleLogin, handleLogout }) => {
                             <td>{payment.paymentMethod}</td>
                             <td>
                               <span
-                                className={`badge ${
-                                  payment.status === "SUCCESS"
+                                className={`badge ${payment.status === "SUCCESS"
                                     ? "bg-success"
                                     : payment.status === "PENDING"
-                                    ? "bg-warning"
-                                    : "bg-danger"
-                                }`}
+                                      ? "bg-warning"
+                                      : "bg-danger"
+                                  }`}
                               >
                                 {payment.status === "SUCCESS"
                                   ? "Thành công"
                                   : payment.status === "PENDING"
-                                  ? "Đang kiểm"
-                                  : "Thất bại"}
+                                    ? "Đang kiểm"
+                                    : "Thất bại"}
                               </span>
                             </td>
                             <td>{payment.paymentDate}</td>

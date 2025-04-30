@@ -1,37 +1,36 @@
-import React, { useState, useEffect } from "react";
-import { NavLink } from "react-router-dom";
-import { Container, Row, Col, Card, Spinner, Badge, Pagination, Form, Button } from "react-bootstrap";
-import { FaPhone, FaStar } from "react-icons/fa";
-import SearchForm from "../components/SearchForm";
-import apiServices from "../services/apiServices";
-import "../assets/styles/App.css";
+import React, { useState, useEffect } from 'react';
+import { NavLink } from 'react-router-dom';
+import { Container, Row, Col, Card, Spinner, Badge, Pagination, Form, Button } from 'react-bootstrap';
+import { FaStar, FaImages, FaInfoCircle } from 'react-icons/fa';
+import SearchForm from '../components/SearchForm';
+import MapComponent from '../components/maps/MapComponent';
+import ContactButton from '../components/notifications/ContactButton';
+import apiServices from '../services/apiServices';
+import '../assets/styles/App.css';
 
 // Hàm chuyển đổi giá từ số sang chuỗi (triệu VNĐ hoặc tỷ VNĐ)
 const formatPrice = (price) => {
   if (price >= 1000000000) {
-    return `${(price / 1000000000).toLocaleString("vi-VN")} tỷ`;
+    return `${(price / 1000000000).toLocaleString('vi-VN')} tỷ`;
   }
-  return `${(price / 1000000).toLocaleString("vi-VN")} triệu`;
+  return `${(price / 1000000).toLocaleString('vi-VN')} triệu`;
 };
 
 // Hàm tính thời gian đã đăng (phút, giờ, ngày trước)
 const getTimeAgo = (createdAt) => {
-  if (!createdAt) return "N/A";
-
+  if (!createdAt) return 'N/A';
   const now = new Date();
   const postDate = new Date(createdAt);
   const diffInMs = now - postDate;
-
   const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
   const diffInHours = Math.floor(diffInMinutes / 60);
   const diffInDays = Math.floor(diffInHours / 24);
-
   if (diffInMinutes < 60) {
-    return `Đã đăng ${diffInMinutes} phút trước`;
+    return `Đăng ${diffInMinutes} phút trước`;
   } else if (diffInHours < 24) {
-    return `Đã đăng ${diffInHours} giờ trước`;
+    return `Đăng ${diffInHours} giờ trước`;
   } else {
-    return `Đã đăng ${diffInDays} ngày trước`;
+    return `Đăng ${diffInDays} ngày trước`;
   }
 };
 
@@ -40,52 +39,110 @@ const customStyles = `
   .sell-page-container {
     background-color: #f0f8ff;
     min-height: 100vh;
-    padding-top: 100px;
+    padding: 0;
+  }
+  .content-wrapper {
+    display: flex;
+    height: calc(100vh - 40px);
+    overflow: hidden;
+  }
+  .left-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .posts-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0px 30px;
+  }
+  .map-container {
+    flex: 1;
+    position: relative;
+  }
+  .search-form-wrapper {
+    margin-bottom: 0.5rem;
   }
   .hover-card {
     position: relative;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: box-shadow 0.3s ease;
     background-color: #fff;
     border-radius: 12px;
     border: none;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
     overflow: hidden;
-    cursor: pointer;
     display: flex;
-    flex-direction: row;
-    height: 300px;
+    flex-direction: column;
     max-width: 1000px;
-    margin: 0 auto;
+    margin: 0 auto 20px auto;
+    min-height: 460px;
   }
   .hover-card:hover {
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
   }
   .card-img-wrapper {
     position: relative;
-    width: 35%;
-    height: 100%;
-    overflow: hidden;
-  }
-  .card-img-top {
-    border-top-left-radius: 12px;
-    border-bottom-left-radius: 12px;
-    height: 100%;
     width: 100%;
-    object-fit: cover;
-    transition: transform 0.3s ease;
+    height: 240px;
+    background-color: #f0f0f0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: row;
+    gap: 4px;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
   }
-  .hover-card:hover .card-img-top {
-    transform: scale(1.05);
+  .main-img {
+    width: 60%;
+    height: 100%;
+    object-fit: cover;
+    border-top-left-radius: 12px;
+  }
+  .sub-img-container {
+    width: 40%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .sub-img-top {
+    width: 100%;
+    height: 50%;
+    object-fit: cover;
+    border-top-right-radius: 12px;
+  }
+  .sub-img-bottom-wrapper {
+    width: 100%;
+    height: 50%;
+    display: flex;
+    flex-direction: row;
+    gap: 4px;
+  }
+  .sub-img-bottom {
+    width: 50%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .sub-img-bottom:last-child {
+    border-bottom-right-radius: 12px;
+  }
+  .single-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
   }
   .card-img-overlay {
     position: absolute;
     top: 0;
     left: 0;
-    right: 0;
+    right: 40%;
     bottom: 0;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
+    justify-content: space-between;
     padding: 12px;
     background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), transparent);
   }
@@ -106,10 +163,10 @@ const customStyles = `
     background: linear-gradient(45deg, #007bff, #00b7eb);
   }
   .vip-1 {
-    background: linear-gradient(45deg, #28a745, #34c759);
+    background: linear-gradient(45deg, #ffc107, #ffdb58);
   }
   .vip-2 {
-    background: linear-gradient(45deg, #ffc107, #ffdb58);
+    background: linear-gradient(45deg, #dc3545, #ff5e62);
   }
   .vip-3 {
     background: linear-gradient(45deg, #ff6f61, #ff9f43);
@@ -120,16 +177,35 @@ const customStyles = `
   .vip-star {
     color: #ffd700;
   }
+  .image-count {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    font-size: 0.8rem;
+    padding: 4px 8px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    z-index: 1;
+  }
   .card-body {
     padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    width: 65%;
-    justify-content: space-between;
+    gap: 6px;
+    width: 100%;
+    min-height: 220px;
+    flex-grow: 1;
+    overflow: hidden;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+    background-color: #fff;
   }
   .card-title-body {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     font-weight: 600;
     margin: 0;
     display: -webkit-box;
@@ -137,43 +213,21 @@ const customStyles = `
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
-  }
-  .vip-title-0 {
-    background: linear-gradient(45deg, #007bff, #00b7eb);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  .vip-title-1 {
-    background: linear-gradient(45deg, #28a745, #34c759);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  .vip-title-2 {
-    background: linear-gradient(45deg, #ffc107, #ffdb58);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  .vip-title-3 {
-    background: linear-gradient(45deg, #ff6f61, #ff9f43);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  .vip-title-4 {
-    background: linear-gradient(45deg, #dc3545, #ff5e62);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    line-height: 1.3;
+    max-height: 3.12rem;
+    color: #000;
+    text-transform: uppercase;
   }
   .card-price {
     font-size: 1.2rem;
     font-weight: 700;
     color: #e74c3c;
     margin: 0;
-    margin-left: 10px;
   }
   .card-info {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
     font-size: 0.9rem;
     color: #555;
   }
@@ -194,11 +248,25 @@ const customStyles = `
     font-size: 0.9rem;
     color: #666;
     margin: 0;
+    display: flex;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .card-description-icon {
+    color: #666;
+    flex-shrink: 0;
+    font-size: 0.9rem;
+    margin-top: 2px;
+  }
+  .card-description-text {
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
+    line-height: 1. invention2;
   }
   .contact-button {
     background-color: #17a2b8;
@@ -213,7 +281,7 @@ const customStyles = `
     gap: 6px;
     transition: background-color 0.3s ease;
     color: #fff;
-    align-self: flex-start;
+    margin: 0;
   }
   .contact-button:hover {
     background-color: #138496;
@@ -248,6 +316,7 @@ const customStyles = `
     color: #555;
     text-align: center;
     margin-top: 0.5rem;
+    margin-bottom: 1rem;
   }
   .post-date {
     color: #28a745;
@@ -259,6 +328,263 @@ const customStyles = `
     text-align: center;
     margin-top: 1rem;
   }
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+  }
+  .user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  .user-details {
+    display: flex;
+    flex-direction: column;
+  }
+  .user-name {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #333;
+  }
+  .user-time {
+    font-size: 0.8rem;
+    color: #666;
+  }
+  .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+    border-top: 1px solid #e0e0e0;
+    padding: 8px 16px;
+    background-color: #fff;
+  }
+
+  /* Media Queries cho Responsive */
+  @media (max-width: 768px) {
+    .content-wrapper {
+      flex-direction: column;
+      height: auto;
+    }
+    .left-content {
+      flex: none;
+      overflow-y: auto;
+    }
+    .posts-container {
+      flex: none;
+      max-height: 50vh;
+      overflow-y: auto;
+      padding: 5px 15px;
+    }
+    .map-container {
+      flex: none;
+      height: 50vh;
+    }
+    .search-form-wrapper {
+      margin-bottom: 0.5rem;
+    }
+    .hover-card {
+      flex-direction: column;
+      max-width: 100%;
+      min-height: 500px;
+    }
+    .card-img-wrapper {
+      width: 100%;
+      height: 240px;
+      flex-direction: column;
+      border-bottom-left-radius: 0;
+      border-top-right-radius: 12px;
+    }
+    .main-img {
+      width: 100%;
+      height: 66.66%;
+      border-top-right-radius: 12px;
+      border-bottom-left-radius: 0;
+    }
+    .sub-img-container {
+      width: 100%;
+      height: 33.33%;
+      display: flex;
+      flex-direction: row;
+      gap: 4px;
+    }
+    .sub-img-top {
+      width: 33.33%;
+      height: 100%;
+      border-top-right-radius: 0;
+    }
+    .sub-img-bottom-wrapper {
+      width: 66.66%;
+      height: 100%;
+      display: flex;
+      flex-direction: row;
+      gap: 4px;
+    }
+    .sub-img-bottom {
+      width: 50%;
+      height: 100%;
+    }
+    .sub-img-bottom:last-child {
+      border-bottom-right-radius: 12px;
+    }
+    .single-img {
+      width: 100%;
+      height: 100%;
+      border-top-right-radius: 12px;
+      border-bottom-left-radius: 0;
+    }
+    .card-img-overlay {
+      right: 0;
+    }
+    .card-body {
+      width: 100%;
+      min-height: 260px;
+      flex-grow: 1;
+      padding: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .card-title-body {
+      font-size: 1.1rem;
+      line-height: 1.2;
+      max-height: 2.64rem;
+      flex-grow: 0;
+      text-transform: uppercase;
+    }
+    .card-price {
+      font-size: 1.1rem;
+    }
+    .card-info {
+      font-size: 0.85rem;
+      gap: 6px;
+    }
+    .card-description {
+      font-size: 0.85rem;
+    }
+    .card-description-text {
+      -webkit-line-clamp: 1;
+    }
+    .contact-button {
+      padding: 8px 20px;
+      font-size: 0.85rem;
+    }
+    .pagination {
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .pagination-input {
+      width: 60px;
+    }
+    .go-button {
+      margin-top: 5px;
+    }
+    .post-count {
+      font-size: 0.9rem;
+    }
+    .user-avatar {
+      width: 28px;
+      height: 28px;
+    }
+    .user-name {
+      font-size: 0.85rem;
+    }
+    .user-time {
+      font-size: 0.75rem;
+    }
+    .card-footer {
+      padding: 12px;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .sell-page-container {
+      padding-top: 2px;
+    }
+    .posts-container {
+      padding: 2px 10px;
+    }
+    .hover-card {
+      min-height: 480px;
+    }
+    .card-img-wrapper {
+      height: 220px;
+    }
+    .main-img {
+      height: 66.66%;
+    }
+    .sub-img-container {
+      height: 33.33%;
+    }
+    .sub-img-top {
+      width: 33.33%;
+      height: 100%;
+    }
+    .sub-img-bottom-wrapper {
+      width: 66.66%;
+      height: 100%;
+    }
+    .sub-img-bottom {
+      width: 50%;
+      height: 100%;
+    }
+    .card-body {
+      min-height: 260px;
+      flex-grow: 1;
+    }
+    .card-title-body {
+      font-size: 1rem;
+      line-height: 1.2;
+      max-height: 2.4rem;
+      text-transform: uppercase;
+    }
+    .card-price {
+      font-size: 1rem;
+    }
+    .card-info {
+      font-size: 0.8rem;
+    }
+    .card-description {
+      font-size: 0.8rem;
+    }
+    .card-description-text {
+      -webkit-line-clamp: 1;
+    }
+    .contact-button {
+      padding: 6px 16px;
+      font-size: 0.8rem;
+    }
+    .user-avatar {
+      width: 24px;
+      height: 24px;
+    }
+    .user-name {
+      font-size: 0.8rem;
+    }
+    .user-time {
+      font-size: 0.7rem;
+    }
+  }
+
+  @media (max-width: 375px) {
+    .card-footer {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+      padding: 12px;
+    }
+    .user-info {
+      margin-left: -6px;
+    }
+    .contact-button {
+      align-self: flex-start;
+      margin-left: -6px;
+    }
+  }
 `;
 
 const SellPage = ({ setLoading: setParentLoading }) => {
@@ -267,19 +593,18 @@ const SellPage = ({ setLoading: setParentLoading }) => {
   const [allProjects, setAllProjects] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [totalPosts, setTotalPosts] = useState(0);
-  const [pageInput, setPageInput] = useState("");
+  const [totalFilteredPosts, setTotalFilteredPosts] = useState(0);
+  const [pageInput, setPageInput] = useState('');
   const [searchFilters, setSearchFilters] = useState({});
   const [revealedPhones, setRevealedPhones] = useState({});
   const [vipLevels, setVipLevels] = useState({});
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState('');
   const projectsPerPage = 12;
 
   // Lấy danh sách gói VIP
   const fetchVipLevels = async () => {
     try {
-      const response = await apiServices.get("/api/vips");
-      console.log("VIP API response:", response.data);
+      const response = await apiServices.get('/api/vips');
       if (response.data.statusCode === 200) {
         const vipData = response.data.data;
         const vipLevelMap = {};
@@ -287,97 +612,54 @@ const SellPage = ({ setLoading: setParentLoading }) => {
           vipLevelMap[vip.id] = vip.vipLevel;
         });
         setVipLevels(vipLevelMap);
-        console.log("VIP levels fetched:", vipLevelMap);
       } else {
-        throw new Error(response.data.message || "Không thể lấy danh sách gói VIP.");
+        throw new Error(response.data.message || 'Không thể lấy danh sách gói VIP.');
       }
     } catch (err) {
-      console.error("Lỗi khi lấy danh sách gói VIP:", err.response?.data || err.message);
       setVipLevels({});
-    }
-  };
-
-  // Lấy tổng số bài đăng
-  const fetchTotalPosts = async () => {
-    try {
-      const queryParams = new URLSearchParams({
-        type: "SALE",
-        status: "APPROVED",
-        page: 0,
-        size: 1,
-      });
-
-      const response = await apiServices.get(`/api/posts?${queryParams.toString()}`);
-      console.log("Total posts API response:", response.data);
-      if (response.data.statusCode === 200) {
-        const total = response.data.data.totalElements;
-        setTotalPosts(total);
-        console.log("Total posts fetched:", total);
-      } else {
-        throw new Error(response.data.message || "Không thể lấy tổng số bài đăng.");
-      }
-    } catch (err) {
-      console.error("Lỗi khi lấy tổng số bài đăng:", err.response?.data || err.message);
-      setTotalPosts(0);
     }
   };
 
   // Lấy danh sách bài đăng
   const fetchPosts = async (page = 0, filters = {}) => {
     try {
-      console.log("=== Starting fetchPosts in SellPage ===");
       setLoading(true);
       setParentLoading(true);
-      setErrorMessage("");
+      setErrorMessage('');
 
       const queryParams = new URLSearchParams({
         page,
         size: projectsPerPage,
-        sort: "id,desc",
-        type: "SALE",
-        status: "APPROVED",
+        type: 'SALE',
         minPrice: filters.minPrice || 0,
         maxPrice: filters.maxPrice || 50000000000000000,
         minArea: filters.minArea || 0,
         maxArea: filters.maxArea || 1000000000,
       });
 
-      if (filters.provinceCode) queryParams.append("provinceCode", filters.provinceCode);
-      if (filters.districtCode) queryParams.append("districtCode", filters.districtCode);
-      if (filters.wardCode) queryParams.append("wardCode", filters.wardCode);
-      if (filters.categoryId) queryParams.append("categoryId", filters.categoryId); // Sử dụng categoryId thay vì categoryIds
-
-      console.log("Query params gửi đến API:", queryParams.toString());
+      if (filters.provinceCode) queryParams.append('provinceCode', filters.provinceCode);
+      if (filters.districtCode) queryParams.append('districtCode', filters.districtCode);
+      if (filters.wardCode) queryParams.append('wardCode', filters.wardCode);
+      if (filters.categoryId) queryParams.append('categoryId', filters.categoryId);
 
       const response = await apiServices.get(`/api/posts?${queryParams.toString()}`);
-      console.log("Phản hồi từ API /api/posts:", response.data);
-
       if (response.data.statusCode === 200) {
         const posts = response.data.data.content || [];
-        if (posts.length === 0) {
-          console.warn("API trả về danh sách bài đăng rỗng. Kiểm tra bộ lọc và dữ liệu trong database.");
-          setErrorMessage("Không tìm thấy bài đăng nào phù hợp với bộ lọc. Vui lòng thử lại với các tiêu chí khác.");
-        }
+        const totalElements = response.data.data.totalElements || 0;
 
         const formattedProjects = posts
           .map((post) => {
             const price = parseFloat(post.price);
-            if (isNaN(price)) {
-              console.warn(`Giá không hợp lệ cho bài đăng ID ${post.id}: ${post.price}`);
-              return null;
-            }
+            if (isNaN(price)) return null;
 
             const area = parseFloat(post.area);
-            if (isNaN(area)) {
-              console.warn(`Diện tích không hợp lệ cho bài đăng ID ${post.id}: ${post.area}`);
-              return null;
-            }
+            if (isNaN(area)) return null;
 
-            const fullPhone = post.user?.phone || "0123456789";
-            const hiddenPhone = fullPhone.slice(0, 4) + "******";
+            const fullPhone = post.user?.phone || '0123456789';
+            const hiddenPhone = fullPhone.slice(0, 4) + '******';
 
             let vipLevel = 0;
-            let vipName = "Không có gói VIP";
+            let vipName = 'Không có gói VIP';
 
             if (post.vip) {
               if (post.vip.vipLevel !== undefined) {
@@ -395,47 +677,61 @@ const SellPage = ({ setLoading: setParentLoading }) => {
 
             const timeAgo = getTimeAgo(post.createdAt);
 
+            const imageCount = post.images ? post.images.length : 0;
+
+            let images =
+              post.images && post.images.length > 0
+                ? post.images.slice(0, 4).map((image) => `http://localhost:8080/uploads/${image.url}`)
+                : [];
+            while (images.length < 4) {
+              images.push('https://placehold.co/300x300');
+            }
+
             return {
               id: post.id,
-              title: post.title || "Không có tiêu đề",
-              desc: post.description || "Không có mô tả",
-              img: post.images && post.images.length > 0 ? `http://localhost:8080/uploads/${post.images[0].url}` : "https://placehold.co/300x300",
+              title: post.title || 'Không có tiêu đề',
+              desc: post.description || 'Không có mô tả',
+              images,
+              imageCount,
               price: formatPrice(price),
               area: `${area}m²`,
-              location: `${post.detailAddress || ""}, ${post.ward?.name || ""}, ${post.district?.name || ""}, ${post.province?.name || ""}`,
+              location: `${post.detailAddress || ''}, ${post.ward?.name || ''}, ${post.district?.name || ''}, ${post.province?.name || ''}`,
               vipPackage: vipName,
               vipLevel: vipLevel,
               categoryId: post.category?.id || null,
               phone: fullPhone,
               hiddenPhone: hiddenPhone,
               timeAgo,
+              userAvatar: post.user?.avatar
+                ? `http://localhost:8080/uploads/${post.user.avatar}`
+                : 'https://placehold.co/32x32',
+              userName: post.user?.name || 'Người dùng ẩn danh',
             };
           })
           .filter((project) => project !== null);
 
-        console.log("Formatted projects:", formattedProjects);
         setAllProjects(formattedProjects);
         setTotalPages(response.data.data.totalPages || 1);
+        setTotalFilteredPosts(totalElements);
       } else {
-        throw new Error(response.data.message || "Không thể lấy danh sách bài đăng.");
+        throw new Error(response.data.message || 'Không thể lấy danh sách bài đăng.');
       }
     } catch (err) {
-      console.error("Lỗi khi lấy danh sách bài đăng:", err.response?.data || err.message);
       setAllProjects([]);
       setTotalPages(1);
-      setErrorMessage("Có lỗi xảy ra khi tải danh sách bài đăng. Vui lòng thử lại sau.");
+      setTotalFilteredPosts(0);
+      setErrorMessage('Có lỗi xảy ra khi tải danh sách bài đăng. Vui lòng thử lại sau.');
+      console.log(">>> err: ", err);
     } finally {
       setLoading(false);
       setParentLoading(false);
       setIsShowingLoading(false);
-      console.log("=== Finished fetchPosts in SellPage ===");
     }
   };
 
   // Khởi tạo dữ liệu khi component mount
   useEffect(() => {
     fetchVipLevels();
-    fetchTotalPosts();
     fetchPosts(0, searchFilters);
   }, []);
 
@@ -447,14 +743,11 @@ const SellPage = ({ setLoading: setParentLoading }) => {
 
   // Xử lý tìm kiếm
   const handleSearch = (searchData) => {
-    console.log("=== Starting handleSearch in SellPage ===");
-    console.log("Search data received in SellPage:", searchData);
     setSearchFilters(searchData);
     setCurrentPage(1);
-    setPageInput("");
+    setPageInput('');
     setIsShowingLoading(true);
     fetchPosts(0, searchData);
-    console.log("=== Finished handleSearch in SellPage ===");
   };
 
   // Xử lý hiển thị/ẩn số điện thoại
@@ -478,7 +771,7 @@ const SellPage = ({ setLoading: setParentLoading }) => {
   const paginate = (pageNumber) => {
     if (pageNumber >= 1 && pageNumber <= totalPages) {
       setCurrentPage(pageNumber);
-      setPageInput("");
+      setPageInput('');
     }
   };
 
@@ -488,12 +781,12 @@ const SellPage = ({ setLoading: setParentLoading }) => {
       paginate(pageNumber);
     } else {
       alert(`Vui lòng nhập số trang hợp lệ từ 1 đến ${totalPages}`);
-      setPageInput("");
+      setPageInput('');
     }
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       handlePageInput();
     }
   };
@@ -512,141 +805,166 @@ const SellPage = ({ setLoading: setParentLoading }) => {
   }
 
   return (
-    <Container fluid className="py-5 sell-page-container">
+    <Container fluid className="py-0 sell-page-container">
       <style>{customStyles}</style>
-      <Container>
-        <Row className="mb-4">
-          <Col>
-            <SearchForm
-              onSearch={handleSearch}
-              hideTransactionType={true}
-              projects={allProjects}
-            />
-          </Col>
-        </Row>
-
-        <Row className="mb-4">
-          <Col>
-            <h2 className="text-primary fw-bold text-center">Danh Sách Nhà Đất Bán</h2>
+      <div className="content-wrapper">
+        <div className="left-content">
+          <div className="posts-container">
+            <div className="search-form-wrapper">
+              <SearchForm onSearch={handleSearch} hideTransactionType={true} projects={allProjects} />
+            </div>
             <p className="post-count">
-              Hiện có <strong>{allProjects.length}</strong> bài đăng (Tổng cộng: <strong>{totalPosts}</strong> bài đăng)
+              Tìm thấy <span className="text-primary">{totalFilteredPosts}</span> bài đăng bán bất động sản
             </p>
             {errorMessage && <p className="error-message">{errorMessage}</p>}
-          </Col>
-        </Row>
-
-        {isShowingLoading ? (
-          <div className="d-flex flex-column justify-content-center align-items-center" style={{ minHeight: "50vh" }}>
-            <Spinner animation="border" variant="primary" />
-            <p className="mt-3 text-muted">Đang tải dữ liệu...</p>
-          </div>
-        ) : (
-          <>
-            <Row xs={1} className="g-4">
-              {allProjects.length > 0 ? (
-                allProjects.map((project, index) => (
-                  <Col key={project.id}>
-                    <NavLink to={`/post/${project.id}`} style={{ textDecoration: "none" }}>
-                      <Card className="hover-card">
-                        <div className="card-img-wrapper">
-                          <Card.Img variant="top" src={project.img} alt={project.title} className="card-img-top" />
-                          <div className="card-img-overlay">
-                            <Badge className={`vip-badge vip-${project.vipLevel}`}>
-                              <FaStar className="vip-star" />
-                              {project.vipPackage}
-                            </Badge>
-                          </div>
-                        </div>
-                        <Card.Body>
-                          <Card.Text className={`card-title-body vip-title-${project.vipLevel}`}>
-                            {project.title}
-                          </Card.Text>
-                          <Card.Text className="card-price">{project.price}</Card.Text>
-                          <div className="card-info">
-                            <div className="info-row">
-                              <span>
-                                <i className="bi bi-rulers"></i> {project.area}
-                              </span>
-                              <span>
-                                <i className="bi bi-geo-alt"></i> {project.location}
-                              </span>
+            {isShowingLoading ? (
+              <div className="d-flex flex-column justify-content-center align-items-center" style={{ minHeight: '50vh' }}>
+                <Spinner animation="border" variant="primary" />
+                <p className="mt-3 text-muted">Đang tải dữ liệu...</p>
+              </div>
+            ) : (
+              <>
+                <Row xs={1} className="g-4">
+                  {allProjects.length > 0 ? (
+                    allProjects.map((project) => (
+                      <Col key={project.id}>
+                        <Card className="hover-card">
+                          <NavLink to={`/post/${project.id}`} style={{ textDecoration: 'none' }}>
+                            <div className="card-img-wrapper">
+                              {project.images.length > 0 ? (
+                                <>
+                                  <img src={project.images[0]} alt={project.title} className="main-img" />
+                                  {project.images.length > 1 && (
+                                    <div className="sub-img-container">
+                                      <img src={project.images[1]} alt={project.title} className="sub-img-top" />
+                                      <div className="sub-img-bottom-wrapper">
+                                        {project.images[2] && (
+                                          <img src={project.images[2]} alt={project.title} className="sub-img-bottom" />
+                                        )}
+                                        {project.images[3] && (
+                                          <img src={project.images[3]} alt={project.title} className="sub-img-bottom" />
+                                        )}
+                                      </div>
+                                    </div>
+                                  )}
+                                </>
+                              ) : (
+                                <img src="https://placehold.co/300x300" alt={project.title} className="single-img" />
+                              )}
+                              <div className="card-img-overlay">
+                                {project.vipLevel > 0 && (
+                                  <Badge className={`vip-badge vip-${project.vipLevel}`}>
+                                    {/* <FaStar className="vip-star" /> */}
+                                    {project.vipPackage}
+                                  </Badge>
+                                )}
+                              </div>
+                              <div className="image-count">
+                                <FaImages />
+                                {project.imageCount}
+                              </div>
                             </div>
-                            <span className="post-date">
-                              <i className="bi bi-clock"></i> {project.timeAgo}
-                            </span>
-                          </div>
-                          <Card.Text className="card-description">{project.desc}</Card.Text>
-                          <Button
-                            className="contact-button"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              handleTogglePhone(project.id);
-                            }}
-                          >
-                            <FaPhone />{" "}
-                            {revealedPhones[project.id] ? `${revealedPhones[project.id]} - Ẩn số` : `${project.hiddenPhone} - Hiển số`}
-                          </Button>
-                        </Card.Body>
-                      </Card>
-                    </NavLink>
-                  </Col>
-                ))
-              ) : (
-                <Col className="text-center py-5">
-                  <p className="text-muted">
-                    <i className="bi bi-exclamation-triangle me-2"></i>
-                    Không tìm thấy bài đăng nào phù hợp với bộ lọc. Vui lòng thử các tiêu chí khác.
-                  </p>
-                </Col>
-              )}
-            </Row>
+                            <Card.Body>
+                              <Card.Text className="card-title-body">{project.title}</Card.Text>
+                              <Card.Text className="card-price">{project.price}</Card.Text>
+                              <div className="card-info">
+                                <div className="info-row">
+                                  <span>
+                                    <i className="bi bi-rulers"></i> {project.area}
+                                  </span>
+                                  <span>
+                                    <i className="bi bi-geo-alt"></i> {project.location}
+                                  </span>
+                                </div>
+                              </div>
+                              <Card.Text className="card-description">
+                                <FaInfoCircle className="card-description-icon" />
+                                <span className="card-description-text">{project.desc}</span>
+                              </Card.Text>
+                              <div className="card-footer">
+                                <div className="user-info">
+                                  <img src={project.userAvatar} alt={project.userName} className="user-avatar" />
+                                  <div className="user-details">
+                                    <span className="user-name">{project.userName}</span>
+                                    <span className="user-time">{project.timeAgo}</span>
+                                  </div>
+                                </div>
+                                <ContactButton
+                                  projectId={project.id}
+                                  revealedPhones={revealedPhones}
+                                  hiddenPhone={project.hiddenPhone}
+                                  fullPhone={project.phone}
+                                  handleTogglePhone={handleTogglePhone}
+                                />
+                              </div>
+                            </Card.Body>
+                          </NavLink>
+                        </Card>
+                      </Col>
+                    ))
+                  ) : (
+                    <Col className="text-center py-5">
+                      <p className="text-muted">
+                        <i className="bi bi-exclamation-triangle me-2"></i>
+                        Không tìm thấy bài đăng nào phù hợp với bộ lọc. Vui lòng thử các tiêu chí khác.
+                      </p>
+                    </Col>
+                  )}
+                </Row>
 
-            {totalPages > 1 && allProjects.length > 0 && (
-              <Row className="justify-content-center mt-5">
-                <Col xs="auto">
-                  <Pagination>
-                    <Pagination.First onClick={() => paginate(1)} disabled={currentPage === 1} />
-                    <Pagination.Prev onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} />
-                    {startPage > 1 && (
-                      <>
-                        <Pagination.Item onClick={() => paginate(1)}>1</Pagination.Item>
-                        {startPage > 2 && <Pagination.Ellipsis />}
-                      </>
-                    )}
-                    {pageNumbers.map((page) => (
-                      <Pagination.Item key={page} active={page === currentPage} onClick={() => paginate(page)}>
-                        {page}
-                      </Pagination.Item>
-                    ))}
-                    {endPage < totalPages && (
-                      <>
-                        {endPage < totalPages - 1 && <Pagination.Ellipsis />}
-                        <Pagination.Item onClick={() => paginate(totalPages)}>{totalPages}</Pagination.Item>
-                      </>
-                    )}
-                    <Pagination.Next onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages} />
-                    <Pagination.Last onClick={() => paginate(totalPages)} disabled={currentPage === totalPages} />
-                    <Form.Control
-                      type="number"
-                      min="1"
-                      max={totalPages}
-                      value={pageInput}
-                      onChange={(e) => setPageInput(e.target.value)}
-                      onKeyPress={handleKeyPress}
-                      className="pagination-input"
-                      placeholder="Trang"
-                    />
-                    <Button variant="primary" onClick={handlePageInput} className="go-button">
-                      Đi
-                    </Button>
-                  </Pagination>
-                </Col>
-              </Row>
+                {totalPages > 1 && allProjects.length > 0 && (
+                  <Row className="justify-content-center mt-5">
+                    <Col xs="auto">
+                      <Pagination>
+                        <Pagination.First onClick={() => paginate(1)} disabled={currentPage === 1} />
+                        <Pagination.Prev onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} />
+                        {startPage > 1 && (
+                          <>
+                            <Pagination.Item onClick={() => paginate(1)}>1</Pagination.Item>
+                            {startPage > 2 && <Pagination.Ellipsis />}
+                          </>
+                        )}
+                        {pageNumbers.map((page) => (
+                          <Pagination.Item key={page} active={page === currentPage} onClick={() => paginate(page)}>
+                            {page}
+                          </Pagination.Item>
+                        ))}
+                        {endPage < totalPages && (
+                          <>
+                            {endPage < totalPages - 1 && <Pagination.Ellipsis />}
+                            <Pagination.Item onClick={() => paginate(totalPages)}>{totalPages}</Pagination.Item>
+                          </>
+                        )}
+                        <Pagination.Next
+                          onClick={() => paginate(currentPage + 1)}
+                          disabled={currentPage === totalPages}
+                        />
+                        <Pagination.Last onClick={() => paginate(totalPages)} disabled={currentPage === totalPages} />
+                        <Form.Control
+                          type="number"
+                          min="1"
+                          max={totalPages}
+                          value={pageInput}
+                          onChange={(e) => setPageInput(e.target.value)}
+                          onKeyPress={handleKeyPress}
+                          className="pagination-input"
+                          placeholder="Trang"
+                        />
+                        <Button variant="primary" onClick={handlePageInput} className="go-button">
+                          Đi
+                        </Button>
+                      </Pagination>
+                    </Col>
+                  </Row>
+                )}
+              </>
             )}
-          </>
-        )}
-      </Container>
+          </div>
+        </div>
+        <div className="map-container">
+          <MapComponent filters={searchFilters} />
+        </div>
+      </div>
     </Container>
   );
 };

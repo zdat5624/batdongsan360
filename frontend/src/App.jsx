@@ -85,6 +85,7 @@ const App = () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("userId");
     setUser(null);
+    Navigate("/");
   };
 
   if (isLoading) {

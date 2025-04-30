@@ -24,7 +24,7 @@
     "react-dom": "^19.0.0",
     "react-helmet": "^6.1.0",
     "react-icons": "^5.5.0",
-    "react-map-gl": "^8.0.4",
+    "react-map-gl": "^7.0.17",
     "react-router-dom": "^7.1.5",
     "react-toastify": "^11.0.5",
     "sockjs-client": "^1.6.1",

@@ -33,7 +33,7 @@ import {
 import { motion } from "framer-motion";
 import { Carousel } from "react-bootstrap";
 import AdminHeader from "../components/AdminHeader";
-import Sidebar from "../components/Sidebar";
+import AdminSidebar from "../components/AdminSidebar";
 import apiServices from "../services/apiServices";
 import { Helmet } from "react-helmet";
 
@@ -570,9 +570,8 @@ const AdminPostsPage = ({ user, setUser, handleLogin, handleLogout }) => {
             type: post.type || "Không xác định",
             price: formatPrice(post.price, post.type),
             area: post.area ? `${post.area}m²` : "Không xác định",
-            address: `${
-              post.detailAddress || ""
-            }${post.ward?.name ? `, ${post.ward.name}` : ""}${post.district?.name ? `, ${post.district.name}` : ""}${post.province?.name ? `, ${post.province.name}` : ""}`.trim() || "Không xác định",
+            address: `${post.detailAddress || ""
+              }${post.ward?.name ? `, ${post.ward.name}` : ""}${post.district?.name ? `, ${post.district.name}` : ""}${post.province?.name ? `, ${post.province.name}` : ""}`.trim() || "Không xác định",
             status: post.status || "Không xác định",
             createdAt: formatDate(post.createdAt),
             expireDate: formatDate(post.expireDate),
@@ -790,7 +789,7 @@ const AdminPostsPage = ({ user, setUser, handleLogin, handleLogout }) => {
         <title>Quản lý Bài Đăng - Admin Panel</title>
       </Helmet>
       <style>{customStyles}</style>
-      <Sidebar user={user} handleLogout={handleLogout} />
+      <AdminSidebar user={user} handleLogout={handleLogout} />
       <div className="content-wrapper">
         <div className="admin-header">
           <AdminHeader user={user} setUser={setUser} handleLogin={handleLogin} handleLogout={handleLogout} />
@@ -830,12 +829,12 @@ const AdminPostsPage = ({ user, setUser, handleLogin, handleLogout }) => {
                         {status === "PENDING"
                           ? "Chờ duyệt"
                           : status === "REVIEW_LATER"
-                          ? "Xem sau"
-                          : status === "APPROVED"
-                          ? "Đã duyệt"
-                          : status === "REJECTED"
-                          ? "Từ chối"
-                          : "Hết hạn"}
+                            ? "Xem sau"
+                            : status === "APPROVED"
+                              ? "Đã duyệt"
+                              : status === "REJECTED"
+                                ? "Từ chối"
+                                : "Hết hạn"}
                       </Button>
                     ))}
 
@@ -945,12 +944,12 @@ const AdminPostsPage = ({ user, setUser, handleLogin, handleLogout }) => {
                                 {post.status === "PENDING"
                                   ? "Chờ duyệt"
                                   : post.status === "REVIEW_LATER"
-                                  ? "Xem sau"
-                                  : post.status === "APPROVED"
-                                  ? "Đã duyệt"
-                                  : post.status === "REJECTED"
-                                  ? "Từ chối"
-                                  : "Hết hạn"}
+                                    ? "Xem sau"
+                                    : post.status === "APPROVED"
+                                      ? "Đã duyệt"
+                                      : post.status === "REJECTED"
+                                        ? "Từ chối"
+                                        : "Hết hạn"}
                               </span>
                             </td>
                             <td>
@@ -1135,12 +1134,12 @@ const AdminPostsPage = ({ user, setUser, handleLogin, handleLogout }) => {
                                 {selectedPost.status === "PENDING"
                                   ? "Chờ duyệt"
                                   : selectedPost.status === "REVIEW_LATER"
-                                  ? "Xem sau"
-                                  : selectedPost.status === "APPROVED"
-                                  ? "Đã duyệt"
-                                  : selectedPost.status === "REJECTED"
-                                  ? "Từ chối"
-                                  : "Hết hạn"}
+                                    ? "Xem sau"
+                                    : selectedPost.status === "APPROVED"
+                                      ? "Đã duyệt"
+                                      : selectedPost.status === "REJECTED"
+                                        ? "Từ chối"
+                                        : "Hết hạn"}
                               </span>
                             </li>
                             <li className="mt-3">
