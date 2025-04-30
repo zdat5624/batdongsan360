@@ -105,7 +105,7 @@ const App = () => {
           <Header user={user} setUser={setUser} handleLogin={handleLogin} handleLogout={handleLogout} />
         </div>
       )}
-      <main style={{ flex: "1 0 auto" }}>
+      <main style={{ flex: "1 0 auto", paddingTop: "20px" }}>
         <Routes>
           <Route path="/" element={<HomePage setLoading={setLoading} />} />
           <Route path="/sell" element={<SellPage setLoading={setLoading} />} />

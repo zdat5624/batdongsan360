@@ -20,17 +20,8 @@ import { Helmet } from "react-helmet";
 import AdminHeader from "../components/AdminHeader";
 import AdminSidebar from "../components/AdminSidebar";
 import apiServices from "../services/apiServices";
+import AdminFooter from "../components/AdminFooter";
 
-// AdminFooter component
-const AdminFooter = () => {
-  return (
-    <footer style={{ backgroundColor: '#343a40', color: '#fff', padding: '10px 0', textAlign: 'center' }}>
-      <Container>
-        <p style={{ margin: 0 }}>THÔNG TIN</p>
-      </Container>
-    </footer>
-  );
-};
 
 // CSS tùy chỉnh
 const customStyles = `
@@ -65,13 +56,7 @@ const customStyles = `
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-footer {
-  background-color: #343a40;
-  color: #fff;
-  padding: 10px 0;
-  text-align: center;
-  width: 100%;
-}
+
 
 .page-title {
   font-size: 2rem;
@@ -303,306 +288,310 @@ const AdminUsers = ({ user, setUser, handleLogin, handleLogout }) => {
   };
 
   return (
-    <div className="layout">
-      <Helmet>
-        <title>Quản lý Người dùng - Admin Panel</title>
-      </Helmet>
-      <style>{customStyles}</style>
-      <AdminSidebar user={user} handleLogout={handleLogout} />
-      <div className="content-wrapper">
-        <div className="admin-header">
-          <AdminHeader user={user} setUser={setUser} handleLogin={handleLogin} handleLogout={handleLogout} />
-        </div>
-        <div className="main-content">
-          <Container>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              <h2 className="page-title">
-                <FaInfoCircle /> Quản Lý Người Dùng
-              </h2>
-
-              {error && (
-                <Alert variant="danger" dismissible onClose={() => setError(null)}>
-                  {error}
-                </Alert>
-              )}
-
-              <div className="d-flex justify-content-start mb-4">
-                <InputGroup style={{ maxWidth: "350px" }}>
-                  <InputGroup.Text style={{ background: "#fff", borderRadius: "25px 0 0 25px" }}>
-                    <FaSearch className="text-primary" />
-                  </InputGroup.Text>
-                  <Form.Control
-                    type="text"
-                    placeholder="Tìm kiếm theo email..."
-                    value={searchTerm}
-                    onChange={(e) => {
-                      setSearchTerm(e.target.value);
-                      setCurrentPage(1);
-                    }}
-                    className="search-input"
-                    style={{ borderRadius: "0 25px 25px 0" }}
-                  />
-                </InputGroup>
-              </div>
-
-              <Modal
-                show={showConfirm}
-                onHide={() => setShowConfirm(false)}
-                centered
-                backdrop="static"
-                keyboard={false}
+    <>
+      <div className="layout">
+        <Helmet>
+          <title>Quản lý Người dùng - Admin Panel</title>
+        </Helmet>
+        <style>{customStyles}</style>
+        <AdminSidebar user={user} handleLogout={handleLogout} />
+        <div className="content-wrapper">
+          <div className="admin-header">
+            <AdminHeader user={user} setUser={setUser} handleLogin={handleLogin} handleLogout={handleLogout} />
+          </div>
+          <div className="main-content">
+            <Container>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
               >
-                <Modal.Header closeButton>
-                  <Modal.Title>
-                    <FaExclamationTriangle className="me-2" style={{ color: "#ffd700" }} />
-                    Xác nhận hành động
-                  </Modal.Title>
-                </Modal.Header>
-                <Modal.Body>{confirmMessage}</Modal.Body>
-                <Modal.Footer>
-                  <Button variant="secondary" onClick={() => setShowConfirm(false)}>
-                    Hủy
-                  </Button>
-                  <Button
-                    variant="primary"
-                    onClick={() => {
-                      confirmAction();
-                      setShowConfirm(false);
-                    }}
-                  >
-                    Xác nhận
-                  </Button>
-                </Modal.Footer>
-              </Modal>
+                <h2 className="page-title">
+                  <FaInfoCircle /> Quản Lý Người Dùng
+                </h2>
 
-              <Modal show={showDetailModal} onHide={() => setShowDetailModal(false)} centered>
-                <Modal.Header closeButton>
-                  <Modal.Title>
-                    <FaInfoCircle className="me-2" />
-                    Chi tiết Người dùng
-                  </Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                  {detailUser ? (
-                    <ListGroup variant="flush">
-                      <ListGroup.Item><strong>ID:</strong> {detailUser.id}</ListGroup.Item>
-                      <ListGroup.Item><strong>Tên:</strong> {detailUser.name}</ListGroup.Item>
-                      <ListGroup.Item><strong>Email:</strong> {detailUser.email}</ListGroup.Item>
-                      <ListGroup.Item>
-                        <strong>Quyền:</strong>{" "}
-                        <span className={`badge ${detailUser.role === "ADMIN" ? "bg-primary" : "bg-secondary"}`}>
-                          {detailUser.role}
-                        </span>
-                      </ListGroup.Item>
-                      <ListGroup.Item>
-                        <strong>Giới tính:</strong>{" "}
-                        <span className={`badge ${detailUser.gender === "MALE" ? "bg-info" : "bg-warning"}`}>
-                          {detailUser.gender === "MALE" ? "Nam" : "Nữ"}
-                        </span>
-                      </ListGroup.Item>
-                      <ListGroup.Item>
-                        <strong>Số dư:</strong>{" "}
-                        {detailUser.balance ? detailUser.balance.toLocaleString("vi-VN") : "N/A"} VNĐ
-                      </ListGroup.Item>
-                      <ListGroup.Item>
-                        <strong>Avatar:</strong>{" "}
-                        {detailUser.avatar ? (
-                          <div className="mt-2">
-                            <img src={detailUser.avatar} alt="Avatar" style={{ maxWidth: "120px", borderRadius: "8px" }} />
-                          </div>
-                        ) : (
-                          <span className="text-muted">Chưa có avatar</span>
-                        )}
-                      </ListGroup.Item>
-                      <ListGroup.Item><strong>Số điện thoại:</strong> {detailUser.phone || "Chưa cập nhật"}</ListGroup.Item>
-                      <ListGroup.Item>
-                        <strong>Địa chỉ:</strong>{" "}
-                        {detailUser.address || <span className="text-muted">Chưa cập nhật</span>}
-                      </ListGroup.Item>
-                      <ListGroup.Item>
-                        <strong>Ngày tạo:</strong>{" "}
-                        {new Date(detailUser.createdAt).toLocaleString("vi-VN")}
-                      </ListGroup.Item>
-                      <ListGroup.Item>
-                        <strong>Ngày cập nhật:</strong>{" "}
-                        {new Date(detailUser.updatedAt).toLocaleString("vi-VN")}
-                      </ListGroup.Item>
-                    </ListGroup>
-                  ) : (
-                    <p>Đang tải thông tin...</p>
-                  )}
-                </Modal.Body>
-                <Modal.Footer>
-                  <Button variant="secondary" onClick={() => setShowDetailModal(false)}>
-                    Đóng
-                  </Button>
-                </Modal.Footer>
-              </Modal>
+                {error && (
+                  <Alert variant="danger" dismissible onClose={() => setError(null)}>
+                    {error}
+                  </Alert>
+                )}
 
-              <Table responsive className="admin-table">
-                <thead>
-                  <tr>
-                    <th>Tên</th>
-                    <th>Email</th>
-                    <th>Quyền</th>
-                    <th>Ngày Tham Gia</th>
-                    <th>Trạng Thái</th>
-                    <th>Hành động</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {loading ? (
+                <div className="d-flex justify-content-start mb-4">
+                  <InputGroup style={{ maxWidth: "350px" }}>
+                    <InputGroup.Text style={{ background: "#fff", borderRadius: "25px 0 0 25px" }}>
+                      <FaSearch className="text-primary" />
+                    </InputGroup.Text>
+                    <Form.Control
+                      type="text"
+                      placeholder="Tìm kiếm theo email..."
+                      value={searchTerm}
+                      onChange={(e) => {
+                        setSearchTerm(e.target.value);
+                        setCurrentPage(1);
+                      }}
+                      className="search-input"
+                      style={{ borderRadius: "0 25px 25px 0" }}
+                    />
+                  </InputGroup>
+                </div>
+
+                <Modal
+                  show={showConfirm}
+                  onHide={() => setShowConfirm(false)}
+                  centered
+                  backdrop="static"
+                  keyboard={false}
+                >
+                  <Modal.Header closeButton>
+                    <Modal.Title>
+                      <FaExclamationTriangle className="me-2" style={{ color: "#ffd700" }} />
+                      Xác nhận hành động
+                    </Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>{confirmMessage}</Modal.Body>
+                  <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowConfirm(false)}>
+                      Hủy
+                    </Button>
+                    <Button
+                      variant="primary"
+                      onClick={() => {
+                        confirmAction();
+                        setShowConfirm(false);
+                      }}
+                    >
+                      Xác nhận
+                    </Button>
+                  </Modal.Footer>
+                </Modal>
+
+                <Modal show={showDetailModal} onHide={() => setShowDetailModal(false)} centered>
+                  <Modal.Header closeButton>
+                    <Modal.Title>
+                      <FaInfoCircle className="me-2" />
+                      Chi tiết Người dùng
+                    </Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>
+                    {detailUser ? (
+                      <ListGroup variant="flush">
+                        <ListGroup.Item><strong>ID:</strong> {detailUser.id}</ListGroup.Item>
+                        <ListGroup.Item><strong>Tên:</strong> {detailUser.name}</ListGroup.Item>
+                        <ListGroup.Item><strong>Email:</strong> {detailUser.email}</ListGroup.Item>
+                        <ListGroup.Item>
+                          <strong>Quyền:</strong>{" "}
+                          <span className={`badge ${detailUser.role === "ADMIN" ? "bg-primary" : "bg-secondary"}`}>
+                            {detailUser.role}
+                          </span>
+                        </ListGroup.Item>
+                        <ListGroup.Item>
+                          <strong>Giới tính:</strong>{" "}
+                          <span className={`badge ${detailUser.gender === "MALE" ? "bg-info" : "bg-warning"}`}>
+                            {detailUser.gender === "MALE" ? "Nam" : "Nữ"}
+                          </span>
+                        </ListGroup.Item>
+                        <ListGroup.Item>
+                          <strong>Số dư:</strong>{" "}
+                          {detailUser.balance ? detailUser.balance.toLocaleString("vi-VN") : "N/A"} VNĐ
+                        </ListGroup.Item>
+                        <ListGroup.Item>
+                          <strong>Avatar:</strong>{" "}
+                          {detailUser.avatar ? (
+                            <div className="mt-2">
+                              <img src={detailUser.avatar} alt="Avatar" style={{ maxWidth: "120px", borderRadius: "8px" }} />
+                            </div>
+                          ) : (
+                            <span className="text-muted">Chưa có avatar</span>
+                          )}
+                        </ListGroup.Item>
+                        <ListGroup.Item><strong>Số điện thoại:</strong> {detailUser.phone || "Chưa cập nhật"}</ListGroup.Item>
+                        <ListGroup.Item>
+                          <strong>Địa chỉ:</strong>{" "}
+                          {detailUser.address || <span className="text-muted">Chưa cập nhật</span>}
+                        </ListGroup.Item>
+                        <ListGroup.Item>
+                          <strong>Ngày tạo:</strong>{" "}
+                          {new Date(detailUser.createdAt).toLocaleString("vi-VN")}
+                        </ListGroup.Item>
+                        <ListGroup.Item>
+                          <strong>Ngày cập nhật:</strong>{" "}
+                          {new Date(detailUser.updatedAt).toLocaleString("vi-VN")}
+                        </ListGroup.Item>
+                      </ListGroup>
+                    ) : (
+                      <p>Đang tải thông tin...</p>
+                    )}
+                  </Modal.Body>
+                  <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowDetailModal(false)}>
+                      Đóng
+                    </Button>
+                  </Modal.Footer>
+                </Modal>
+
+                <Table responsive className="admin-table">
+                  <thead>
                     <tr>
-                      <td colSpan="6" className="text-center py-4">
-                        <Spinner animation="border" variant="primary" />
-                        <span className="ms-2">Đang tải...</span>
-                      </td>
+                      <th>Tên</th>
+                      <th>Email</th>
+                      <th>Quyền</th>
+                      <th>Ngày Tham Gia</th>
+                      <th>Trạng Thái</th>
+                      <th>Hành động</th>
                     </tr>
-                  ) : users.length > 0 ? (
-                    users.map((user) => (
-                      <tr key={user.id}>
-                        <td>{user.name}</td>
-                        <td>{user.email}</td>
-                        <td>
-                          <span className={`badge ${user.role === "admin" ? "bg-primary" : "bg-secondary"}`}>
-                            {user.role}
-                          </span>
-                        </td>
-                        <td>{user.joinedDate}</td>
-                        <td>
-                          <span
-                            className={`badge ${user.status === "Active" ? "bg-success" : user.status === "Locked" ? "bg-danger" : "bg-secondary"
-                              }`}
-                          >
-                            {user.status}
-                          </span>
-                        </td>
-                        <td>
-                          <Button
-                            variant="warning"
-                            size="sm"
-                            className="me-2 action-button"
-                            onClick={() => handleDetail(user.id)}
-                          >
-                            <FaInfoCircle /> Chi tiết
-                          </Button>
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            className="me-2 action-button"
-                            onClick={() => handleDelete(user.id)}
-                          >
-                            <FaTrash /> Xóa
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            className="action-button"
-                            onClick={() => handleLock(user.id)}
-                            disabled={user.status === "Locked"}
-                          >
-                            <FaLock /> Khóa
-                          </Button>
+                  </thead>
+                  <tbody>
+                    {loading ? (
+                      <tr>
+                        <td colSpan="6" className="text-center py-4">
+                          <Spinner animation="border" variant="primary" />
+                          <span className="ms-2">Đang tải...</span>
                         </td>
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="6" className="text-center py-4">
-                        Không tìm thấy người dùng nào.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </Table>
+                    ) : users.length > 0 ? (
+                      users.map((user) => (
+                        <tr key={user.id}>
+                          <td>{user.name}</td>
+                          <td>{user.email}</td>
+                          <td>
+                            <span className={`badge ${user.role === "admin" ? "bg-primary" : "bg-secondary"}`}>
+                              {user.role}
+                            </span>
+                          </td>
+                          <td>{user.joinedDate}</td>
+                          <td>
+                            <span
+                              className={`badge ${user.status === "Active" ? "bg-success" : user.status === "Locked" ? "bg-danger" : "bg-secondary"
+                                }`}
+                            >
+                              {user.status}
+                            </span>
+                          </td>
+                          <td>
+                            <Button
+                              variant="warning"
+                              size="sm"
+                              className="me-2 action-button"
+                              onClick={() => handleDetail(user.id)}
+                            >
+                              <FaInfoCircle /> Chi tiết
+                            </Button>
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              className="me-2 action-button"
+                              onClick={() => handleDelete(user.id)}
+                            >
+                              <FaTrash /> Xóa
+                            </Button>
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              className="action-button"
+                              onClick={() => handleLock(user.id)}
+                              disabled={user.status === "Locked"}
+                            >
+                              <FaLock /> Khóa
+                            </Button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="6" className="text-center py-4">
+                          Không tìm thấy người dùng nào.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </Table>
 
-              <div className="pagination-container">
-                <Pagination>
-                  <Pagination.First onClick={() => paginate(1)} disabled={currentPage === 1} />
-                  <Pagination.Prev onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} />
-                  {(() => {
-                    const pageItems = [];
-                    const maxVisiblePages = 5;
-                    const ellipsis = <Pagination.Ellipsis disabled />;
+                <div className="pagination-container">
+                  <Pagination>
+                    <Pagination.First onClick={() => paginate(1)} disabled={currentPage === 1} />
+                    <Pagination.Prev onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} />
+                    {(() => {
+                      const pageItems = [];
+                      const maxVisiblePages = 5;
+                      const ellipsis = <Pagination.Ellipsis disabled />;
 
-                    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-                    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+                      let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+                      let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
-                    if (endPage - startPage + 1 < maxVisiblePages) {
-                      startPage = Math.max(1, endPage - maxVisiblePages + 1);
-                    }
-
-                    for (let number = startPage; number <= endPage; number++) {
-                      pageItems.push(
-                        <Pagination.Item
-                          key={number}
-                          active={number === currentPage}
-                          onClick={() => paginate(number)}
-                        >
-                          {number}
-                        </Pagination.Item>
-                      );
-                    }
-
-                    if (startPage > 1) {
-                      pageItems.unshift(
-                        <Pagination.Item key={1} onClick={() => paginate(1)}>
-                          1
-                        </Pagination.Item>
-                      );
-                      if (startPage > 2) {
-                        pageItems.splice(1, 0, ellipsis);
+                      if (endPage - startPage + 1 < maxVisiblePages) {
+                        startPage = Math.max(1, endPage - maxVisiblePages + 1);
                       }
-                    }
 
-                    if (endPage < totalPages) {
-                      if (endPage < totalPages - 1) {
-                        pageItems.push(ellipsis);
+                      for (let number = startPage; number <= endPage; number++) {
+                        pageItems.push(
+                          <Pagination.Item
+                            key={number}
+                            active={number === currentPage}
+                            onClick={() => paginate(number)}
+                          >
+                            {number}
+                          </Pagination.Item>
+                        );
                       }
-                      pageItems.push(
-                        <Pagination.Item key={totalPages} onClick={() => paginate(totalPages)}>
-                          {totalPages}
-                        </Pagination.Item>
-                      );
-                    }
 
-                    return pageItems;
-                  })()}
-                  <Pagination.Next
-                    onClick={() => paginate(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                  />
-                  <Pagination.Last
-                    onClick={() => paginate(totalPages)}
-                    disabled={currentPage === totalPages}
-                  />
-                </Pagination>
+                      if (startPage > 1) {
+                        pageItems.unshift(
+                          <Pagination.Item key={1} onClick={() => paginate(1)}>
+                            1
+                          </Pagination.Item>
+                        );
+                        if (startPage > 2) {
+                          pageItems.splice(1, 0, ellipsis);
+                        }
+                      }
 
-                <Form onSubmit={handlePageInputSubmit} className="d-flex align-items-center gap-2 ms-3">
-                  <Form.Control
-                    type="number"
-                    value={pageInput}
-                    onChange={(e) => setPageInput(e.target.value)}
-                    placeholder="Trang"
-                    min="1"
-                    max={totalPages}
-                    className="pagination-input"
-                  />
-                  <Button type="submit" className="pagination-go-button">
-                    Đi
-                  </Button>
-                </Form>
-              </div>
-            </motion.div>
-          </Container>
+                      if (endPage < totalPages) {
+                        if (endPage < totalPages - 1) {
+                          pageItems.push(ellipsis);
+                        }
+                        pageItems.push(
+                          <Pagination.Item key={totalPages} onClick={() => paginate(totalPages)}>
+                            {totalPages}
+                          </Pagination.Item>
+                        );
+                      }
+
+                      return pageItems;
+                    })()}
+                    <Pagination.Next
+                      onClick={() => paginate(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    />
+                    <Pagination.Last
+                      onClick={() => paginate(totalPages)}
+                      disabled={currentPage === totalPages}
+                    />
+                  </Pagination>
+
+                  <Form onSubmit={handlePageInputSubmit} className="d-flex align-items-center gap-2 ms-3">
+                    <Form.Control
+                      type="number"
+                      value={pageInput}
+                      onChange={(e) => setPageInput(e.target.value)}
+                      placeholder="Trang"
+                      min="1"
+                      max={totalPages}
+                      className="pagination-input"
+                    />
+                    <Button type="submit" className="pagination-go-button">
+                      Đi
+                    </Button>
+                  </Form>
+                </div>
+              </motion.div>
+            </Container>
+          </div>
+
         </div>
-        <AdminFooter />
+
       </div>
-    </div>
+      <AdminFooter />
+    </ >
   );
 };
 

@@ -105,11 +105,6 @@ const Header = ({ user, setUser, handleLogin, handleLogout }) => {
     setShowLogoutConfirm(false);
   };
 
-  const handleLogoutHeader = () => {
-    setShowLogoutConfirm(false);
-    handleLogout();
-  }
-
   return (
     <>
       <style>
@@ -133,160 +128,160 @@ const Header = ({ user, setUser, handleLogin, handleLogout }) => {
         `}
       </style>
 
-      <Navbar expand="lg" className="header " bg="dark" variant="dark" style={{ position: "fixed", top: 0, width: "100%", zIndex: 1000 }}>
+      <Navbar expand="lg" className="header " bg="dark" variant="dark" style={{ position: "fixed", top: 0, width: "100%", zIndex: 1000, padding: "0.5rem 1rem" }}>
 
-        <Container>
-          <Navbar.Brand as={NavLink} to="/">
-            <Image src={logo} alt="PropTech Logo" height="45" className="logo" />
-          </Navbar.Brand>
-          <Navbar.Toggle aria-controls="navbar-nav" />
-          <Navbar.Collapse id="navbar-nav">
-            <Nav className="me-auto">
-              <Nav.Link as={NavLink} to="/sell" className="nav-link-custom">
-                Nhà đất bán
-              </Nav.Link>
-              <Nav.Link as={NavLink} to="/rent" className="nav-link-custom">
-                Nhà đất cho thuê
-              </Nav.Link>
-            </Nav>
 
-            {user ? (
-              <div className="d-flex align-items-center gap-3">
-                <Dropdown>
-                  <Dropdown.Toggle
-                    variant="white"
-                    id="dropdown-user"
-                    className="dropdown-toggle-custom d-flex align-items-center text-white text-decoration-none"
-                  >
-                    <Image
-                      src={`http://localhost:8080/uploads/${user.avatar}`}
-                      alt="Avatar"
-                      roundedCircle
-                      className=" me-2"
-                      style={{ width: "40px", height: "40px" }}
-                    />
-                    <span className="fw-bold">{user.name}</span>
-                  </Dropdown.Toggle>
+        <Navbar.Brand as={NavLink} to="/">
+          <span className="fw-bold text-light">BĐS360</span>
+        </Navbar.Brand>
+        <Navbar.Toggle aria-controls="navbar-nav" />
+        <Navbar.Collapse id="navbar-nav">
+          <Nav className="me-auto">
+            <Nav.Link as={NavLink} to="/sell" className="nav-link-custom">
+              Nhà đất bán
+            </Nav.Link>
+            <Nav.Link as={NavLink} to="/rent" className="nav-link-custom">
+              Nhà đất cho thuê
+            </Nav.Link>
+          </Nav>
 
-                  <Dropdown.Menu align="end" className="dropdown-menu-custom user-dropdown">
-                    <Dropdown.Item as={NavLink} to="/profile">
-                      <i className="fas fa-user me-2"></i> Thông tin cá nhân
-                    </Dropdown.Item>
-                    <Dropdown.Item as={NavLink} to="/payment">
-                      <i className="fas fa-credit-card me-2"></i> Thanh toán
-                    </Dropdown.Item>
-                    <Dropdown.Item as={NavLink} to="/post-history">
-                      <i className="fas fa-history me-2"></i> Lịch sử tin đăng
-                    </Dropdown.Item>
-                    <Dropdown.Item as={NavLink} to="/notifications">
-                      <i className="fas fa-bell me-2"></i> Thông báo
-                    </Dropdown.Item>
-                    <Dropdown.Item as={NavLink} to="/admin/users">
-                      <i className="fas fa-tools me-2"></i> Đi đến trang quản trị
-                    </Dropdown.Item>
-                    <Dropdown.Divider />
-                    <Dropdown.Item onClick={handleShowLogoutConfirm} className="text-danger">
-                      <i className="fas fa-sign-out-alt me-2"></i> Đăng xuất
-                    </Dropdown.Item>
-                  </Dropdown.Menu>
-                </Dropdown>
-
-                <Button
-                  variant="warning"
-                  className="btn-custom btn-post-ad"
-                  onClick={handlePostAd}
+          {user ? (
+            <div className="d-flex align-items-center gap-3">
+              <Dropdown>
+                <Dropdown.Toggle
+                  variant="white"
+                  id="dropdown-user"
+                  className="dropdown-toggle-custom d-flex align-items-center text-white text-decoration-none"
                 >
-                  Đăng tin
-                </Button>
+                  <Image
+                    src={`${import.meta.env.VITE_IMAGE_URL}/${user.avatar}`}
+                    alt="Avatar"
+                    roundedCircle
+                    className="border border-light me-2"
+                    style={{ width: "40px", height: "40px" }}
+                  />
+                  <span className="fw-bold">{user.name}</span>
+                </Dropdown.Toggle>
 
-                <Dropdown>
-                  <Dropdown.Toggle
-                    variant="dark"
-                    id="dropdown-notifications"
-                    className="dropdown-toggle-custom d-flex align-items-center text-white text-decoration-none position-relative"
-                  >
-                    <FaBell size={24} />
-                    {unreadCount > 0 && (
-                      <Badge
-                        bg="danger"
-                        className="position-absolute top-0 start-100 translate-middle rounded-circle"
-                        style={{ fontSize: "0.6rem", padding: "0.3em 0.5em" }}
+                <Dropdown.Menu align="end" className="dropdown-menu-custom user-dropdown">
+                  <Dropdown.Item as={NavLink} to="/profile">
+                    <i className="fas fa-user me-2"></i> Thông tin cá nhân
+                  </Dropdown.Item>
+                  <Dropdown.Item as={NavLink} to="/payment">
+                    <i className="fas fa-credit-card me-2"></i> Thanh toán
+                  </Dropdown.Item>
+                  <Dropdown.Item as={NavLink} to="/post-history">
+                    <i className="fas fa-history me-2"></i> Lịch sử tin đăng
+                  </Dropdown.Item>
+                  <Dropdown.Item as={NavLink} to="/notifications">
+                    <i className="fas fa-bell me-2"></i> Thông báo
+                  </Dropdown.Item>
+                  <Dropdown.Item as={NavLink} to="/admin/users">
+                    <i className="fas fa-tools me-2"></i> Đi đến trang quản trị
+                  </Dropdown.Item>
+                  <Dropdown.Divider />
+                  <Dropdown.Item onClick={handleShowLogoutConfirm} className="text-danger">
+                    <i className="fas fa-sign-out-alt me-2"></i> Đăng xuất
+                  </Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
+
+              <Button
+                variant="warning"
+                className="btn-custom btn-post-ad"
+                onClick={handlePostAd}
+              >
+                Đăng tin
+              </Button>
+
+              <Dropdown>
+                <Dropdown.Toggle
+                  variant="dark"
+                  id="dropdown-notifications"
+                  className="dropdown-toggle-custom d-flex align-items-center text-white text-decoration-none position-relative"
+                >
+                  <FaBell size={24} />
+                  {unreadCount > 0 && (
+                    <Badge
+                      bg="danger"
+                      className="position-absolute top-0 start-100 translate-middle rounded-circle"
+                      style={{ fontSize: "0.6rem", padding: "0.3em 0.5em" }}
+                    >
+                      {unreadCount}
+                    </Badge>
+                  )}
+                </Dropdown.Toggle>
+
+                <Dropdown.Menu align="end" className="dropdown-menu-custom notification-dropdown">
+                  <Dropdown.Header className="notification-header">
+                    <i className="fas fa-bell me-2"></i> Thông Báo
+                  </Dropdown.Header>
+                  {notificationLoading ? (
+                    <Dropdown.ItemText className="text-center">
+                      <i className="fas fa-spinner fa-spin me-2"></i> Đang tải...
+                    </Dropdown.ItemText>
+                  ) : notificationError ? (
+                    <Dropdown.ItemText className="text-danger">
+                      {notificationError}
+                    </Dropdown.ItemText>
+                  ) : notifications.length > 0 ? (
+                    notifications.map((notification) => (
+                      <Dropdown.Item
+                        key={notification.id}
+                        className={`notification-item ${notification.read ? "" : "notification-unread"}`}
                       >
-                        {unreadCount}
-                      </Badge>
-                    )}
-                  </Dropdown.Toggle>
-
-                  <Dropdown.Menu align="end" className="dropdown-menu-custom notification-dropdown">
-                    <Dropdown.Header className="notification-header">
-                      <i className="fas fa-bell me-2"></i> Thông Báo
-                    </Dropdown.Header>
-                    {notificationLoading ? (
-                      <Dropdown.ItemText className="text-center">
-                        <i className="fas fa-spinner fa-spin me-2"></i> Đang tải...
-                      </Dropdown.ItemText>
-                    ) : notificationError ? (
-                      <Dropdown.ItemText className="text-danger">
-                        {notificationError}
-                      </Dropdown.ItemText>
-                    ) : notifications.length > 0 ? (
-                      notifications.map((notification) => (
-                        <Dropdown.Item
-                          key={notification.id}
-                          className={`notification-item ${notification.read ? "" : "notification-unread"}`}
-                        >
-                          <div className="d-flex align-items-center gap-2">
-                            <i className={`fas fa-bell notification-icon ${notification.read ? "text-muted" : "text-primary"}`}></i>
-                            <div className="d-flex flex-column">
-                              <span>{notification.message || "Không có nội dung"}</span>
-                              <small className="text-muted">{getTimeAgo(notification.createdAt)}</small>
-                            </div>
+                        <div className="d-flex align-items-center gap-2">
+                          <i className={`fas fa-bell notification-icon ${notification.read ? "text-muted" : "text-primary"}`}></i>
+                          <div className="d-flex flex-column">
+                            <span>{notification.message || "Không có nội dung"}</span>
+                            <small className="text-muted">{getTimeAgo(notification.createdAt)}</small>
                           </div>
-                        </Dropdown.Item>
-                      ))
-                    ) : (
-                      <Dropdown.ItemText className="text-center text-muted">
-                        Chưa có thông báo nào.
-                      </Dropdown.ItemText>
-                    )}
-                    {notifications.length > 0 && (
-                      <>
-                        <Dropdown.Divider />
-                        <Dropdown.Item as={NavLink} to="/notifications" className="notification-view-all">
-                          Xem tất cả thông báo
-                        </Dropdown.Item>
-                      </>
-                    )}
-                  </Dropdown.Menu>
-                </Dropdown>
-              </div>
-            ) : (
-              <div className="d-flex align-items-center gap-2">
-                <Button
-                  variant="outline-light"
-                  className="btn-custom btn-login"
-                  onClick={() => setShowLogin(true)}
-                >
-                  Đăng nhập
-                </Button>
-                <Button
-                  variant="primary"
-                  className="btn-custom btn-register"
-                  onClick={() => setShowRegister(true)}
-                >
-                  Đăng ký
-                </Button>
-                <Button
-                  variant="warning"
-                  className="btn-custom btn-post-ad"
-                  onClick={handlePostAd}
-                >
-                  Đăng tin
-                </Button>
-              </div>
-            )}
-          </Navbar.Collapse>
-        </Container>
+                        </div>
+                      </Dropdown.Item>
+                    ))
+                  ) : (
+                    <Dropdown.ItemText className="text-center text-muted">
+                      Chưa có thông báo nào.
+                    </Dropdown.ItemText>
+                  )}
+                  {notifications.length > 0 && (
+                    <>
+                      <Dropdown.Divider />
+                      <Dropdown.Item as={NavLink} to="/notifications" className="notification-view-all">
+                        Xem tất cả thông báo
+                      </Dropdown.Item>
+                    </>
+                  )}
+                </Dropdown.Menu>
+              </Dropdown>
+            </div>
+          ) : (
+            <div className="d-flex align-items-center gap-2">
+              <Button
+                variant="outline-light"
+                className="btn-custom btn-login"
+                onClick={() => setShowLogin(true)}
+              >
+                Đăng nhập
+              </Button>
+              <Button
+                variant="primary"
+                className="btn-custom btn-register"
+                onClick={() => setShowRegister(true)}
+              >
+                Đăng ký
+              </Button>
+              <Button
+                variant="warning"
+                className="btn-custom btn-post-ad"
+                onClick={handlePostAd}
+              >
+                Đăng tin
+              </Button>
+            </div>
+          )}
+        </Navbar.Collapse>
+
       </Navbar>
 
       {showLogoutConfirm && (
@@ -301,13 +296,12 @@ const Header = ({ user, setUser, handleLogin, handleLogout }) => {
             <div className="logout-confirm-body">
               <p>Bạn có chắc chắn muốn đăng xuất không?</p>
               <div className="logout-confirm-buttons">
-                <button className="btn-confirm" onClick={handleLogoutHeader}>
-                  Đăng xuất
-                </button>
                 <button className="btn-cancel" onClick={handleCloseLogoutConfirm}>
                   Hủy
                 </button>
-
+                <button className="btn-confirm" onClick={handleLogout}>
+                  Đăng xuất
+                </button>
               </div>
             </div>
           </div>

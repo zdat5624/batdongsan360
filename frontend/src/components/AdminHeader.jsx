@@ -1,38 +1,44 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
-import React, { useState } from "react";
-import { Navbar, Container, Dropdown, Image, Nav } from "react-bootstrap";
-import { NavLink, useNavigate } from "react-router-dom";
+import React from "react";
+import { NavLink } from "react-router-dom";
+import { Navbar, Dropdown, Image, Nav } from "react-bootstrap";
 import logo from "../assets/img/logo.png";
 import "../assets/styles/Header.css";
 
 const AdminHeader = ({ user, handleLogout }) => {
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const navigate = useNavigate();
-
-  const handleShowLogoutConfirm = () => {
-    setShowLogoutConfirm(true);
-  };
-
-  const handleLogoutHeader = () => {
-    setShowLogoutConfirm(false);
-    handleLogout();
-  }
-  const handleCloseLogoutConfirm = () => {
-    setShowLogoutConfirm(false);
-  };
-
   return (
     <>
-      <Navbar expand="lg" className="header py-2" style={{ position: "fixed", top: 0, width: "100%", zIndex: 1000 }}>
-        <Container>
+      <style>
+        {`
+          .navbar-custom {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+          }
+          .navbar-content {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+          }
+        `}
+      </style>
+
+      <Navbar
+        expand="lg"
+        className="header navbar-custom py-2"
+        style={{ position: "fixed", top: 0, width: "100%", zIndex: 1000 }}
+      >
+        <div className="navbar-content">
           <Navbar.Brand as={NavLink} to="/">
-            <Image src={logo} alt="PropTech Logo" height="45" className="logo" />
+            <span className="fw-bold text-light">ADMIN</span>
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="navbar-nav" />
           <Navbar.Collapse id="navbar-nav">
             <Nav className="me-auto"></Nav>
-            {user && (
+
+            {user ? (
               <div className="d-flex align-items-center gap-3">
                 <Dropdown>
                   <Dropdown.Toggle
@@ -41,59 +47,32 @@ const AdminHeader = ({ user, handleLogout }) => {
                     className="dropdown-toggle-custom d-flex align-items-center text-white text-decoration-none"
                   >
                     <Image
-                      src={`http://localhost:8080/uploads/${user.avatar}`}
+                      src={`${import.meta.env.VITE_IMAGE_URL}/${user.avatar}`}
                       alt="Avatar"
                       roundedCircle
-                      className=" me-2"
+                      className="border border-light me-2"
                       style={{ width: "40px", height: "40px" }}
                     />
                     <span className="fw-bold">{user.name}</span>
                   </Dropdown.Toggle>
 
-
                   <Dropdown.Menu align="end" className="dropdown-menu-custom user-dropdown">
-                    <Dropdown.Item as={NavLink} to="/" className="text-danger">
-                      <i className="fas fa-home me-2"></i> Về trang chủ
+                    <Dropdown.Item as={NavLink} to="/">
+                      <i className="fas fa-home me-2"></i> Trang chủ
                     </Dropdown.Item>
-                    <Dropdown.Item onClick={handleShowLogoutConfirm} className="text-danger">
+                    <Dropdown.Divider />
+                    <Dropdown.Item onClick={handleLogout} className="text-danger">
                       <i className="fas fa-sign-out-alt me-2"></i> Đăng xuất
                     </Dropdown.Item>
-
                   </Dropdown.Menu>
-
-
-
                 </Dropdown>
               </div>
+            ) : (
+              <div className="d-flex align-items-center gap-2"></div>
             )}
           </Navbar.Collapse>
-        </Container>
-      </Navbar>
-
-      {showLogoutConfirm && (
-        <div className="logout-confirm-overlay">
-          <div className="logout-confirm-container">
-            <div className="logout-confirm-header">
-              <h3>Xác nhận đăng xuất</h3>
-              <button className="btn-close-custom" onClick={handleCloseLogoutConfirm}>
-                <i className="fas fa-times"></i>
-              </button>
-            </div>
-            <div className="logout-confirm-body">
-              <p>Bạn có chắc chắn muốn đăng xuất không?</p>
-              <div className="logout-confirm-buttons">
-                <button className="btn-confirm" onClick={handleLogoutHeader}>
-                  Đăng xuất
-                </button>
-                <button className="btn-cancel" onClick={handleCloseLogoutConfirm}>
-                  Hủy
-                </button>
-
-              </div>
-            </div>
-          </div>
         </div>
-      )}
+      </Navbar>
     </>
   );
 };

@@ -318,143 +318,146 @@ const AdminVips = ({ user, setUser, handleLogin, handleLogout }) => {
   };
 
   return (
-    <div className="layout">
-      <Helmet>
-        <title>Quản lý Gói VIP - Admin Panel</title>
-      </Helmet>
-      <style>{customStyles}</style>
-      <AdminSidebar user={user} handleLogout={handleLogout} />
-      <div className="content-wrapper">
-        <div className="admin-header">
-          <AdminHeader user={user} setUser={setUser} handleLogin={handleLogin} handleLogout={handleLogout} />
-        </div>
-        <div className="main-content">
-          <Container className="custom-container">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              <div className="d-flex justify-content-between align-items-center mb-4">
-                <h2 className="page-title">
-                  <FaInfoCircle /> Quản lý Gói VIP
-                </h2>
-                <Button
-                  variant="outline-primary"
-                  onClick={fetchVips}
-                  disabled={loading}
-                  className="action-button"
-                >
-                  <FaSyncAlt className="me-2" /> Tải lại
-                </Button>
-              </div>
-
-              {error && (
-                <Alert variant="danger" dismissible onClose={() => setError(null)}>
-                  {error}
-                </Alert>
-              )}
-
-              <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered>
-                <Modal.Header closeButton>
-                  <Modal.Title>
-                    <FaEdit className="me-2" /> Chỉnh sửa Giá Gói VIP
-                  </Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                  <Form onSubmit={handleSaveEdit}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Tên Gói VIP</Form.Label>
-                      <Form.Control
-                        type="text"
-                        value={editVip.name}
-                        disabled
-                        className="bg-light"
-                      />
-                    </Form.Group>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Giá Mỗi Ngày (VNĐ)</Form.Label>
-                      <Form.Control
-                        type="number"
-                        value={editVip.pricePerDay}
-                        onChange={(e) =>
-                          setEditVip({ ...editVip, pricePerDay: parseInt(e.target.value) || 0 })
-                        }
-                        required
-                        min="0"
-                        placeholder="Nhập giá mỗi ngày"
-                      />
-                    </Form.Group>
-                  </Form>
-                </Modal.Body>
-                <Modal.Footer>
+    <>
+      <div className="layout">
+        <Helmet>
+          <title>Quản lý Gói VIP - Admin Panel</title>
+        </Helmet>
+        <style>{customStyles}</style>
+        <AdminSidebar user={user} handleLogout={handleLogout} />
+        <div className="content-wrapper">
+          <div className="admin-header">
+            <AdminHeader user={user} setUser={setUser} handleLogin={handleLogin} handleLogout={handleLogout} />
+          </div>
+          <div className="main-content">
+            <Container className="custom-container">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                  <h2 className="page-title">
+                    <FaInfoCircle /> Quản lý Gói VIP
+                  </h2>
                   <Button
-                    variant="secondary"
-                    onClick={() => setShowEditModal(false)}
+                    variant="outline-primary"
+                    onClick={fetchVips}
+                    disabled={loading}
+                    className="action-button"
                   >
-                    Hủy
+                    <FaSyncAlt className="me-2" /> Tải lại
                   </Button>
-                  <Button
-                    variant="primary"
-                    onClick={handleSaveEdit}
-                  >
-                    Lưu
-                  </Button>
-                </Modal.Footer>
-              </Modal>
+                </div>
 
-              <Table responsive className="admin-table">
-                <thead>
-                  <tr>
-                    <th>Tên Gói</th>
-                    <th>Cấp VIP</th>
-                    <th>Giá Mỗi Ngày (VNĐ)</th>
-                    <th>Hành động</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {loading ? (
+                {error && (
+                  <Alert variant="danger" dismissible onClose={() => setError(null)}>
+                    {error}
+                  </Alert>
+                )}
+
+                <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered>
+                  <Modal.Header closeButton>
+                    <Modal.Title>
+                      <FaEdit className="me-2" /> Chỉnh sửa Giá Gói VIP
+                    </Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>
+                    <Form onSubmit={handleSaveEdit}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>Tên Gói VIP</Form.Label>
+                        <Form.Control
+                          type="text"
+                          value={editVip.name}
+                          disabled
+                          className="bg-light"
+                        />
+                      </Form.Group>
+                      <Form.Group className="mb-3">
+                        <Form.Label>Giá Mỗi Ngày (VNĐ)</Form.Label>
+                        <Form.Control
+                          type="number"
+                          value={editVip.pricePerDay}
+                          onChange={(e) =>
+                            setEditVip({ ...editVip, pricePerDay: parseInt(e.target.value) || 0 })
+                          }
+                          required
+                          min="0"
+                          placeholder="Nhập giá mỗi ngày"
+                        />
+                      </Form.Group>
+                    </Form>
+                  </Modal.Body>
+                  <Modal.Footer>
+                    <Button
+                      variant="secondary"
+                      onClick={() => setShowEditModal(false)}
+                    >
+                      Hủy
+                    </Button>
+                    <Button
+                      variant="primary"
+                      onClick={handleSaveEdit}
+                    >
+                      Lưu
+                    </Button>
+                  </Modal.Footer>
+                </Modal>
+
+                <Table responsive className="admin-table">
+                  <thead>
                     <tr>
-                      <td colSpan="5" className="text-center py-4">
-                        <Spinner animation="border" variant="primary" />
-                        <span className="ms-2">Đang tải...</span>
-                      </td>
+                      <th>Tên Gói</th>
+                      <th>Cấp VIP</th>
+                      <th>Giá Mỗi Ngày (VNĐ)</th>
+                      <th>Hành động</th>
                     </tr>
-                  ) : vips.length > 0 ? (
-                    vips.map((vip) => (
-                      <tr key={vip.id}>
-                        <td style={{ color: getVipTextColor(vip.vipLevel), fontWeight: "bold" }}>
-                          {vip.name}
-                        </td>
-                        <td>{vip.vipLevel}</td>
-                        <td>{vip.pricePerDay.toLocaleString("vi-VN")}</td>
-                        <td>
-                          <Button
-                            variant="outline-primary"
-                            size="sm"
-                            className="action-button"
-                            onClick={() => handleEdit(vip.id)}
-                          >
-                            <FaEdit className="me-1" /> Sửa Giá
-                          </Button>
+                  </thead>
+                  <tbody>
+                    {loading ? (
+                      <tr>
+                        <td colSpan="5" className="text-center py-4">
+                          <Spinner animation="border" variant="primary" />
+                          <span className="ms-2">Đang tải...</span>
                         </td>
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="5" className="text-center py-4">
-                        Không tìm thấy gói VIP nào.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </Table>
-            </motion.div>
-          </Container>
+                    ) : vips.length > 0 ? (
+                      vips.map((vip) => (
+                        <tr key={vip.id}>
+                          <td style={{ color: getVipTextColor(vip.vipLevel), fontWeight: "bold" }}>
+                            {vip.name}
+                          </td>
+                          <td>{vip.vipLevel}</td>
+                          <td>{vip.pricePerDay.toLocaleString("vi-VN")}</td>
+                          <td>
+                            <Button
+                              variant="outline-primary"
+                              size="sm"
+                              className="action-button"
+                              onClick={() => handleEdit(vip.id)}
+                            >
+                              <FaEdit className="me-1" /> Sửa Giá
+                            </Button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="5" className="text-center py-4">
+                          Không tìm thấy gói VIP nào.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </Table>
+              </motion.div>
+            </Container>
+          </div>
+
         </div>
-        <AdminFooter />
       </div>
-    </div>
+      <AdminFooter />
+    </>
   );
 };
 

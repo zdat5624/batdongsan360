@@ -41,7 +41,7 @@ const customStyles = `
     display: inline-block;
   }
   .avatar-img {
-    border: 5px solid #007bff;
+    border: 3px solidrgb(0, 6, 12);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   }
   .form-control {
@@ -55,7 +55,7 @@ const customStyles = `
   .form-label {
     font-size: 1.2rem;
   }
-  .btn-custom {
+  .btn-profile-custom {
     border-radius: 25px;
     padding: 12px 30px;
     font-weight: bold;
@@ -290,7 +290,7 @@ const UserProfile = ({ user, setUser, handleLogout }) => {
                     <Col>
                       <div className="avatar-wrapper">
                         <Image
-                          src={avatar || "https://via.placeholder.com/200"}
+                          src={`http://localhost:8080/uploads/${avatar}`}
                           alt="Avatar"
                           roundedCircle
                           className="avatar-img"
@@ -309,7 +309,7 @@ const UserProfile = ({ user, setUser, handleLogout }) => {
                             size="sm"
                             as="label"
                             htmlFor="upload-avatar"
-                            className="btn-custom"
+                            className="btn-profile-custom"
                           >
                             Đổi Ảnh Đại Diện
                           </Button>
@@ -317,7 +317,7 @@ const UserProfile = ({ user, setUser, handleLogout }) => {
                             <Button
                               variant="success"
                               size="sm"
-                              className="btn-custom"
+                              className="btn-profile-custom"
                               onClick={handleSaveAvatar}
                             >
                               Lưu Ảnh
@@ -412,15 +412,15 @@ const UserProfile = ({ user, setUser, handleLogout }) => {
 
                   <div className="text-center mt-5">
                     {!isEditing ? (
-                      <Button variant="primary" className="btn-custom" onClick={handleEditClick}>
+                      <Button variant="primary" className="btn-profile-custom" onClick={handleEditClick}>
                         Chỉnh Sửa Thông Tin
                       </Button>
                     ) : (
                       <div className="d-flex justify-content-center gap-4">
-                        <Button variant="success" className="btn-custom" onClick={handleSaveClick}>
+                        <Button variant="success" className="btn-profile-custom" onClick={handleSaveClick}>
                           Lưu
                         </Button>
-                        <Button variant="outline-secondary" className="btn-custom" onClick={handleCancelClick}>
+                        <Button variant="outline-secondary" className="btn-profile-custom" onClick={handleCancelClick}>
                           Hủy
                         </Button>
                       </div>

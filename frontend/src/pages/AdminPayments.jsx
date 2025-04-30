@@ -369,170 +369,173 @@ const AdminPayments = ({ user, setUser, handleLogin, handleLogout }) => {
   };
 
   return (
-    <div className="layout">
-      <Helmet>
-        <title>Quản lý Thanh Toán - Admin Panel</title>
-      </Helmet>
-      <style>{customStyles}</style>
-      <AdminSidebar user={user} handleLogout={handleLogout} />
-      <div className="content-wrapper">
-        <div className="admin-header">
-          <AdminHeader user={user} setUser={setUser} handleLogin={handleLogin} handleLogout={handleLogout} />
-        </div>
-        <div className="main-content">
-          <Container className="custom-container">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              <h2 className="page-title">
-                <FaInfoCircle /> Quản lý Thanh Toán
-              </h2>
-              {error && (
-                <Alert variant="danger" dismissible onClose={() => setError(null)}>
-                  {error}
-                </Alert>
-              )}
+    <>
+      <div className="layout">
+        <Helmet>
+          <title>Quản lý Thanh Toán - Admin Panel</title>
+        </Helmet>
+        <style>{customStyles}</style>
+        <AdminSidebar user={user} handleLogout={handleLogout} />
+        <div className="content-wrapper">
+          <div className="admin-header">
+            <AdminHeader user={user} setUser={setUser} handleLogin={handleLogin} handleLogout={handleLogout} />
+          </div>
+          <div className="main-content">
+            <Container className="custom-container">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <h2 className="page-title">
+                  <FaInfoCircle /> Quản lý Thanh Toán
+                </h2>
+                {error && (
+                  <Alert variant="danger" dismissible onClose={() => setError(null)}>
+                    {error}
+                  </Alert>
+                )}
 
-              <div className="d-flex justify-content-start mb-4">
-                <div className="filter-group">
-                  <InputGroup style={{ maxWidth: "350px" }}>
-                    <InputGroup.Text
-                      style={{ background: "#fff", borderRadius: "25px 0 0 25px" }}
-                    >
-                      <FaSearch className="text-primary" />
-                    </InputGroup.Text>
-                    <Form.Control
-                      type="text"
-                      placeholder="Tìm kiếm mã giao dịch hoặc ID người dùng..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="search-input"
-                      style={{ borderRadius: "0 25px 25px 0" }}
-                    />
-                  </InputGroup>
-                  <InputGroup style={{ maxWidth: "200px" }}>
-                    <Form.Control
-                      type="date"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                    />
-                  </InputGroup>
-                  <InputGroup style={{ maxWidth: "200px" }}>
-                    <Form.Control
-                      type="date"
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                    />
-                  </InputGroup>
-                  <InputGroup style={{ maxWidth: "200px" }}>
-                    <Form.Control
-                      as="select"
-                      value={statusFilter}
-                      onChange={(e) => setStatusFilter(e.target.value)}
-                    >
-                      <option value="SUCCESS">Thành công</option>
-                      <option value="PENDING">Đang kiểm</option>
-                      <option value="FAILED">Thất bại</option>
-                    </Form.Control>
-                  </InputGroup>
+                <div className="d-flex justify-content-start mb-4">
+                  <div className="filter-group">
+                    <InputGroup style={{ maxWidth: "350px" }}>
+                      <InputGroup.Text
+                        style={{ background: "#fff", borderRadius: "25px 0 0 25px" }}
+                      >
+                        <FaSearch className="text-primary" />
+                      </InputGroup.Text>
+                      <Form.Control
+                        type="text"
+                        placeholder="Tìm kiếm mã giao dịch hoặc ID người dùng..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="search-input"
+                        style={{ borderRadius: "0 25px 25px 0" }}
+                      />
+                    </InputGroup>
+                    <InputGroup style={{ maxWidth: "200px" }}>
+                      <Form.Control
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                      />
+                    </InputGroup>
+                    <InputGroup style={{ maxWidth: "200px" }}>
+                      <Form.Control
+                        type="date"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                      />
+                    </InputGroup>
+                    <InputGroup style={{ maxWidth: "200px" }}>
+                      <Form.Control
+                        as="select"
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                      >
+                        <option value="SUCCESS">Thành công</option>
+                        <option value="PENDING">Đang kiểm</option>
+                        <option value="FAILED">Thất bại</option>
+                      </Form.Control>
+                    </InputGroup>
+                  </div>
                 </div>
-              </div>
 
-              {loading ? (
-                <div className="text-center py-5">
-                  <Spinner animation="border" variant="primary" />
-                  <p className="mt-3">Đang tải dữ liệu...</p>
-                </div>
-              ) : (
-                <>
-                  <Table responsive className="admin-table">
-                    <thead>
-                      <tr>
-                        <th>Mã Giao Dịch</th>
-                        <th>ID Người Dùng</th>
-                        <th>Số Tiền (VND)</th>
-                        <th>Phương Thức</th>
-                        <th>Trạng Thái</th>
-                        <th>Ngày Thanh Toán</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredPayments.length > 0 ? (
-                        filteredPayments.map((payment) => (
-                          <tr key={payment.id}>
-                            <td>{payment.transactionId}</td>
-                            <td>{payment.userId}</td>
-                            <td>{payment.amount.toLocaleString()}</td>
-                            <td>{payment.paymentMethod}</td>
-                            <td>
-                              <span
-                                className={`badge ${payment.status === "SUCCESS"
+                {loading ? (
+                  <div className="text-center py-5">
+                    <Spinner animation="border" variant="primary" />
+                    <p className="mt-3">Đang tải dữ liệu...</p>
+                  </div>
+                ) : (
+                  <>
+                    <Table responsive className="admin-table">
+                      <thead>
+                        <tr>
+                          <th>Mã Giao Dịch</th>
+                          <th>ID Người Dùng</th>
+                          <th>Số Tiền (VND)</th>
+                          <th>Phương Thức</th>
+                          <th>Trạng Thái</th>
+                          <th>Ngày Thanh Toán</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredPayments.length > 0 ? (
+                          filteredPayments.map((payment) => (
+                            <tr key={payment.id}>
+                              <td>{payment.transactionId}</td>
+                              <td>{payment.userId}</td>
+                              <td>{payment.amount.toLocaleString()}</td>
+                              <td>{payment.paymentMethod}</td>
+                              <td>
+                                <span
+                                  className={`badge ${payment.status === "SUCCESS"
                                     ? "bg-success"
                                     : payment.status === "PENDING"
                                       ? "bg-warning"
                                       : "bg-danger"
-                                  }`}
-                              >
-                                {payment.status === "SUCCESS"
-                                  ? "Thành công"
-                                  : payment.status === "PENDING"
-                                    ? "Đang kiểm"
-                                    : "Thất bại"}
-                              </span>
+                                    }`}
+                                >
+                                  {payment.status === "SUCCESS"
+                                    ? "Thành công"
+                                    : payment.status === "PENDING"
+                                      ? "Đang kiểm"
+                                      : "Thất bại"}
+                                </span>
+                              </td>
+                              <td>{payment.paymentDate}</td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan="6" className="text-center py-4">
+                              Không tìm thấy giao dịch nào.
                             </td>
-                            <td>{payment.paymentDate}</td>
                           </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan="6" className="text-center py-4">
-                            Không tìm thấy giao dịch nào.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </Table>
+                        )}
+                      </tbody>
+                    </Table>
 
-                  <div className="pagination-container">
-                    <Pagination>
-                      <Pagination.First onClick={() => paginate(1)} disabled={currentPage === 1} />
-                      <Pagination.Prev onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} />
-                      {renderPaginationItems()}
-                      <Pagination.Next
-                        onClick={() => paginate(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                      />
-                      <Pagination.Last
-                        onClick={() => paginate(totalPages)}
-                        disabled={currentPage === totalPages}
-                      />
-                    </Pagination>
+                    <div className="pagination-container">
+                      <Pagination>
+                        <Pagination.First onClick={() => paginate(1)} disabled={currentPage === 1} />
+                        <Pagination.Prev onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} />
+                        {renderPaginationItems()}
+                        <Pagination.Next
+                          onClick={() => paginate(currentPage + 1)}
+                          disabled={currentPage === totalPages}
+                        />
+                        <Pagination.Last
+                          onClick={() => paginate(totalPages)}
+                          disabled={currentPage === totalPages}
+                        />
+                      </Pagination>
 
-                    <Form onSubmit={handleGoToPage} className="d-flex align-items-center gap-2 ms-3">
-                      <Form.Control
-                        type="number"
-                        value={goToPage}
-                        onChange={(e) => setGoToPage(e.target.value)}
-                        placeholder="Trang"
-                        min="1"
-                        max={totalPages}
-                        className="pagination-input"
-                      />
-                      <Button type="submit" className="pagination-go-button">
-                        Đi
-                      </Button>
-                    </Form>
-                  </div>
-                </>
-              )}
-            </motion.div>
-          </Container>
+                      <Form onSubmit={handleGoToPage} className="d-flex align-items-center gap-2 ms-3">
+                        <Form.Control
+                          type="number"
+                          value={goToPage}
+                          onChange={(e) => setGoToPage(e.target.value)}
+                          placeholder="Trang"
+                          min="1"
+                          max={totalPages}
+                          className="pagination-input"
+                        />
+                        <Button type="submit" className="pagination-go-button">
+                          Đi
+                        </Button>
+                      </Form>
+                    </div>
+                  </>
+                )}
+              </motion.div>
+            </Container>
+          </div>
+
         </div>
-        <AdminFooter />
       </div>
-    </div>
+      <AdminFooter />
+    </>
   );
 };
 
