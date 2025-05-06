@@ -1,0 +1,63 @@
+/* General styles for both arrows */
+.ant-carousel .slick-prev,
+.ant-carousel .slick-next {
+    width: 40px;
+    /* Square button size */
+    height: 40px;
+    background: rgba(0, 0, 0, 0.6);
+    /* Semi-transparent dark background */
+    border-radius: 8px;
+    /* Rounded corners */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    /* Ensure arrows are above the carousel content */
+    transition: background 0.3s ease;
+    /* Smooth hover transition */
+}
+
+/* Position the left arrow */
+.ant-carousel .slick-prev {
+    left: 10px;
+    /* Distance from the left edge */
+}
+
+/* Position the right arrow */
+.ant-carousel .slick-next {
+    right: 10px;
+    /* Distance from the right edge */
+}
+
+/* Hide the default arrow icons */
+.ant-carousel .slick-prev::before,
+.ant-carousel .slick-next::before {
+    display: none;
+    /* Remove default chevron icons */
+}
+
+/* Add custom arrow symbols */
+.ant-carousel .slick-prev::after {
+    content: "<";
+    /* Left arrow symbol */
+    color: white;
+    /* White color for the arrow */
+    font-size: 20px;
+    /* Size of the arrow symbol */
+    font-weight: bold;
+}
+
+.ant-carousel .slick-next::after {
+    content: ">";
+    /* Right arrow symbol */
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+/* Hover effect */
+.ant-carousel .slick-prev:hover,
+.ant-carousel .slick-next:hover {
+    background: rgba(0, 0, 0, 0.8);
+    /* Darker background on hover */
+}
