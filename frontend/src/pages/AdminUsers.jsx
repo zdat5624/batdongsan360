@@ -22,8 +22,6 @@ import AdminSidebar from "../components/AdminSidebar";
 import apiServices from "../services/apiServices";
 import AdminFooter from "../components/AdminFooter";
 
-
-// CSS tùy chỉnh
 const customStyles = `
 .layout {
   display: grid;
@@ -42,7 +40,7 @@ const customStyles = `
   flex: 1;
   padding: 20px;
   padding-top: 90px;
-  padding-bottom: 20px; /* Đảm bảo khoảng cách tự nhiên với footer */
+  padding-bottom: 20px;
   overflow-y: auto;
 }
 
@@ -55,8 +53,6 @@ const customStyles = `
   background: #fff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
-
-
 
 .page-title {
   font-size: 2rem;
@@ -128,13 +124,16 @@ const customStyles = `
   }
   .sidebar {
     position: fixed;
-    width: 100%;
+    width: 250px !important;
     z-index: 1000;
     top: 0;
     left: 0;
-    display: none;
-    max-height: calc(100vh - 60px); /* Giới hạn chiều cao của Sidebar, để lại khoảng trống cho footer */
-    overflow-y: auto; /* Nếu Sidebar dài, cho phép cuộn */
+    max-height: calc(100vh - 60px);
+    overflow-y: auto;
+    transform: translateX(-100%);
+  }
+  .sidebar.show {
+    transform: translateX(0);
   }
   .main-content {
     padding: 15px;
@@ -174,6 +173,11 @@ const AdminUsers = ({ user, setUser, handleLogin, handleLogout }) => {
   const [confirmAction, setConfirmAction] = useState(null);
   const [confirmMessage, setConfirmMessage] = useState("");
   const [confirmUserId, setConfirmUserId] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -294,10 +298,16 @@ const AdminUsers = ({ user, setUser, handleLogin, handleLogout }) => {
           <title>Quản lý Người dùng - Admin Panel</title>
         </Helmet>
         <style>{customStyles}</style>
-        <AdminSidebar user={user} handleLogout={handleLogout} />
+        <AdminSidebar user={user} isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
         <div className="content-wrapper">
           <div className="admin-header">
-            <AdminHeader user={user} setUser={setUser} handleLogin={handleLogin} handleLogout={handleLogout} />
+            <AdminHeader
+              user={user}
+              setUser={setUser}
+              handleLogin={handleLogin}
+              handleLogout={handleLogout}
+              toggleSidebar={toggleSidebar}
+            />
           </div>
           <div className="main-content">
             <Container>
@@ -461,8 +471,7 @@ const AdminUsers = ({ user, setUser, handleLogin, handleLogout }) => {
                           <td>{user.joinedDate}</td>
                           <td>
                             <span
-                              className={`badge ${user.status === "Active" ? "bg-success" : user.status === "Locked" ? "bg-danger" : "bg-secondary"
-                                }`}
+                              className={`badge ${user.status === "Active" ? "bg-success" : user.status === "Locked" ? "bg-danger" : "bg-secondary"}`}
                             >
                               {user.status}
                             </span>
@@ -586,12 +595,10 @@ const AdminUsers = ({ user, setUser, handleLogin, handleLogout }) => {
               </motion.div>
             </Container>
           </div>
-
         </div>
-
       </div>
       <AdminFooter />
-    </ >
+    </>
   );
 };
 

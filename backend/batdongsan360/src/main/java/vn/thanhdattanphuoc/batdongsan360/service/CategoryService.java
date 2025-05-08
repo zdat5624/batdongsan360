@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import vn.thanhdattanphuoc.batdongsan360.domain.Category;
 import vn.thanhdattanphuoc.batdongsan360.repository.CategoryRepository;
+import vn.thanhdattanphuoc.batdongsan360.util.constant.PostTypeEnum;
 
 @Service
 public class CategoryService {
@@ -48,6 +49,16 @@ public class CategoryService {
 
     public Page<Category> getCategories(Pageable pageable) {
         return categoryRepository.findAll(pageable);
+    }
+    
+    
+    public Category getCategoryById(Long id) {
+        return categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy category với id: " + id));
+    }
+
+    public Page<Category> getCategoriesForAdmin( PostTypeEnum type, Pageable pageable) {
+        return categoryRepository.findByNameContainingAndType( type, pageable);
     }
 
 }

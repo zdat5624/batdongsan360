@@ -16,14 +16,14 @@ import vn.thanhdattanphuoc.batdongsan360.util.constant.GenderEnum;
 public class UpdateProfileDTO {
 
     private long id;
-    @NotBlank(message = "Username không được để trống")
-    @Size(min = 5, max = 50, message = "Username phải có độ dài từ 5 đến 50 ký tự")
+    @NotBlank(message = "Tên không được để trống")
+    @Size(min = 5, max = 50, message = "Tên phải có độ dài từ 5 đến 50 ký tự")
     private String name;
     @NotNull(message = "Gender không được để trống")
     @Enumerated(EnumType.STRING)
     private GenderEnum gender;
     private String avatar;
-    @NotBlank(message = "Phone không được để trống")
+    @NotBlank(message = "Số điện thoại không được để trống")
     @Pattern(regexp = "^(\\+84|0)[0-9]{9,10}$", message = "Số điện thoại không hợp lệ")
     private String phone;
     private String address;

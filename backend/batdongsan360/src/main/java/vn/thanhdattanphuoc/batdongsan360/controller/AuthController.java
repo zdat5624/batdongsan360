@@ -21,6 +21,7 @@ import vn.thanhdattanphuoc.batdongsan360.util.annotation.ApiMessage;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.GenderEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.RoleEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.error.InputInvalidException;
+import vn.thanhdattanphuoc.batdongsan360.util.request.ChangePasswordRequest;
 import vn.thanhdattanphuoc.batdongsan360.util.request.EmailRequest;
 import vn.thanhdattanphuoc.batdongsan360.util.request.LoginDTO;
 import vn.thanhdattanphuoc.batdongsan360.util.request.RegisterDTO;
@@ -150,6 +151,15 @@ public class AuthController {
     public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request)
             throws InputInvalidException {
         forgotPasswordService.resetPassword(request.getEmail(), request.getCode(), request.getNewPassword());
+        return ResponseEntity.ok(null);
+    }
+    
+    @ApiMessage("Đổi mật khẩu thành công")
+    @PostMapping("/api/auth/change-password")
+    public ResponseEntity<Void> changePassword(@Valid @RequestBody ChangePasswordRequest request) throws InputInvalidException {
+        String email = SecurityUtil.getCurrentUserLogin().orElseThrow(() -> 
+            new InputInvalidException("Bạn cần đăng nhập để đổi mật khẩu"));
+        userService.changePassword(email, request.getCurrentPassword(), request.getNewPassword());
         return ResponseEntity.ok(null);
     }
 

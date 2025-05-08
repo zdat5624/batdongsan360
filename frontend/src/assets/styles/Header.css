@@ -1,11 +1,7 @@
 .header {
   background-color: #1a252f !important;
   border-bottom: 1px solid #34495e;
-
 }
-
-
-
 
 .nav-link-custom {
   color: #ecf0f1 !important;
@@ -106,48 +102,6 @@
   min-width: 250px !important;
 }
 
-.notification-dropdown {
-  min-width: 350px !important;
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-.notification-header {
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #e9ecef;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #333;
-}
-
-.notification-item {
-  padding: 12px 15px !important;
-  border-bottom: 1px solid #e9ecef;
-}
-
-.notification-item:last-child {
-  border-bottom: none;
-}
-
-.notification-unread {
-  background-color: #e6f3ff !important;
-  font-weight: 500;
-}
-
-.notification-icon {
-  font-size: 1.2rem;
-}
-
-.notification-view-all {
-  color: #007bff !important;
-  font-weight: 500;
-}
-
-.notification-view-all:hover {
-  background-color: #f0f8ff !important;
-  color: #0056b3 !important;
-}
-
 .logout-confirm-overlay {
   position: fixed;
   top: 0;
@@ -234,4 +188,59 @@
 
 .btn-confirm:hover {
   background-color: #c82333;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .nav-link-custom {
+    font-size: 0.9rem !important;
+    padding: 8px 15px !important;
+  }
+
+  .btn-custom {
+    padding: 6px 15px !important;
+    font-size: 0.85rem !important;
+  }
+
+  .user-dropdown {
+    width: 100% !important;
+    max-width: 96vw !important;
+    left: 0 !important;
+    right: 0 !important;
+    transform: none !important;
+  }
+
+  .dropdown-menu-custom {
+    position: absolute !important;
+    inset: auto 0 auto 0 !important;
+    border-radius: 8px !important;
+  }
+
+  .d-flex.align-items-center.gap-3 {
+    gap: 1rem !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .nav-link-custom {
+    font-size: 0.8rem !important;
+    padding: 6px 10px !important;
+  }
+
+  .btn-custom {
+    padding: 5px 10px !important;
+    font-size: 0.8rem !important;
+  }
+
+  .user-dropdown {
+    width: 100% !important;
+    max-width: 96vw !important;
+    left: 0 !important;
+    right: 0 !important;
+    transform: none !important;
+  }
+
+  .dropdown-menu-custom {
+    inset: auto 0 auto 0 !important;
+  }
 }

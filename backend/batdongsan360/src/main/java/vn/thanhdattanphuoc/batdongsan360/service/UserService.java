@@ -6,11 +6,17 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import vn.thanhdattanphuoc.batdongsan360.domain.User;
 import vn.thanhdattanphuoc.batdongsan360.repository.UserRepository;
 import vn.thanhdattanphuoc.batdongsan360.service.specification.UserSpecification;
+import vn.thanhdattanphuoc.batdongsan360.util.constant.GenderEnum;
+import vn.thanhdattanphuoc.batdongsan360.util.constant.RoleEnum;
+import vn.thanhdattanphuoc.batdongsan360.util.error.InputInvalidException;
+import vn.thanhdattanphuoc.batdongsan360.util.error.NotFoundException;
 import vn.thanhdattanphuoc.batdongsan360.util.request.CreateUserDTO;
 import vn.thanhdattanphuoc.batdongsan360.util.request.UpdateProfileDTO;
 import vn.thanhdattanphuoc.batdongsan360.util.request.UserFilterRequest;
@@ -21,9 +27,11 @@ import vn.thanhdattanphuoc.batdongsan360.util.response.UserDTO;
 public class UserService {
 
     private UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public User handleCreateUser(CreateUserDTO createUserDTO) {
@@ -48,11 +56,8 @@ public class UserService {
     }
 
     public User fetchUserById(long id) {
-        Optional<User> userOptional = this.userRepository.findById(id);
-        if (userOptional.isPresent()) {
-            return userOptional.get();
-        }
-        return null;
+        return this.userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng với ID: " + id));
     }
 
     public User handleGetUserByUserName(String username) {
@@ -98,12 +103,25 @@ public class UserService {
         return this.userRepository.existsByEmail(email);
     }
 
-    public Page<UserDTO> getUsers(UserFilterRequest filter) {
-        Pageable pageable = PageRequest.of(filter.getPage(), filter.getSize());
+    public Page<UserDTO> getUsers(int page, int size, RoleEnum role, GenderEnum gender, String search, String sortBy, String sortDirection) {
+        Sort sort = Sort.by(sortDirection.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC, sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
         Page<User> userPage = userRepository.findAll(
-                UserSpecification.filterUsers(filter),
+                UserSpecification.filterUsers(role, gender, search),
                 pageable);
         return userPage.map(this::convertToDTO);
+    }
+    
+    public void changePassword(String email, String currentPassword, String newPassword) throws InputInvalidException {
+        User user = handleGetUserByUserName(email);
+        if (user == null) {
+            throw new InputInvalidException("Người dùng không tồn tại, vui lòng kiểm tra lại đăng nhập!");
+        }
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new InputInvalidException("Mật khẩu hiện tại không đúng");
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
     }
 
     private UserDTO convertToDTO(User user) {

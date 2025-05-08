@@ -14,6 +14,7 @@ import vn.thanhdattanphuoc.batdongsan360.repository.UserRepository;
 import vn.thanhdattanphuoc.batdongsan360.util.SecurityUtil;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.TransStatusEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.TransactionFilterType;
+import vn.thanhdattanphuoc.batdongsan360.util.error.NotFoundException;
 
 @Service
 public class TransactionService {
@@ -25,16 +26,24 @@ public class TransactionService {
         this.userRepository = userRepository;
     }
 
-    public Page<Transaction> getTransactions(Pageable pageable, Long userId, TransStatusEnum status, Instant startDate,
-            Instant endDate) {
-        return transactionRepository.findTransactionsWithFilters(userId, status, startDate, endDate, pageable);
+    public Transaction getTransactionById(Long id) {
+        return transactionRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy giao dịch id: " + id));
+    }
+    
+    public Page<Transaction> getTransactions(
+            Pageable pageable, String email, Long transactionId, String txnId,
+            TransStatusEnum status, TransactionFilterType type, Instant startDate, Instant endDate) {
+        String typeStr = type != null ? type.name() : null;
+        return transactionRepository.findTransactionsWithFilters(
+                email, transactionId, txnId, status, typeStr, startDate, endDate, pageable);
     }
 
     public Page<Transaction> getUserTransactions(Long userId, Pageable pageable) {
         return transactionRepository.findByUserId(userId, pageable);
     }
 
-    public Page<Transaction> getCurrentUserTransactions(Pageable pageable, TransactionFilterType type) {
+    public Page<Transaction> getCurrentUserTransactions(Pageable pageable, TransactionFilterType type, TransStatusEnum status) {
         Optional<String> currentUserLogin = SecurityUtil.getCurrentUserLogin();
         if (currentUserLogin.isEmpty()) {
             throw new IllegalStateException("User not authenticated");
@@ -47,12 +56,12 @@ public class TransactionService {
 
         switch (type) {
             case DEPOSIT:
-                return transactionRepository.findByUserIdAndAmountGreaterThan(user.get().getId(), 0, pageable);
+                return transactionRepository.findByUserIdAndAmountGreaterThanAndStatus(user.get().getId(), 0, status, pageable);
             case PAYMENT:
-                return transactionRepository.findByUserIdAndAmountLessThan(user.get().getId(), 0, pageable);
+                return transactionRepository.findByUserIdAndAmountLessThanAndStatus(user.get().getId(), 0, status, pageable);
             case ALL:
             default:
-                return transactionRepository.findByUserId(user.get().getId(), pageable);
+                return transactionRepository.findByUserIdAndStatus(user.get().getId(), status, pageable);
         }
     }
 }

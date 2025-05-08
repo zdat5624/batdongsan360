@@ -8,6 +8,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.data.domain.Sort;
@@ -27,22 +28,30 @@ public class TransactionController {
     @GetMapping("/api/admin/payment/transactions")
     public ResponseEntity<Page<Transaction>> getTransactions(
             @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
-            @RequestParam(required = false) Long userId,
-            @RequestParam(required = false) TransStatusEnum status, // Vẫn nhận String từ request
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) Long transactionId,
+            @RequestParam(required = false) String txnId,
+            @RequestParam(required = false) TransStatusEnum status,
+            @RequestParam(required = false, defaultValue = "ALL") TransactionFilterType type,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant endDate) {
-        // TransStatusEnum transStatus = (status != null) ?
-        // TransStatusEnum.valueOf(status) : null;
-        Page<Transaction> transactions = transactionService.getTransactions(pageable, userId, status, startDate,
-                endDate);
+        Page<Transaction> transactions = transactionService.getTransactions(
+                pageable, email, transactionId, txnId, status, type, startDate, endDate);
         return ResponseEntity.ok(transactions);
+    }
+    
+    @GetMapping("api/payment/transactions/{id}")
+    public ResponseEntity<Transaction> getTransactionById(@PathVariable Long id) {
+        Transaction transaction = transactionService.getTransactionById(id);
+        return ResponseEntity.ok(transaction);
     }
 
     @GetMapping("/api/payment/my-transactions")
     public ResponseEntity<Page<Transaction>> getMyTransactions(
             @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
-            @RequestParam(value = "type", defaultValue = "ALL") TransactionFilterType type) {
-        Page<Transaction> transactions = transactionService.getCurrentUserTransactions(pageable, type);
+            @RequestParam(value = "type", defaultValue = "ALL") TransactionFilterType type,
+            @RequestParam(required = false) TransStatusEnum status) {
+        Page<Transaction> transactions = transactionService.getCurrentUserTransactions(pageable, type, status);
         return ResponseEntity.ok(transactions);
     }
 }

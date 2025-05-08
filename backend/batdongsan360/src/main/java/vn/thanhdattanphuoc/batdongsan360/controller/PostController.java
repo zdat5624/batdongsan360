@@ -24,6 +24,7 @@ import vn.thanhdattanphuoc.batdongsan360.util.constant.PostStatusEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.PostTypeEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.error.InputInvalidException;
 import vn.thanhdattanphuoc.batdongsan360.util.request.PostRequestDTO;
+import vn.thanhdattanphuoc.batdongsan360.util.request.UpdatePostDTO;
 import vn.thanhdattanphuoc.batdongsan360.util.request.UpdatePostStatusDTO;
 import vn.thanhdattanphuoc.batdongsan360.util.response.MapPostDTO;
 import vn.thanhdattanphuoc.batdongsan360.util.response.ResAddressDTO;
@@ -44,11 +45,9 @@ public class PostController {
     }
 
     @PutMapping("/api/posts")
-    public ResponseEntity<Post> updatePost(@Valid @RequestBody Post updatedPost) throws InputInvalidException {
-
-        Post post = postService.updatePost(updatedPost);
+    public ResponseEntity<Post> updatePost(@Valid @RequestBody UpdatePostDTO updatePostDTO) throws InputInvalidException {
+        Post post = postService.updatePost(updatePostDTO);
         return ResponseEntity.status(HttpStatus.OK).body(post);
-
     }
 
     @DeleteMapping("/api/posts/{id}")
@@ -83,18 +82,14 @@ public class PostController {
             @RequestParam(required = false) Double minArea,
             @RequestParam(required = false) Double maxArea,
             @RequestParam(required = false) PostStatusEnum status,
-            @RequestParam(required = false) Long provinceCode,
-            @RequestParam(required = false) Long districtCode,
-            @RequestParam(required = false) Long wardCode,
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) PostTypeEnum type,
             @RequestParam(required = false) Long vipId,
-            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) String email,
             @RequestParam(required = false) Boolean isDeleteByUser,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        return postService.getFilteredPosts(minPrice, maxPrice, minArea, maxArea, status, provinceCode,
-                districtCode, wardCode, categoryId, type, vipId, userId, isDeleteByUser, page, size);
+            Pageable pageable) {
+        return postService.getFilteredPosts(minPrice, maxPrice, minArea, maxArea, status, 
+                categoryId, type, vipId, email, isDeleteByUser, pageable);
     }
 
     @GetMapping("/api/posts")

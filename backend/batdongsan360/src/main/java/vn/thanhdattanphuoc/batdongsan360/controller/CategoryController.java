@@ -13,10 +13,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import jakarta.validation.Valid;
 import vn.thanhdattanphuoc.batdongsan360.domain.Category;
 import vn.thanhdattanphuoc.batdongsan360.service.CategoryService;
+import vn.thanhdattanphuoc.batdongsan360.util.constant.PostTypeEnum;
 
 @Controller
 public class CategoryController {
@@ -46,6 +48,20 @@ public class CategoryController {
     public ResponseEntity<Page<Category>> getCategories(
             @PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<Category> categories = categoryService.getCategories(pageable);
+        return ResponseEntity.ok(categories);
+    }
+    
+    @GetMapping("/api/categories/{id}")
+    public ResponseEntity<Category> getCategoryById(@PathVariable Long id) {
+        Category category = categoryService.getCategoryById(id);
+        return ResponseEntity.ok(category);
+    }
+    
+    @GetMapping("/api/admin/categories")
+    public ResponseEntity<Page<Category>> getCategoriesForAdmin(
+ @RequestParam(required = false) PostTypeEnum type,
+            @PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<Category> categories = categoryService.getCategoriesForAdmin( type, pageable);
         return ResponseEntity.ok(categories);
     }
 }

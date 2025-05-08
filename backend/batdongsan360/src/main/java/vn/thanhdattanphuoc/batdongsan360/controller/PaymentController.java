@@ -46,18 +46,20 @@ public class PaymentController {
             throws IOException, InputInvalidException {
 
         int paymentStatus = this.vnpayService.handleOrderReturn(request);
-
+    
         String orderInfo = request.getParameter("vnp_OrderInfo");
         String paymentTime = request.getParameter("vnp_PayDate");
-        String transactionId = request.getParameter("vnp_TransactionNo");
+        String transactionId = request.getParameter("vnp_TxnRef");
         String totalPrice = request.getParameter("vnp_Amount");
+        String transactionStatus = request.getParameter("vnp_TransactionStatus");
 
         String redirectUrl = vnp_ReturnUrl_frontend
                 + "?status=" + paymentStatus
                 + "&orderInfo=" + URLEncoder.encode(orderInfo, StandardCharsets.UTF_8)
                 + "&paymentTime=" + URLEncoder.encode(paymentTime, StandardCharsets.UTF_8)
                 + "&transactionId=" + URLEncoder.encode(transactionId, StandardCharsets.UTF_8)
-                + "&totalPrice=" + URLEncoder.encode(totalPrice, StandardCharsets.UTF_8);
+                + "&totalPrice=" + URLEncoder.encode(totalPrice, StandardCharsets.UTF_8)
+                + "&transactionStatus=" + URLEncoder.encode(transactionStatus, StandardCharsets.UTF_8);
 
         response.sendRedirect(redirectUrl);
     }

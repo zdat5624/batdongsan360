@@ -1,29 +1,29 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { 
-  Container, 
-  Row, 
-  Col, 
-  Card, 
-  Badge, 
-  Spinner, 
-  Modal, 
-  Carousel 
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  Badge,
+  Spinner,
+  Modal,
+  Carousel
 } from "react-bootstrap";
-import { 
-  FaStar, 
-  FaMapMarkerAlt, 
-  FaPhone, 
-  FaEnvelope, 
-  FaUser, 
-  FaMoneyBillWave, 
-  FaRulerCombined, 
-  FaFileAlt, 
-  FaHome, 
-  FaFolderOpen, 
-  FaCalendarAlt, 
-  FaCalendarTimes 
+import {
+  FaStar,
+  FaMapMarkerAlt,
+  FaPhone,
+  FaEnvelope,
+  FaUser,
+  FaMoneyBillWave,
+  FaRulerCombined,
+  FaFileAlt,
+  FaHome,
+  FaFolderOpen,
+  FaCalendarAlt,
+  FaCalendarTimes
 } from "react-icons/fa";
 import { motion } from "framer-motion";
 import apiServices from "../services/apiServices";
@@ -212,7 +212,7 @@ const ProjectDetail = () => {
                         <a href={`mailto:${project.email}`} className="text-decoration-none text-primary">{project.email}</a>
                       </span>
                     </li>
-                    
+
                   </ul>
                 </Card.Body>
               </Card>

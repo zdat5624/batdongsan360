@@ -105,32 +105,21 @@ const Header = ({ user, setUser, handleLogin, handleLogout }) => {
     setShowLogoutConfirm(false);
   };
 
+  const handleNotificationClick = () => {
+    navigate("/notifications");
+  };
+
+  const dropdownAlign = window.innerWidth <= 768 ? "start" : "end";
+
   return (
     <>
-      <style>
-        {`
-          /* Thu nhỏ button "Xem tất cả thông báo" */
-          .notification-view-all {
-            padding: 5px 10px !important; /* Giảm padding để thu nhỏ button */
-            font-size: 0.9rem !important; /* Giảm kích thước chữ */
-            text-align: center;
-            display: block;
-            color: #007bff !important;
-            background-color: transparent !important;
-            border: none !important;
-            transition: all 0.3s ease;
-          }
-          .notification-view-all:hover {
-            background-color: #007bff !important;
-            color: white !important;
-            border-radius: 5px;
-          }
-        `}
-      </style>
-
-      <Navbar expand="lg" className="header " bg="dark" variant="dark" style={{ position: "fixed", top: 0, width: "100%", zIndex: 1000, padding: "0.5rem 1rem" }}>
-
-
+      <Navbar
+        expand="lg"
+        className="header"
+        bg="dark"
+        variant="dark"
+        style={{ position: "fixed", top: 0, width: "100%", zIndex: 1000, padding: "0.5rem 1rem" }}
+      >
         <Navbar.Brand as={NavLink} to="/">
           <span className="fw-bold text-light">BĐS360</span>
         </Navbar.Brand>
@@ -163,7 +152,7 @@ const Header = ({ user, setUser, handleLogin, handleLogout }) => {
                   <span className="fw-bold">{user.name}</span>
                 </Dropdown.Toggle>
 
-                <Dropdown.Menu align="end" className="dropdown-menu-custom user-dropdown">
+                <Dropdown.Menu align={dropdownAlign} className="dropdown-menu-custom user-dropdown">
                   <Dropdown.Item as={NavLink} to="/profile">
                     <i className="fas fa-user me-2"></i> Thông tin cá nhân
                   </Dropdown.Item>
@@ -194,66 +183,22 @@ const Header = ({ user, setUser, handleLogin, handleLogout }) => {
                 Đăng tin
               </Button>
 
-              <Dropdown>
-                <Dropdown.Toggle
-                  variant="dark"
-                  id="dropdown-notifications"
-                  className="dropdown-toggle-custom d-flex align-items-center text-white text-decoration-none position-relative"
-                >
-                  <FaBell size={24} />
-                  {unreadCount > 0 && (
-                    <Badge
-                      bg="danger"
-                      className="position-absolute top-0 start-100 translate-middle rounded-circle"
-                      style={{ fontSize: "0.6rem", padding: "0.3em 0.5em" }}
-                    >
-                      {unreadCount}
-                    </Badge>
-                  )}
-                </Dropdown.Toggle>
-
-                <Dropdown.Menu align="end" className="dropdown-menu-custom notification-dropdown">
-                  <Dropdown.Header className="notification-header">
-                    <i className="fas fa-bell me-2"></i> Thông Báo
-                  </Dropdown.Header>
-                  {notificationLoading ? (
-                    <Dropdown.ItemText className="text-center">
-                      <i className="fas fa-spinner fa-spin me-2"></i> Đang tải...
-                    </Dropdown.ItemText>
-                  ) : notificationError ? (
-                    <Dropdown.ItemText className="text-danger">
-                      {notificationError}
-                    </Dropdown.ItemText>
-                  ) : notifications.length > 0 ? (
-                    notifications.map((notification) => (
-                      <Dropdown.Item
-                        key={notification.id}
-                        className={`notification-item ${notification.read ? "" : "notification-unread"}`}
-                      >
-                        <div className="d-flex align-items-center gap-2">
-                          <i className={`fas fa-bell notification-icon ${notification.read ? "text-muted" : "text-primary"}`}></i>
-                          <div className="d-flex flex-column">
-                            <span>{notification.message || "Không có nội dung"}</span>
-                            <small className="text-muted">{getTimeAgo(notification.createdAt)}</small>
-                          </div>
-                        </div>
-                      </Dropdown.Item>
-                    ))
-                  ) : (
-                    <Dropdown.ItemText className="text-center text-muted">
-                      Chưa có thông báo nào.
-                    </Dropdown.ItemText>
-                  )}
-                  {notifications.length > 0 && (
-                    <>
-                      <Dropdown.Divider />
-                      <Dropdown.Item as={NavLink} to="/notifications" className="notification-view-all">
-                        Xem tất cả thông báo
-                      </Dropdown.Item>
-                    </>
-                  )}
-                </Dropdown.Menu>
-              </Dropdown>
+              <div
+                className="d-flex align-items-center text-white text-decoration-none position-relative"
+                onClick={handleNotificationClick}
+                style={{ cursor: "pointer" }}
+              >
+                <FaBell size={24} />
+                {unreadCount > 0 && (
+                  <Badge
+                    bg="danger"
+                    className="position-absolute top-0 start-100 translate-middle rounded-circle"
+                    style={{ fontSize: "0.6rem", padding: "0.3em 0.5em" }}
+                  >
+                    {unreadCount}
+                  </Badge>
+                )}
+              </div>
             </div>
           ) : (
             <div className="d-flex align-items-center gap-2">
@@ -281,7 +226,6 @@ const Header = ({ user, setUser, handleLogin, handleLogout }) => {
             </div>
           )}
         </Navbar.Collapse>
-
       </Navbar>
 
       {showLogoutConfirm && (

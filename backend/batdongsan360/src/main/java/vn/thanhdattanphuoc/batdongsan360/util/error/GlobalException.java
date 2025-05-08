@@ -21,15 +21,15 @@ import vn.thanhdattanphuoc.batdongsan360.util.response.RestResponse;
 public class GlobalException {
 
     // handle all exception
-    // @ExceptionHandler(Exception.class)
-    // public ResponseEntity<RestResponse<Object>> handleAllException(Exception ex)
-    // {
-    // RestResponse<Object> res = new RestResponse<Object>();
-    // res.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
-    // res.setMessage(ex.getMessage());
-    // res.setError("Internal Server Error");
-    // return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
-    // }
+     @ExceptionHandler(Exception.class)
+     public ResponseEntity<RestResponse<Object>> handleAllException(Exception ex)
+     {
+     RestResponse<Object> res = new RestResponse<Object>();
+     res.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+     res.setMessage(ex.getMessage());
+     res.setError("Internal Server Error");
+     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
+     }
 
     @ExceptionHandler(value = {
             UsernameNotFoundException.class,
@@ -47,13 +47,14 @@ public class GlobalException {
     }
 
     @ExceptionHandler(value = {
+    		   NotFoundException.class,
             NoResourceFoundException.class,
     })
     public ResponseEntity<RestResponse<Object>> handleNotFoundException(Exception ex) {
         RestResponse<Object> res = new RestResponse<Object>();
         res.setStatusCode(HttpStatus.NOT_FOUND.value());
         res.setMessage(ex.getMessage());
-        res.setError("404 Not Found. URL may not exist...");
+        res.setError("Resource Not Found ...");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
     }
 
@@ -73,7 +74,9 @@ public class GlobalException {
     }
 
     @ExceptionHandler(value = {
+    		ForbiddenException.class,
             PermissionException.class,
+            
     })
     public ResponseEntity<RestResponse<Object>> handlePermissionException(Exception ex) {
         RestResponse<Object> res = new RestResponse<Object>();

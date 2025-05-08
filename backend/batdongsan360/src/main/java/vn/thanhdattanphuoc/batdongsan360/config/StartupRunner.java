@@ -83,41 +83,13 @@ public class StartupRunner implements CommandLineRunner {
         System.out.println(">>> START INIT DATABASE");
 
         System.out.println(">>> INIT TABLE 'users': 1 ADMIN, 50 USER");
-        List<User> userList = new ArrayList<>();
-
-        // Thêm user admin mẫu
-        User adminUser = new User();
-        adminUser.setEmail("admin@gmail.com");
-        adminUser.setName("Quản trị viên");
-        adminUser.setPassword(this.passwordEncoder.encode("123456"));
-        adminUser.setRole(RoleEnum.ADMIN);
-        adminUser.setGender(GenderEnum.MALE);
-        adminUser.setBalance(999999999);
-        adminUser.setPhone("0123456789");
-        adminUser.setAddress("Thành Phố Hồ Chí Minh");
-        userList.add(adminUser);
-
-        // Tạo 100 user mẫu với thông tin ngẫu nhiên
-        for (int i = 1; i <= 50; i++) {
-            User user = new User();
-            user.setEmail("user" + i + "@gmail.com");
-            user.setName("TestUser" + i);
-            user.setPassword(this.passwordEncoder.encode("123456"));
-            user.setRole(RoleEnum.USER);
-            user.setGender(i % 2 == 0 ? GenderEnum.MALE : GenderEnum.FEMALE);
-            user.setBalance(1000000 * i); // Số dư tăng dần
-            user.setPhone("01234567" + String.format("%02d", i));
-            user.setAddress(i % 2 == 0 ? "Thành Phố Hồ Chí Minh" : "Thành Phố Hà Nội");
-            userList.add(user);
+        
+        if (this.userRepository.count() > 0) { 
+        	System.out.println(">>> SKIP! INIT TABLE 'users' : ALREADY HAVE DATA ... ");
+        } else {
+        	initSampleUsers();
         }
-
-        for (User user : userList) {
-            boolean isEmailExist = this.userService.isEmailExist(user.getEmail());
-            if (!isEmailExist) {
-                this.userService.handleCreateUser(user);
-            }
-        }
-
+        
         // Kiểm tra nếu database table provinces,dictrics,wars đã có dữ liệu thì không
         // init
         if (this.provinceRepository.count() > 0 || this.districtRepository.count() > 0
@@ -158,6 +130,43 @@ public class StartupRunner implements CommandLineRunner {
 
         initSampleNotifications();
 
+    }
+    
+    private void initSampleUsers() {
+    	List<User> userList = new ArrayList<>();
+
+        // Thêm user admin mẫu
+        User adminUser = new User();
+        adminUser.setEmail("admin@gmail.com");
+        adminUser.setName("Quản trị viên");
+        adminUser.setPassword(this.passwordEncoder.encode("123456"));
+        adminUser.setRole(RoleEnum.ADMIN);
+        adminUser.setGender(GenderEnum.MALE);
+        adminUser.setBalance(999999999);
+        adminUser.setPhone("0123456789");
+        adminUser.setAddress("Thành Phố Hồ Chí Minh");
+        userList.add(adminUser);
+
+        // Tạo 100 user mẫu với thông tin ngẫu nhiên
+        for (int i = 1; i <= 50; i++) {
+            User user = new User();
+            user.setEmail("user" + i + "@gmail.com");
+            user.setName("TestUser" + i);
+            user.setPassword(this.passwordEncoder.encode("123456"));
+            user.setRole(RoleEnum.USER);
+            user.setGender(i % 2 == 0 ? GenderEnum.MALE : GenderEnum.FEMALE);
+            user.setBalance(1000000 * i); // Số dư tăng dần
+            user.setPhone("01234567" + String.format("%02d", i));
+            user.setAddress(i % 2 == 0 ? "Thành Phố Hồ Chí Minh" : "Thành Phố Hà Nội");
+            userList.add(user);
+        }
+
+        for (User user : userList) {
+            boolean isEmailExist = this.userService.isEmailExist(user.getEmail());
+            if (!isEmailExist) {
+                this.userService.handleCreateUser(user);
+            }
+        }
     }
 
     private void initSampleCategories() {
@@ -206,10 +215,9 @@ public class StartupRunner implements CommandLineRunner {
 
         ArrayList<Vip> lst = new ArrayList<Vip>();
         lst.add(new Vip(0, "VIP 0", 0));
-        lst.add(new Vip(1, "VIP 1", 3000));
+        lst.add(new Vip(1, "VIP 1", 2000));
         lst.add(new Vip(2, "VIP 2", 4000));
-        lst.add(new Vip(3, "VIP 3", 5000));
-        lst.add(new Vip(4, "VIP 4", 7000));
+
 
         this.vipRepository.saveAll(lst);
 
@@ -218,6 +226,20 @@ public class StartupRunner implements CommandLineRunner {
     }
 
     private void initSamplePosts() {
+    	// Danh sách tên đường
+    	List<String> streetNames = Arrays.asList(
+    	        "A1", "A2", "A5", "A8", "A12", "A18", "A25", "A30", "A35", "A40",
+    	        "A45", "A50", "B1", "B3", "B7", "B10", "B15", "B20", "B28", "B32",
+    	        "B38", "B45", "B50", "C2", "C4", "C6", "C9", "C12", "C16", "C22",
+    	        "C27", "C33", "C39", "C45", "C50", "D1", "D5", "D8", "D10", "D15",
+    	        "D20", "D25", "D30", "D36", "D42", "D50", "E3", "E7", "E12", "E18",
+    	        "E24", "E29", "E35", "E40", "E50", "F2", "F8", "F15", "F21", "F30",
+    	        "F38", "F45", "G1", "G5", "G10", "G15", "G20", "G25", "G30", "G35",
+    	        "G40", "G50", "H2", "H7", "H12", "H18", "H24", "H30", "H36", "H45",
+    	        "I1", "I5", "I10", "I15", "I20", "I25", "I30", "I40", "J2", "J8",
+    	        "J15", "J21", "J30", "J40", "K3", "K9", "K18", "K27", "K36", "K45"
+    	    );
+        
         if (postRepository.count() > 0) {
             System.out.println(">>> SKIP! INIT ADDRESS DATA TABLE posts: ALREADY HAVE DATA ... ");
             return;
@@ -272,11 +294,43 @@ public class StartupRunner implements CommandLineRunner {
 
             Optional<double[]> latLng = mapboxGeocodeService.getLatLngFromAddress(fullAddress);
             if (latLng.isPresent()) {
-                double[] coords = latLng.get();
-                post.setLongitude(coords[0]);
-                post.setLatitude(coords[1]);
-            }
+            	double[] coords = latLng.get();
+                double baseLongitude = coords[0];
+                double baseLatitude = coords[1];
 
+                // Tạo tọa độ ngẫu nhiên trong bán kính 1000 mét
+                Random randomPoint = new Random();
+                double radiusInMeters = 1000.0;
+                double radiusInDegrees = radiusInMeters / 111_000.0; // Chuyển đổi mét sang độ (~111km/độ)
+
+                // Tạo offset ngẫu nhiên trong bán kính
+                double u = randomPoint.nextDouble();
+                double v = randomPoint.nextDouble();
+                double w = radiusInDegrees * Math.sqrt(u);
+                double t = 2 * Math.PI * v;
+                double x = w * Math.cos(t); // Offset kinh độ
+                double y = w * Math.sin(t); // Offset vĩ độ
+
+                // Điều chỉnh kinh độ dựa trên vĩ độ (cos(latitude) để chính xác hơn)
+                double newLongitude = baseLongitude + x / Math.cos(Math.toRadians(baseLatitude));
+                double newLatitude = baseLatitude + y;
+
+                // Gán tọa độ ngẫu nhiên cho bài đăng
+                post.setLongitude(newLongitude);
+                post.setLatitude(newLatitude);
+            }
+            
+            String houseNumber = "Số " + (random.nextInt(999) + 1); // Số 1-999
+            String street = streetNames.get(random.nextInt(streetNames.size()));
+            detailAddress = houseNumber + " Đường " + street;
+
+            // Tạo chuỗi địa chỉ đầy đủ
+            fullAddress = detailAddress + ", " + (selectedWard != null ? selectedWard.getName() : "") +
+                    (selectedDistrict != null ? ", " + selectedDistrict.getName() : "") +
+                    ", " + selectedProvince.getName();
+            
+            
+            
             String title = "";
             String description = "";
             List<String> sampleImageUrls = new ArrayList<>();
@@ -578,6 +632,14 @@ public class StartupRunner implements CommandLineRunner {
                             "https://example.com/images/default2.jpg");
                     break;
             }
+            String generalDescription = "\n\n**Thông tin bổ sung**:\n" +
+                    "- Vị trí đắc địa: Nằm trong khu vực phát triển sôi động, xung quanh có đầy đủ tiện ích như trường học quốc tế, bệnh viện đa khoa, siêu thị lớn, công viên xanh mát và các trung tâm thương mại hiện đại.\n" +
+                    "- Giao thông thuận tiện: Gần các trục đường chính và tuyến giao thông huyết mạch, dễ dàng di chuyển đến trung tâm thành phố hoặc các khu vực lân cận trong thời gian ngắn.\n" +
+                    "- Tiện ích đa dạng: Cư dân được hưởng các tiện ích cao cấp như hồ bơi, phòng gym, khu vui chơi trẻ em, không gian BBQ ngoài trời, và hệ thống an ninh 24/7 đảm bảo sự an toàn tuyệt đối.\n" +
+                    "- Hỗ trợ toàn diện: Đội ngũ tư vấn chuyên nghiệp sẵn sàng hỗ trợ từ A-Z, bao gồm xem nhà miễn phí, tư vấn pháp lý nhanh chóng, và đàm phán giá tốt nhất để bạn có được giao dịch hoàn hảo.\n" +
+                    "- Cam kết chất lượng: Chúng tôi cung cấp thông tin minh bạch, chính xác, đảm bảo mọi chi tiết về bất động sản đều được kiểm tra kỹ lưỡng trước khi giới thiệu đến bạn.\n" +
+                    "- Cơ hội không thể bỏ lỡ: Hãy liên hệ ngay hôm nay để được tư vấn chi tiết, đặt lịch xem nhà thực tế, và nhận ưu đãi đặc biệt dành riêng cho khách hàng sớm nhất!";
+            description = description + generalDescription;
             post.setTitle(title);
             post.setDescription(description);
 
@@ -634,12 +696,23 @@ public class StartupRunner implements CommandLineRunner {
             post.setVip(selectedVip);
             post.setDetailAddress(detailAddress);
 
-            // Tạo danh sách ảnh mẫu
+            // Tạo danh sách ảnh mẫu (ít nhất 4 ảnh)
             List<Image> images = new ArrayList<>();
-            int numberOfImages = random.nextInt(sampleImageUrls.size()) + 1;
+            // Chọn số lượng ảnh ngẫu nhiên từ 4 đến tối đa 8 (hoặc sampleImageUrls.size() nếu nhỏ hơn)
+            int maxImages = Math.min(sampleImageUrls.size(), 12);
+            int numberOfImages = random.nextInt(maxImages - 3) + 4; // Từ 4 đến maxImages
+            // Tạo danh sách URL đã chọn để tránh trùng lặp
+            List<String> availableImageUrls = new ArrayList<>(sampleImageUrls);
             for (int j = 0; j < numberOfImages; j++) {
                 Image image = new Image();
-                image.setUrl(sampleImageUrls.get(random.nextInt(sampleImageUrls.size())));
+                // Chọn URL ngẫu nhiên và xóa khỏi danh sách để tránh trùng
+                if (!availableImageUrls.isEmpty()) {
+                    int randomIndex = random.nextInt(availableImageUrls.size());
+                    image.setUrl(availableImageUrls.remove(randomIndex));
+                } else {
+                    // Nếu hết URL, quay lại dùng danh sách gốc (cho phép trùng nếu danh sách nhỏ)
+                    image.setUrl(sampleImageUrls.get(random.nextInt(sampleImageUrls.size())));
+                }
                 image.setOrderIndex(j);
                 image.setPost(post);
                 images.add(image);
@@ -669,7 +742,7 @@ public class StartupRunner implements CommandLineRunner {
                 TransStatusEnum.FAILED);
 
         // Tạo 200 giao dịch mẫu
-        for (int i = 1; i <= 100; i++) {
+        for (int i = 1; i <= 1000; i++) {
             Transaction transaction = new Transaction();
 
             // Gán user ngẫu nhiên
@@ -684,7 +757,7 @@ public class StartupRunner implements CommandLineRunner {
             boolean isDeposit = random.nextBoolean();
             long amount;
             String description = "";
-            String txnId = "TXN" + String.format("%06d", i) + Instant.now().toEpochMilli();
+            String txnId = ConfigVNPAY.getRandomNumber(10);
 
             if (isDeposit || userPosts.isEmpty()) { // Nếu không có Post hoặc là giao dịch nạp tiền
                 // Giao dịch nạp tiền
@@ -715,7 +788,7 @@ public class StartupRunner implements CommandLineRunner {
                 long costRange = maxCost - minCost;
                 amount = -(minCost + (long) (random.nextDouble() * costRange));
                 transaction.setStatus(TransStatusEnum.SUCCESS);
-                description = "Thanh toán phí đăng tin " + selectedPost.getId() + " thành công";
+                description = "Thanh toán phí đăng tin mã " + selectedPost.getId() + " thành công";
                 transaction.setPaymentLink(null);
                 txnId = null;
             }
@@ -724,10 +797,12 @@ public class StartupRunner implements CommandLineRunner {
             transaction.setDescription(description);
             transaction.setTxnId(txnId);
 
-            // Thời gian tạo (ngẫu nhiên trong 30 ngày qua)
-            long secondsIn30Days = 30L * 24 * 60 * 60;
-            long randomSeconds = (long) (random.nextDouble() * secondsIn30Days);
+           
+            // Thời gian tạo (ngẫu nhiên từ 1 năm trước đến hiện tại)
+            long secondsIn1Year = 365L * 24 * 60 * 60;
+            long randomSeconds = (long) (random.nextDouble() * secondsIn1Year);
             transaction.setCreatedAt(Instant.now().minusSeconds(randomSeconds));
+
 
             // Thời gian cập nhật (nếu SUCCESS hoặc FAILED thì có updatedAt)
             if (transaction.getStatus() != TransStatusEnum.PENDING) {
@@ -753,7 +828,7 @@ public class StartupRunner implements CommandLineRunner {
         List<Transaction> transactions = transactionRepository.findAll();
         List<Notification> notifications = new ArrayList<>();
 
-        for (int i = 1; i <= 100; i++) {
+        for (int i = 1; i <= 1000; i++) {
             Notification notification = new Notification();
 
             User selectedUser = users.get(random.nextInt(users.size()));
@@ -771,7 +846,7 @@ public class StartupRunner implements CommandLineRunner {
                     Post viewedPost = posts.get(random.nextInt(posts.size()));
                     User viewer = users.get(random.nextInt(users.size()));
                     message = "Người dùng '" + viewer.getName() + " - " + viewer.getPhone() +
-                            " đã xem bài đăng mã" + viewedPost.getId() + " của bạn.";
+                            " đã xem bài đăng mã " + viewedPost.getId() + " của bạn.";
                     type = NotificationType.POST;
                     notification.setUser(viewedPost.getUser());
                     break;
@@ -789,7 +864,7 @@ public class StartupRunner implements CommandLineRunner {
                     if (posts.isEmpty())
                         continue;
                     Post rejectedPost = posts.get(random.nextInt(posts.size()));
-                    message = "Bài đăng mã'" + rejectedPost.getId() + "' của bạn đã bị kiểm duyệt viên từ chối.";
+                    message = "Bài đăng mã '" + rejectedPost.getId() + "' của bạn đã bị kiểm duyệt viên từ chối.";
                     type = NotificationType.SYSTEM_ALERT;
                     notification.setUser(rejectedPost.getUser());
                     break;

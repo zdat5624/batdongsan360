@@ -65,5 +65,9 @@ public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificat
                         @Param("provinceCode") Long provinceCode,
                         @Param("districtCode") Long districtCode,
                         @Param("wardCode") Long wardCode);
+        
+        
+        @Query("SELECT COUNT(p) FROM Post p WHERE p.status IN (:status1, :status2)")
+        Long countByStatusIn(PostStatusEnum status1, PostStatusEnum status2);
 
 }

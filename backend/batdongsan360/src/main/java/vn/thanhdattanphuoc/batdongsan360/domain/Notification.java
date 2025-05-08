@@ -5,6 +5,7 @@ import java.time.Instant;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.NotificationType;
@@ -19,6 +20,8 @@ public class Notification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Column(columnDefinition = "MEDIUMTEXT")
+    @NotBlank(message = "Nội dung thông báo không được để trống")
     private String message;
 
     @Enumerated(EnumType.STRING)

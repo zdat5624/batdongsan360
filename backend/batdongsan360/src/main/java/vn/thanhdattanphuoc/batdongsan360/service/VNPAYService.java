@@ -98,7 +98,7 @@ public class VNPAYService {
         // vnp_Params.put("vnp_BankCode", bankCode);
         // }
         vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
-        vnp_Params.put("vnp_OrderInfo", "Thanh toán giao dịch nạp tiền id " + vnp_TxnRef);
+        vnp_Params.put("vnp_OrderInfo", "Thanh toan giao dich nap tien ID: " + vnp_TxnRef);
         vnp_Params.put("vnp_OrderType", orderType);
 
         // language default: vn
@@ -210,7 +210,7 @@ public class VNPAYService {
         switch (transactionStatus) {
             case "00":
                 status = TransStatusEnum.SUCCESS;
-                description = "Giao dịch nạp tiền thành công";
+                description = "Giao dịch nạp tiền qua VNPAY("+txnId+") thành công";
                 break;
             case "02":
                 status = TransStatusEnum.FAILED;
@@ -285,7 +285,7 @@ public class VNPAYService {
                 notification.setUser(transaction.getUser());
                 notification.setRead(false);
                 notification.setType(NotificationType.TRANSACTION);
-                notification.setMessage(description + ", tài khoản của bạn cộng " + transaction.getAmount() + "VNĐ");
+                notification.setMessage(description + ", tài khoản của bạn cộng " + transaction.getAmount() + " VNĐ");
                 this.notificationService.createNotification(notification);
                 // send mail
                 String transactionTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
@@ -293,6 +293,15 @@ public class VNPAYService {
                         transactionTime);
                 return 1;
             } else {
+            	Notification notification = new Notification();
+                notification.setUser(transaction.getUser());
+                notification.setRead(false);
+                notification.setType(NotificationType.TRANSACTION);
+                notification.setMessage("Giao dịch nạp tiền qua VNPAY("+txnId+") của bạn không thể hoàn tất: " + description + ". Vui lòng kiểm tra lại hoặc liên hệ hỗ trợ.");
+                if (transactionStatus.equals("02")) {
+                	notification.setMessage("Giao dịch nạp tiền qua VNPAY("+txnId+") của bạn được bị hủy. Vui lòng thử lại hoặc liên hệ hỗ trợ nếu cần.");
+                }
+                this.notificationService.createNotification(notification);
                 return 0;
             }
 

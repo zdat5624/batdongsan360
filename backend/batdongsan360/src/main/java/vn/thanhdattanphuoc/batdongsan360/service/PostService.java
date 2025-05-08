@@ -34,7 +34,10 @@ import vn.thanhdattanphuoc.batdongsan360.util.constant.PostStatusEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.PostTypeEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.RoleEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.TransStatusEnum;
+import vn.thanhdattanphuoc.batdongsan360.util.error.ForbiddenException;
 import vn.thanhdattanphuoc.batdongsan360.util.error.InputInvalidException;
+import vn.thanhdattanphuoc.batdongsan360.util.error.NotFoundException;
+import vn.thanhdattanphuoc.batdongsan360.util.request.UpdatePostDTO;
 import vn.thanhdattanphuoc.batdongsan360.util.response.MapPostDTO;
 
 import java.time.Instant;
@@ -180,7 +183,7 @@ public class PostService {
         // Luu transaction
         Transaction transaction = new Transaction();
         transaction.setAmount(-totalCost);
-        transaction.setDescription("Thanh toán phí đăng tin " + post.getId() + " thành công");
+        transaction.setDescription("Thanh toán phí đăng tin mã " + post.getId() + " thành công");
         transaction.setStatus(TransStatusEnum.SUCCESS);
         transaction.setUser(user);
         this.transactionRepository.save(transaction);
@@ -238,87 +241,106 @@ public class PostService {
         Notification notification = new Notification();
         notification.setUser(post.getUser());
         notification.setRead(false);
-        notification.setMessage("Bài đăng " + post.getId() + "của bạn đã bị quản trị viên xóa vĩnh viễn");
+        notification.setMessage("Bài đăng mã " + post.getId() + " của bạn đã bị quản trị viên xóa vĩnh viễn");
         notification.setType(NotificationType.POST);
         this.notificationService.createNotification(notification);
 
         this.postRepository.delete(post);
     }
 
-    public Post updatePost(Post updatedPost) throws InputInvalidException {
-        if (updatedPost.getId() == 0) {
+    public Post updatePost(UpdatePostDTO updatePostDTO) throws InputInvalidException {
+        if (updatePostDTO.getId() == null || updatePostDTO.getId() == 0) {
             throw new InputInvalidException("ID của bài đăng không được để trống");
         }
 
-        Post existingPost = postRepository.findById(updatedPost.getId())
+        Post existingPost = postRepository.findById(updatePostDTO.getId())
                 .orElseThrow(() -> new InputInvalidException("Không tìm thấy bài đăng"));
 
-        // Cập nhật các thông tin cơ bản
-        if (updatedPost.getTitle() != null) {
-            existingPost.setTitle(updatedPost.getTitle());
-        }
-        if (updatedPost.getDescription() != null) {
-            existingPost.setDescription(updatedPost.getDescription());
-        }
-        if (updatedPost.getPrice() > 0) {
-            existingPost.setPrice(updatedPost.getPrice());
-        }
-        if (updatedPost.getArea() > 0) {
-            existingPost.setArea(updatedPost.getArea());
-        }
-        if (updatedPost.getDetailAddress() != null) {
-            existingPost.setDetailAddress(updatedPost.getDetailAddress());
+        // Kiểm tra quyền chỉnh sửa
+        String userEmail = SecurityUtil.getCurrentUserLogin()
+                .orElseThrow(() -> new InputInvalidException("Chưa đăng nhập"));
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new InputInvalidException("Không tìm thấy người dùng"));
+        if (!existingPost.getUser().getEmail().equals(userEmail) && !user.getRole().equals(RoleEnum.ADMIN)) {
+            throw new InputInvalidException("Bạn không có quyền chỉnh sửa bài đăng này");
         }
 
-        // Cập nhật danh mục
-        if (updatedPost.getCategory() != null && updatedPost.getCategory().getId() > 0) {
-            Category category = categoryRepository.findById(updatedPost.getCategory().getId())
-                    .orElseThrow(() -> new InputInvalidException("Không tìm thấy danh mục"));
-            existingPost.setCategory(category);
+        // Kiểm tra trạng thái bài đăng và cập nhật trạng thái mới
+        if (existingPost.getStatus() == PostStatusEnum.EXPIRED) {
+            throw new InputInvalidException("Không thể cập nhật bài đăng đã hết hạn");
+        } else if (existingPost.getStatus() == PostStatusEnum.REJECTED) {
+            existingPost.setStatus(PostStatusEnum.PENDING);
+        } else if (existingPost.getStatus() == PostStatusEnum.APPROVED) {
+            if (existingPost.getVip() != null && existingPost.getVip().getVipLevel() > 0) {
+                existingPost.setStatus(PostStatusEnum.REVIEW_LATER);
+            } else {
+                existingPost.setStatus(PostStatusEnum.PENDING);
+            }
         }
 
-        // Cập nhật địa chỉ
-        if (updatedPost.getProvince() != null) {
-            Province province = provinceRepository.findById(updatedPost.getProvince().getCode())
+        // Cập nhật các trường được phép
+        if (updatePostDTO.getTitle() != null) {
+            existingPost.setTitle(updatePostDTO.getTitle());
+        }
+        if (updatePostDTO.getDescription() != null) {
+            existingPost.setDescription(updatePostDTO.getDescription());
+        }
+        if (updatePostDTO.getType() != null) {
+            existingPost.setType(updatePostDTO.getType());
+            // Kiểm tra type có khớp với danh mục
+            if (updatePostDTO.getCategory() != null && updatePostDTO.getCategory().getId() > 0) {
+                Category category = categoryRepository.findById(updatePostDTO.getCategory().getId())
+                        .orElseThrow(() -> new InputInvalidException("Không tìm thấy danh mục"));
+                if (updatePostDTO.getType() != category.getType()) {
+                    throw new InputInvalidException("Kiểu của bài đăng và kiểu của danh mục không khớp");
+                }
+            }
+        }
+        if (updatePostDTO.getPrice() != null) {
+            existingPost.setPrice(updatePostDTO.getPrice());
+        }
+        if (updatePostDTO.getArea() != null) {
+            existingPost.setArea(updatePostDTO.getArea());
+        }
+        if (updatePostDTO.getProvince() != null) {
+            Province province = provinceRepository.findById(updatePostDTO.getProvince().getCode())
                     .orElseThrow(() -> new InputInvalidException("Không tìm thấy tỉnh/thành phố"));
             existingPost.setProvince(province);
         }
-        if (updatedPost.getDistrict() != null) {
-            District district = districtRepository.findById(updatedPost.getDistrict().getCode())
+        if (updatePostDTO.getDistrict() != null) {
+            District district = districtRepository.findById(updatePostDTO.getDistrict().getCode())
                     .orElseThrow(() -> new InputInvalidException("Không tìm thấy quận/huyện"));
-            if (updatedPost.getProvince() != null
-                    && !(district.getProvince().getCode() == existingPost.getProvince().getCode())) {
+            if (updatePostDTO.getProvince() != null &&
+                    !(district.getProvince().getCode() == updatePostDTO.getProvince().getCode())) {
                 throw new InputInvalidException("Quận/huyện không thuộc tỉnh/thành phố đã chọn");
             }
             existingPost.setDistrict(district);
         }
-        if (updatedPost.getWard() != null) {
-            Ward ward = wardRepository.findById(updatedPost.getWard().getCode())
+        if (updatePostDTO.getWard() != null) {
+            Ward ward = wardRepository.findById(updatePostDTO.getWard().getCode())
                     .orElseThrow(() -> new InputInvalidException("Không tìm thấy phường/xã"));
-            if (updatedPost.getDistrict() != null
-                    && !(ward.getDistrict().getCode() == existingPost.getDistrict().getCode())) {
+            if (updatePostDTO.getDistrict() != null &&
+                    !(ward.getDistrict().getCode() == updatePostDTO.getDistrict().getCode())) {
                 throw new InputInvalidException("Phường/xã không thuộc quận/huyện đã chọn");
             }
             existingPost.setWard(ward);
         }
-
-        // Cập nhật VIP
-        if (updatedPost.getVip() != null && updatedPost.getVip().getId() > 0) {
-            Vip vip = vipRepository.findById(updatedPost.getVip().getId())
-                    .orElseThrow(() -> new InputInvalidException("Không tìm thấy VIP"));
-            existingPost.setVip(vip);
+        if (updatePostDTO.getDetailAddress() != null) {
+            existingPost.setDetailAddress(updatePostDTO.getDetailAddress());
         }
-
-        if (existingPost.getVip() != null && existingPost.getVip().getVipLevel() > 0) {
-            existingPost.setNotifyOnView(updatedPost.isNotifyOnView());
+        if (updatePostDTO.getCategory() != null && updatePostDTO.getCategory().getId() > 0) {
+            Category category = categoryRepository.findById(updatePostDTO.getCategory().getId())
+                    .orElseThrow(() -> new InputInvalidException("Không tìm thấy danh mục"));
+            if (existingPost.getType() != category.getType()) {
+                throw new InputInvalidException("Kiểu của bài đăng và kiểu của danh mục không khớp");
+            }
+            existingPost.setCategory(category);
         }
-
-        if (updatedPost.getImages() != null && !updatedPost.getImages().isEmpty()) {
+        if (updatePostDTO.getImages() != null && !updatePostDTO.getImages().isEmpty()) {
             existingPost.getImages().clear();
-
             List<Image> newImages = new ArrayList<>();
             int orderIndex = 0;
-            for (Image img : updatedPost.getImages()) {
+            for (Image img : updatePostDTO.getImages()) {
                 img.setPost(existingPost);
                 img.setOrderIndex(orderIndex++);
                 newImages.add(img);
@@ -326,12 +348,31 @@ public class PostService {
             imageRepository.saveAll(newImages);
             existingPost.getImages().addAll(newImages);
         }
+        if (updatePostDTO.getLatitude() != null && updatePostDTO.getLongitude() != null) {
+            existingPost.setLatitude(updatePostDTO.getLatitude());
+            existingPost.setLongitude(updatePostDTO.getLongitude());
+        } else if (updatePostDTO.getDetailAddress() != null || updatePostDTO.getWard() != null ||
+                updatePostDTO.getDistrict() != null || updatePostDTO.getProvince() != null) {
+            // Cập nhật tọa độ từ địa chỉ mới nếu không có latitude/longitude
+            String fullAddress = (updatePostDTO.getDetailAddress() != null ? updatePostDTO.getDetailAddress() : existingPost.getDetailAddress()) + ", "
+                    + (updatePostDTO.getWard() != null ? updatePostDTO.getWard().getName() :
+                    (existingPost.getWard() != null ? existingPost.getWard().getName() : "")) + ", "
+                    + (updatePostDTO.getDistrict() != null ? updatePostDTO.getDistrict().getName() :
+                    (existingPost.getDistrict() != null ? existingPost.getDistrict().getName() : "")) + ", "
+                    + (updatePostDTO.getProvince() != null ? updatePostDTO.getProvince().getName() :
+                    (existingPost.getProvince() != null ? existingPost.getProvince().getName() : ""));
+            Optional<double[]> latLng = mapboxGeocodeService.getLatLngFromAddress(fullAddress);
+            if (latLng.isPresent()) {
+                double[] coords = latLng.get();
+                existingPost.setLongitude(coords[0]);
+                existingPost.setLatitude(coords[1]);
+            }
+        }
 
-        // Cập nhật ngày chỉnh sửa
         existingPost.setUpdatedAt(Instant.now());
         return postRepository.save(existingPost);
     }
-
+    
     public Post updatePostStatus(Long postId, PostStatusEnum newStatus, String message) throws InputInvalidException {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new InputInvalidException("Không tìm thấy bài đăng"));
@@ -358,62 +399,66 @@ public class PostService {
         return post;
     }
 
-    public Post getPostById(Long id) throws InputInvalidException {
+   public Post getPostById(Long id) throws InputInvalidException {
+        // Tìm bài đăng
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy bài đăng với ID: " + id));
 
-        Post post = postRepository.findById(id).orElseThrow(
-                () -> new InputInvalidException("Có lỗi xảy ra: không tìm thấy bài đăng id: " + id + ", ..."));
+        // Lấy thông tin người dùng hiện tại
+        String userEmail = SecurityUtil.getCurrentUserLogin()
+                .orElse(null); // Có thể null nếu chưa đăng nhập
+        User currentUser = userEmail != null ? userRepository.findByEmail(userEmail).orElse(null) : null;
 
-        if (post.isNotifyOnView() && SecurityUtil.getCurrentUserLogin().isPresent()) {
+        // Kiểm tra quyền truy cập
+        boolean isAdmin = currentUser != null && currentUser.getRole().equals(RoleEnum.ADMIN);
+        boolean isOwner = currentUser != null && post.getUser().getEmail().equals(userEmail);
 
-            String userEmail = SecurityUtil.getCurrentUserLogin().get();
-            if (userRepository.findByEmail(userEmail).isPresent()) {
-
-                User user = userRepository.findByEmail(userEmail).get();
-                if (user.getId() != post.getUser().getId() && !user.getRole().equals(RoleEnum.ADMIN)) {
-                    Notification notification = new Notification();
-                    if (user.getGender().equals(GenderEnum.FEMALE) || user.getGender().equals(GenderEnum.MALE)
-                            || user.getGender().equals(GenderEnum.OTHER)) {
-
-                        notification.setMessage("Người dùng '" + user.getName() + " - "
-                                + user.getPhone() + "' đã xem bài đăng mã" + post.getId()
-                                + " của bạn.");
-                    } else {
-                        notification.setMessage("Người dùng '" + user.getName() + " - "
-                                + user.getPhone() + "' đã xem bài đăng mã" + post.getId()
-                                + " của bạn.");
-                    }
-
-                    if (!this.notificationService.existsByMessage(notification.getMessage())) {
-                        notification.setUser(post.getUser());
-                        notification.setRead(false);
-                        notification.setType(NotificationType.POST);
-                        this.notificationService.createNotification(notification);
-                    }
-
-                }
-
-            }
-
+        // Trường hợp bài đăng bị xóa mềm (deletedByUser = true): chỉ admin được truy cập
+        if (post.isDeletedByUser() && !isAdmin) {
+            throw new ForbiddenException("Bạn không có quyền truy cập bài đăng này");
         }
 
+        // Trường hợp trạng thái EXPIRED, REJECTED, PENDING: chỉ chủ sở hữu hoặc admin được truy cập
+        if (post.getStatus().equals(PostStatusEnum.EXPIRED) ||
+            post.getStatus().equals(PostStatusEnum.REJECTED) ||
+            post.getStatus().equals(PostStatusEnum.PENDING)) {
+            if (!isOwner && !isAdmin) {
+                throw new ForbiddenException("Bạn không có quyền truy cập bài đăng này");
+            }
+        }
+
+        // Xử lý thông báo khi notifyOnView = true
+        if (post.isNotifyOnView() && currentUser != null && !isOwner && !isAdmin) {
+            Notification notification = new Notification();
+            String message = "Người dùng '" + currentUser.getName() + " - " + currentUser.getPhone() +
+                            "' đã xem bài đăng mã " + post.getId() + " của bạn.";
+            notification.setMessage(message);
+            notification.setUser(post.getUser());
+            notification.setRead(false);
+            notification.setType(NotificationType.POST);
+
+            // Kiểm tra thông báo trùng lặp
+            if (!notificationService.existsByMessage(message)) {
+                notificationService.createNotification(notification);
+            }
+        }
+
+        // Tăng số lượt xem
         post.setView(post.getView() + 1);
-        this.postRepository.save(post);
+        postRepository.save(post);
 
         return post;
     }
 
-    public Page<Post> getFilteredPosts(Long minPrice, Long maxPrice, Double minArea, Double maxArea,
-            PostStatusEnum status, Long provinceCode, Long districtCode, Long wardCode,
-            Long categoryId, PostTypeEnum type, Long vipId, Long userId, Boolean isDeleteByUser, int page, int size) {
+   public Page<Post> getFilteredPosts(Long minPrice, Long maxPrice, Double minArea, Double maxArea,
+           PostStatusEnum status, Long categoryId, PostTypeEnum type, Long vipId, 
+           String email, Boolean isDeleteByUser, Pageable pageable) {
 
-        Specification<Post> spec = PostSpecification.filterBy(minPrice, maxPrice, minArea, maxArea, status,
-                provinceCode, districtCode, wardCode, categoryId, type, vipId, userId, isDeleteByUser);
+       Specification<Post> spec = PostSpecification.filterBy(minPrice, maxPrice, minArea, maxArea, status,
+               categoryId, type, vipId, email, isDeleteByUser);
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(
-                Sort.Order.desc("vip.vipLevel"),
-                Sort.Order.desc("createdAt")));
-        return postRepository.findAll(spec, pageable);
-    }
+       return postRepository.findAll(spec, pageable);
+   }
 
     public Page<Post> getFilteredReviewOrApprovedPosts(
             Long minPrice, Long maxPrice, Double minArea, Double maxArea,

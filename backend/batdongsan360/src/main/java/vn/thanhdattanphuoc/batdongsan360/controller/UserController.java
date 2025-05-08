@@ -3,6 +3,7 @@ package vn.thanhdattanphuoc.batdongsan360.controller;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,11 +12,16 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import vn.thanhdattanphuoc.batdongsan360.domain.User;
 import vn.thanhdattanphuoc.batdongsan360.service.UserService;
+import vn.thanhdattanphuoc.batdongsan360.util.SecurityUtil;
+import vn.thanhdattanphuoc.batdongsan360.util.constant.GenderEnum;
+import vn.thanhdattanphuoc.batdongsan360.util.constant.RoleEnum;
+import vn.thanhdattanphuoc.batdongsan360.util.error.ForbiddenException;
 import vn.thanhdattanphuoc.batdongsan360.util.error.InputInvalidException;
 import vn.thanhdattanphuoc.batdongsan360.util.request.CreateUserDTO;
 import vn.thanhdattanphuoc.batdongsan360.util.request.UpdateProfileDTO;
@@ -66,13 +72,22 @@ public class UserController {
     }
 
     @GetMapping("/api/users/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable("id") long id) throws InputInvalidException {
+    public ResponseEntity<User> getUserById(@PathVariable("id") long id) {
+        String currentUserEmail = SecurityUtil.getCurrentUserLogin()
+                .orElseThrow(() -> new ForbiddenException("Không tìm thấy thông tin người dùng đang đăng nhập."));
+        User currentUser = userService.handleGetUserByUserName(currentUserEmail);
+        if (currentUser == null) {
+            throw new ForbiddenException("Người dùng đăng nhập không tồn tại.");
+        }
+
+        boolean isAdmin = currentUser.getRole().equals(RoleEnum.ADMIN);
+        boolean isOwner = currentUser.getId() == id;
+
+        if (!isAdmin && !isOwner) {
+        	throw new ForbiddenException("Bạn không có quyền truy cập thông tin người dùng này");
+        }
 
         User fetchUser = this.userService.fetchUserById(id);
-
-        if (fetchUser == null)
-            throw new InputInvalidException("Id không hợp lệ: không tìm thấy user id " + id + ", ...");
-
         return ResponseEntity.status(HttpStatus.OK).body(fetchUser);
     }
 
@@ -90,19 +105,43 @@ public class UserController {
 
     @PutMapping("/api/users/update-profile")
     public ResponseEntity<ResUpdateUserDTO> updateProfile(@Valid @RequestBody UpdateProfileDTO userUpdateDTO)
-            throws InputInvalidException {
+            throws InputInvalidException, AccessDeniedException {
 
-        User newUser = this.userService.handleUpdateProfile(userUpdateDTO);
-        if (newUser == null) {
+        // Get the authenticated user's email from the security context
+        String currentUserEmail = SecurityUtil.getCurrentUserLogin()
+                .orElseThrow(() -> new AccessDeniedException("Không tìm thấy thông tin người dùng hiện tại."));
+
+        // Fetch the authenticated user by email
+        User currentUser = userService.handleGetUserByUserName(currentUserEmail);
+        if (currentUser == null) {
+            throw new AccessDeniedException("Người dùng hiện tại không tồn tại.");
+        }
+
+        // Check if the authenticated user is the owner of the profile
+        if (currentUser.getId() != userUpdateDTO.getId()) {
+            throw new AccessDeniedException("Bạn không có quyền cập nhật hồ sơ của người dùng khác.");
+        }
+
+        // Proceed with updating the profile
+        User updatedUser = this.userService.handleUpdateProfile(userUpdateDTO);
+        if (updatedUser == null) {
             throw new InputInvalidException(
                     "User id " + userUpdateDTO.getId() + " không tồn tại.");
         }
-        return ResponseEntity.status(HttpStatus.OK).body(new ResUpdateUserDTO(newUser));
+
+        return ResponseEntity.status(HttpStatus.OK).body(new ResUpdateUserDTO(updatedUser));
     }
 
     @GetMapping("/api/admin/users")
-    public ResponseEntity<Page<UserDTO>> getUsers(@ModelAttribute UserFilterRequest filter) {
-        Page<UserDTO> users = userService.getUsers(filter);
+    public ResponseEntity<Page<UserDTO>> getUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) RoleEnum role,
+            @RequestParam(required = false) GenderEnum gender,
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "ASC") String sortDirection) {
+        Page<UserDTO> users = userService.getUsers(page, size, role, gender, search, sortBy, sortDirection);
         return ResponseEntity.ok(users);
     }
 }

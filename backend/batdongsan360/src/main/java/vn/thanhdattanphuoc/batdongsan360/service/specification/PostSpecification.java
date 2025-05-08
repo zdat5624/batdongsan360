@@ -14,10 +14,11 @@ import vn.thanhdattanphuoc.batdongsan360.util.constant.PostStatusEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.PostTypeEnum;
 
 public class PostSpecification {
-    public static Specification<Post> filterBy(
+ 
+	public static Specification<Post> filterBy(
             Long minPrice, Long maxPrice, Double minArea, Double maxArea,
-            PostStatusEnum status, Long provinceCode, Long districtCode, Long wardCode,
-            Long categoryId, PostTypeEnum type, Long vipId, Long userId, Boolean deletedByUser) {
+            PostStatusEnum status, Long categoryId, PostTypeEnum type, 
+            Long vipId,  String email, Boolean deletedByUser) {
         return (root, query, criteriaBuilder) -> {
             Predicate predicate = criteriaBuilder.conjunction();
 
@@ -38,46 +39,35 @@ public class PostSpecification {
                         criteriaBuilder.lessThanOrEqualTo(root.get("area"), maxArea));
             }
             if (status != null) {
-                predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("status"), status));
-            }
-            if (provinceCode != null) {
-                Join<Post, Province> provinceJoin = root.join("province");
-                predicate = criteriaBuilder.and(predicate,
-                        criteriaBuilder.equal(provinceJoin.get("code"), provinceCode));
-            }
-            if (districtCode != null) {
-                Join<Post, District> districtJoin = root.join("district");
-                predicate = criteriaBuilder.and(predicate,
-                        criteriaBuilder.equal(districtJoin.get("code"), districtCode));
-            }
-            if (wardCode != null) {
-                Join<Post, Ward> wardJoin = root.join("ward");
-                predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(wardJoin.get("code"), wardCode));
+                predicate = criteriaBuilder.and(predicate, 
+                        criteriaBuilder.equal(root.get("status"), status));
             }
             if (categoryId != null) {
                 predicate = criteriaBuilder.and(predicate,
                         criteriaBuilder.equal(root.get("category").get("id"), categoryId));
             }
             if (type != null) {
-                predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("type"), type));
+                predicate = criteriaBuilder.and(predicate, 
+                        criteriaBuilder.equal(root.get("type"), type));
             }
             if (vipId != null) {
                 Join<Post, Vip> vipJoin = root.join("vip");
-                predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(vipJoin.get("id"), vipId));
+                predicate = criteriaBuilder.and(predicate, 
+                        criteriaBuilder.equal(vipJoin.get("id"), vipId));
             }
             if (deletedByUser != null) {
                 predicate = criteriaBuilder.and(predicate,
                         criteriaBuilder.equal(root.get("deletedByUser"), deletedByUser));
             }
-
-            if (userId != null) {
+            if (email != null && !email.trim().isEmpty()) {
                 Join<Post, User> userJoin = root.join("user");
-                predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(userJoin.get("id"), userId));
+                predicate = criteriaBuilder.and(predicate, 
+                        criteriaBuilder.equal(userJoin.get("email"), email));
             }
             return predicate;
         };
     }
-
+	
     public static Specification<Post> filterBy(
             Long minPrice, Long maxPrice, Double minArea, Double maxArea,
             Long provinceCode, Long districtCode, Long wardCode,
