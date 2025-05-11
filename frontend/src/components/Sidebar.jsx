@@ -1,72 +1,127 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable react/prop-types */
-import React from "react";
-import { NavLink } from "react-router-dom";
-import { Nav } from "react-bootstrap";
+import { Layout, Menu, Avatar, Typography, Space } from 'antd';
+import {
+    PlusCircleOutlined,
+    FileTextOutlined,
+    BellOutlined,
+    UserOutlined,
+    CreditCardOutlined,
+    LockOutlined,
+    LeftOutlined,
+    RightOutlined,
+    StarOutlined,
+} from '@ant-design/icons';
+import { Link, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
-const Sidebar = ({ user, handleLogout, isSidebarOpen, toggleSidebar }) => {
-  const sidebarStyles = `
-    .sidebar {
-      width: 250px !important;
-      background-color: #f8f9fa !important;
-      padding-top: 90px !important;
-      border-right: 1px solid #dee2e6 !important;
-      max-height: calc(100vh - 40px) !important;
-      overflow-y: auto !important;
-      position: sticky !important;
-      top: 0 !important;
-      z-index: 100 !important;
-      transition: transform 0.3s ease-in-out !important;
-    }
-    .sidebar .nav-link {
-      padding: 15px 20px !important;
-      color: #333 !important;
-      font-weight: 500 !important;
-      display: flex !important;
-      align-items: center !important;
-    }
-    .sidebar .nav-link:hover {
-      background-color: #e9ecef !important;
-    }
-    .sidebar .nav-link.active {
-      background-color: #007bff !important;
-      color: white !important;
-    }
-    @media (max-width: 768px) {
-      .sidebar {
-        position: fixed !important;
-        top: 60px !important; /* Dưới header */
-        left: 0 !important;
-        width: 250px !important;
-        height: calc(100vh - 60px) !important;
-        transform: translateX(-100%) !important; /* Ẩn sidebar mặc định */
-        z-index: 1000 !important;
-      }
-      .sidebar.open {
-        transform: translateX(0) !important; /* Hiển thị khi toggle */
-      }
-    }
-  `;
+const { Sider } = Layout;
+const { Text } = Typography;
 
-  return (
-    <>
-      <style>{sidebarStyles}</style>
-      <Nav className={`sidebar flex-column ${isSidebarOpen ? "open" : ""}`}>
-        <Nav.Link as={NavLink} to="/profile">
-          <i className="fas fa-user me-2"></i> Thông tin cá nhân
-        </Nav.Link>
-        <Nav.Link as={NavLink} to="/payment">
-          <i className="fas fa-credit-card me-2"></i> Thanh toán
-        </Nav.Link>
-        <Nav.Link as={NavLink} to="/post-history">
-          <i className="fas fa-history me-2"></i> Lịch sử đăng tin
-        </Nav.Link>
-        <Nav.Link as={NavLink} to="/notifications">
-          <i className="fas fa-bell me-2"></i> Xem thông báo
-        </Nav.Link>
-      </Nav>
-    </>
-  );
+const menuItems = [
+    {
+        key: 'create-post',
+        icon: <PlusCircleOutlined />,
+        label: <Link to="/create-post">Đăng tin</Link>,
+    },
+    {
+        key: 'posts',
+        icon: <FileTextOutlined />,
+        label: <Link to="/posts">Quản lý tin đăng</Link>,
+    },
+    {
+        key: 'notifications',
+        icon: <BellOutlined />,
+        label: <Link to="/notifications">Thông báo</Link>,
+    },
+    {
+        key: 'payments',
+        icon: <CreditCardOutlined />,
+        label: <Link to="/payments">Thanh toán</Link>,
+    },
+    {
+        key: 'vips',
+        icon: <StarOutlined />,
+        label: <Link to="/vips">Gói VIP</Link>,
+    },
+    {
+        key: 'profile',
+        icon: <UserOutlined />,
+        label: <Link to="/profile">Thông tin cá nhân</Link>,
+    },
+
+    {
+        key: 'change-password',
+        icon: <LockOutlined />,
+        label: <Link to="/change-password">Đổi mật khẩu</Link>,
+    },
+];
+
+const Sidebar = () => {
+    const [collapsed, setCollapsed] = useState(window.innerWidth < 768);
+    const location = useLocation();
+    const { user } = useAuth();
+
+    useEffect(() => {
+        const handleResize = () => {
+            setCollapsed(window.innerWidth < 768);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    const getSelectedKey = (path) => {
+        if (path.startsWith('/create-post')) return 'create-post';
+        if (path.startsWith('/posts')) return 'posts';
+        if (path.startsWith('/notifications')) return 'notifications';
+        if (path.startsWith('/profile')) return 'profile';
+        if (path.startsWith('/payments')) return 'payments';
+        if (path.startsWith('/change-password')) return 'change-password';
+        return '';
+    };
+
+    const UPLOADS_URL = import.meta.env.VITE_UPLOADS_URL;
+    const avatarUrl = user?.avatar ? `${UPLOADS_URL}/${user.avatar}` : null;
+
+    return (
+        <Sider
+            collapsible
+            collapsed={collapsed}
+            onCollapse={(value) => setCollapsed(value)}
+            width={200}
+            collapsedWidth={80}
+            theme="light"
+            trigger={
+                <div style={{ textAlign: 'center', padding: 4 }}>
+                    {collapsed ? <RightOutlined /> : <LeftOutlined />}
+                </div>
+            }
+        >
+            {/* Phần hiển thị tên và avatar của user */}
+            <div style={{ padding: collapsed ? '16px 8px' : '16px', textAlign: 'center' }}>
+                <Space direction="vertical" align="center">
+                    <Avatar
+                        size={collapsed ? 40 : 64}
+                        src={avatarUrl}
+                        icon={<UserOutlined />}
+                        style={{ marginBottom: 8 }}
+                    />
+                    {!collapsed && (
+                        <Text strong style={{ fontSize: 16 }}>
+                            {user?.name || 'User'}
+                        </Text>
+                    )}
+                </Space>
+            </div>
+
+            <Menu
+                mode="inline"
+                theme="light"
+                items={menuItems}
+                defaultSelectedKeys={['create-post']}
+                selectedKeys={[getSelectedKey(location.pathname)]}
+            />
+        </Sider>
+    );
 };
 
 export default Sidebar;

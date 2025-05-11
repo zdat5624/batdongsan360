@@ -47,7 +47,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         }
         res.setError(errorMessage);
 
-        res.setMessage("Token không hợp lệ !");
+        res.setMessage("Token không hợp lệ!");
 
         mapper.writeValue(response.getWriter(), res);
     }

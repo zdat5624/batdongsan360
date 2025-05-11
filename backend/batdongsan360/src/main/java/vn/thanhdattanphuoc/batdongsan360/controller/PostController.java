@@ -23,6 +23,7 @@ import vn.thanhdattanphuoc.batdongsan360.service.PostService;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.PostStatusEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.constant.PostTypeEnum;
 import vn.thanhdattanphuoc.batdongsan360.util.error.InputInvalidException;
+import vn.thanhdattanphuoc.batdongsan360.util.error.NotFoundException;
 import vn.thanhdattanphuoc.batdongsan360.util.request.PostRequestDTO;
 import vn.thanhdattanphuoc.batdongsan360.util.request.UpdatePostDTO;
 import vn.thanhdattanphuoc.batdongsan360.util.request.UpdatePostStatusDTO;
@@ -59,7 +60,11 @@ public class PostController {
     @PutMapping("/api/admin/posts/status")
     public ResponseEntity<Post> updatePostStatus(
             @Valid @RequestBody UpdatePostStatusDTO dto) throws InputInvalidException {
-        Post updatedPost = postService.updatePostStatus(dto.getPostId(), dto.getStatus(), dto.getMessage());
+        Post updatedPost = postService.updatePostStatus(
+                dto.getPostId(), 
+                dto.getStatus(), 
+                dto.getMessage(), 
+                dto.isSendNotification());
         return ResponseEntity.ok(updatedPost);
     }
 
@@ -70,7 +75,7 @@ public class PostController {
     }
 
     @GetMapping("/api/posts/{id}")
-    public ResponseEntity<Post> getPostById(@PathVariable Long id) throws InputInvalidException {
+    public ResponseEntity<Post> getPostById(@PathVariable Long id) throws InputInvalidException{
         Post post = postService.getPostById(id);
         return ResponseEntity.status(HttpStatus.OK).body(post);
     }
@@ -85,11 +90,11 @@ public class PostController {
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) PostTypeEnum type,
             @RequestParam(required = false) Long vipId,
-            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String search,
             @RequestParam(required = false) Boolean isDeleteByUser,
             Pageable pageable) {
         return postService.getFilteredPosts(minPrice, maxPrice, minArea, maxArea, status, 
-                categoryId, type, vipId, email, isDeleteByUser, pageable);
+                categoryId, type, vipId, search, isDeleteByUser, pageable);
     }
 
     @GetMapping("/api/posts")
@@ -116,9 +121,10 @@ public class PostController {
             @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
             @RequestParam(required = false) PostStatusEnum status,
             @RequestParam(required = false) PostTypeEnum type,
-            @RequestParam(required = false) Long provinceCode) throws InputInvalidException {
+            @RequestParam(required = false) Long provinceCode,
+            @RequestParam(required = false) Long postId) throws InputInvalidException {
 
-        Page<Post> posts = postService.getMyPosts(pageable, status, type, provinceCode);
+        Page<Post> posts = postService.getMyPosts(pageable, status, type, provinceCode, postId);
         return ResponseEntity.ok(posts);
     }
 

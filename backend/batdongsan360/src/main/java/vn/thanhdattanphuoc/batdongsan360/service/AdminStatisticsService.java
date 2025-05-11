@@ -40,7 +40,8 @@ public class AdminStatisticsService {
                 targetYear, TransStatusEnum.SUCCESS);
         dto.setTotalRevenueYear(totalRevenueYear != null ? totalRevenueYear : 0L);
 
-        // 2. Doanh thu tháng: Tổng amount của các giao dịch SUCCESS trong tháng hiện tại
+        // 2. Doanh thu tháng: Tổng amount của các giao dịch SUCCESS trong tháng hiện
+        // tại
         Long totalRevenueMonth = transactionRepository.sumAmountByYearMonthAndStatus(
                 targetYear, targetMonth, TransStatusEnum.SUCCESS);
         dto.setTotalRevenueMonth(totalRevenueMonth != null ? totalRevenueMonth : 0L);
@@ -49,14 +50,14 @@ public class AdminStatisticsService {
         Long totalUsers = userRepository.count();
         dto.setTotalUsers(totalUsers);
 
-        // 4. Số bài đăng chờ duyệt (PENDING hoặc REVIEW_LATER)
+        // 4. Số tin đăng chờ duyệt (PENDING hoặc REVIEW_LATER)
         Long pendingPosts = postRepository.countByStatusIn(
                 PostStatusEnum.PENDING, PostStatusEnum.REVIEW_LATER);
         dto.setPendingPosts(pendingPosts);
 
         return dto;
     }
-    
+
     public List<MonthlyRevenueDTO> getMonthlyRevenue(Integer year) {
         List<MonthlyRevenueDTO> monthlyRevenues = new ArrayList<>();
 

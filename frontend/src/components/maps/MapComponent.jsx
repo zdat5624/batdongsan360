@@ -11,9 +11,13 @@ import axios from 'axios';
 import { formatPrice } from './utils';
 
 const MapComponent = ({ filters }) => {
+
     const [posts, setPosts] = useState([]);
     const [selectedMarker, setSelectedMarker] = useState(null);
     const mapRef = useRef(null);
+
+    const isSellPage = window.location.pathname.includes("/sell");
+    const typeDefault = isSellPage ? 'SALE' : 'RENT';
 
     const fetchPostsForMap = async () => {
         try {
@@ -23,7 +27,7 @@ const MapComponent = ({ filters }) => {
                 minArea: filters.minArea || 0,
                 maxArea: filters.maxArea || 1000000000,
                 categoryId: filters.categoryId || null,
-                type: filters.type || 'SALE',
+                type: filters.type || typeDefault,
                 provinceCode: filters.provinceCode || null,
                 districtCode: filters.districtCode || null,
                 wardCode: filters.wardCode || null,

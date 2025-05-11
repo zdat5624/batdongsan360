@@ -1,271 +1,295 @@
-/* eslint-disable react/prop-types */
-/* eslint-disable no-unused-vars */
-import React, { useState, useEffect } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { Layout, Menu, Dropdown, Avatar, Button, Drawer, Modal } from 'antd';
 import {
-  Navbar,
-  Nav,
-  Container,
-  Button,
-  Dropdown,
-  Image,
-  Badge,
-} from "react-bootstrap";
-import { FaBell } from "react-icons/fa";
-import logo from "../assets/img/logo.png";
-import LoginForm from "./LoginForm";
-import RegisterForm from "./RegisterForm";
-import apiServices from "../services/apiServices";
-import "../assets/styles/Header.css";
+    UserOutlined,
+    MenuOutlined,
+    ExclamationCircleOutlined,
+    HomeOutlined,
+    KeyOutlined,
+    PlusCircleOutlined,
+    FileTextOutlined,
+    BellOutlined,
+    CreditCardOutlined,
+    LockOutlined,
+    SettingOutlined,
+    LogoutOutlined,
+    CrownOutlined,
+    StarOutlined,
+} from '@ant-design/icons';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import NotificationBadge from './notifications/NotificationBadge';
+import LoginModal from './LoginModal';
 
-const Header = ({ user, setUser, handleLogin, handleLogout }) => {
-  const [showLogin, setShowLogin] = useState(false);
-  const [showRegister, setShowRegister] = useState(false);
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const [notifications, setNotifications] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [notificationLoading, setNotificationLoading] = useState(false);
-  const [notificationError, setNotificationError] = useState(null);
-  const navigate = useNavigate();
+const UPLOADS_URL = import.meta.env.VITE_UPLOADS_URL;
 
-  const getTimeAgo = (createdAt) => {
-    if (!createdAt) return "N/A";
-    const now = new Date();
-    const postDate = new Date(createdAt);
-    const diffInMs = now - postDate;
-    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
-    const diffInHours = Math.floor(diffInMinutes / 60);
-    const diffInDays = Math.floor(diffInHours / 24);
-    if (diffInMinutes < 60) {
-      return `${diffInMinutes} phút trước`;
-    } else if (diffInHours < 24) {
-      return `${diffInHours} giờ trước`;
-    } else {
-      return `${diffInDays} ngày trước`;
-    }
-  };
+const { Header } = Layout;
 
-  const fetchNotifications = async () => {
-    if (!user) return;
-    setNotificationLoading(true);
-    setNotificationError(null);
-    try {
-      const userId = localStorage.getItem("userId");
-      if (!userId) {
-        throw new Error("Bạn cần đăng nhập để xem thông báo.");
-      }
-      const response = await apiServices.get(`/api/notifications?userId=${userId}&page=0&size=5&sort=createdAt,desc`);
-      if (response.data.statusCode === 200) {
-        const notificationData = response.data.data;
-        setNotifications(notificationData.content || []);
-        const unread = (notificationData.content || []).filter((notif) => !notif.read).length;
-        setUnreadCount(unread);
-      } else {
-        throw new Error(response.data.message || "Không thể lấy danh sách thông báo.");
-      }
-    } catch (err) {
-      setNotificationError(err.message || "Không thể lấy danh sách thông báo.");
-    } finally {
-      setNotificationLoading(false);
-    }
-  };
+const HeaderComponent = () => {
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { user, isAuthenticated, logout } = useAuth();
+    const [drawerVisible, setDrawerVisible] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [loginModalVisible, setLoginModalVisible] = useState(false);
 
-  useEffect(() => {
-    if (user) {
-      fetchNotifications();
-    } else {
-      setNotifications([]);
-      setUnreadCount(0);
-    }
-  }, [user]);
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
-  const handlePostAd = () => {
-    if (user) {
-      navigate("/post-ad");
-    } else {
-      setShowLogin(true);
-    }
-  };
+    const showDrawer = () => {
+        setDrawerVisible(true);
+    };
 
-  const handleLoginSuccess = (userData) => {
-    handleLogin(userData);
-    setShowLogin(false);
-  };
+    const onClose = () => {
+        setDrawerVisible(false);
+    };
 
-  const handleRegisterSuccess = () => {
-    setShowRegister(false);
-    setShowLogin(true);
-  };
+    const showLogoutModal = () => {
+        setModalVisible(true);
+    };
 
-  const handleShowLogoutConfirm = () => {
-    setShowLogoutConfirm(true);
-  };
+    const handleLogout = () => {
+        logout();
+        setModalVisible(false);
+        navigate('/');
+    };
 
-  const handleCloseLogoutConfirm = () => {
-    setShowLogoutConfirm(false);
-  };
+    const handleCancel = () => {
+        setModalVisible(false);
+    };
 
-  const handleNotificationClick = () => {
-    navigate("/notifications");
-  };
+    const showLoginModal = () => {
+        setLoginModalVisible(true);
+    };
 
-  const dropdownAlign = window.innerWidth <= 768 ? "start" : "end";
+    const handleLoginCancel = () => {
+        setLoginModalVisible(false);
+    };
 
-  return (
-    <>
-      <Navbar
-        expand="lg"
-        className="header"
-        bg="dark"
-        variant="dark"
-        style={{ position: "fixed", top: 0, width: "100%", zIndex: 1000, padding: "0.5rem 1rem" }}
-      >
-        <Navbar.Brand as={NavLink} to="/">
-          <span className="fw-bold text-light">BĐS360</span>
-        </Navbar.Brand>
-        <Navbar.Toggle aria-controls="navbar-nav" />
-        <Navbar.Collapse id="navbar-nav">
-          <Nav className="me-auto">
-            <Nav.Link as={NavLink} to="/sell" className="nav-link-custom">
-              Nhà đất bán
-            </Nav.Link>
-            <Nav.Link as={NavLink} to="/rent" className="nav-link-custom">
-              Nhà đất cho thuê
-            </Nav.Link>
-          </Nav>
+    const handleLoginSuccess = () => {
+        setLoginModalVisible(false);
+    };
 
-          {user ? (
-            <div className="d-flex align-items-center gap-3">
-              <Dropdown>
-                <Dropdown.Toggle
-                  variant="white"
-                  id="dropdown-user"
-                  className="dropdown-toggle-custom d-flex align-items-center text-white text-decoration-none"
-                >
-                  <Image
-                    src={`${import.meta.env.VITE_IMAGE_URL}/${user.avatar}`}
-                    alt="Avatar"
-                    roundedCircle
-                    className="border border-light me-2"
-                    style={{ width: "40px", height: "40px" }}
-                  />
-                  <span className="fw-bold">{user.name}</span>
-                </Dropdown.Toggle>
+    const getSelectedKey = (path) => {
+        if (path === '/') return 'home';
+        if (path.startsWith('/sell')) return 'sell';
+        if (path.startsWith('/rent')) return 'rent';
+        if (path.startsWith('/create-post')) return 'create-post';
+        if (path.startsWith('/posts')) return 'posts';
+        if (path.startsWith('/notifications')) return 'notifications';
+        if (path.startsWith('/profile')) return 'profile';
+        if (path.startsWith('/change-password')) return 'change-password';
+        if (path.startsWith('/payments')) return 'payments';
+        if (path.startsWith('/admin')) return 'admin';
+        if (path.startsWith('/vips')) return 'vips';
+        return '';
+    };
 
-                <Dropdown.Menu align={dropdownAlign} className="dropdown-menu-custom user-dropdown">
-                  <Dropdown.Item as={NavLink} to="/profile">
-                    <i className="fas fa-user me-2"></i> Thông tin cá nhân
-                  </Dropdown.Item>
-                  <Dropdown.Item as={NavLink} to="/payment">
-                    <i className="fas fa-credit-card me-2"></i> Thanh toán
-                  </Dropdown.Item>
-                  <Dropdown.Item as={NavLink} to="/post-history">
-                    <i className="fas fa-history me-2"></i> Lịch sử tin đăng
-                  </Dropdown.Item>
-                  <Dropdown.Item as={NavLink} to="/notifications">
-                    <i className="fas fa-bell me-2"></i> Thông báo
-                  </Dropdown.Item>
-                  <Dropdown.Item as={NavLink} to="/admin/users">
-                    <i className="fas fa-tools me-2"></i> Đi đến trang quản trị
-                  </Dropdown.Item>
-                  <Dropdown.Divider />
-                  <Dropdown.Item onClick={handleShowLogoutConfirm} className="text-danger">
-                    <i className="fas fa-sign-out-alt me-2"></i> Đăng xuất
-                  </Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown>
+    const navItems = [
+        {
+            key: 'sell',
+            label: <Link to="/sell">Bán</Link>,
+            style: { minWidth: '95px', textAlign: 'center' },
+        },
+        {
+            key: 'rent',
+            label: <Link to="/rent">Thuê</Link>,
+            style: { minWidth: '95px', textAlign: 'center' },
+        },
+    ];
 
-              <Button
-                variant="warning"
-                className="btn-custom btn-post-ad"
-                onClick={handlePostAd}
-              >
-                Đăng tin
-              </Button>
+    const baseUserMenuItems = [
+        {
+            key: 'create-post',
+            icon: <PlusCircleOutlined />,
+            label: <Link to="/create-post">Đăng tin</Link>,
+        },
+        {
+            key: 'posts',
+            icon: <FileTextOutlined />,
+            label: <Link to="/posts">Quản lý tin đăng</Link>,
+        },
+        {
+            key: 'notifications',
+            icon: <BellOutlined />,
+            label: <Link to="/notifications">Thông báo</Link>,
+        },
+        {
+            key: 'payments',
+            icon: <CreditCardOutlined />,
+            label: <Link to="/payments">Thanh toán</Link>,
+        },
+        {
+            key: 'vips',
+            icon: <StarOutlined />,
+            label: <Link to="/vips">Gói VIP</Link>,
+        },
+        {
+            key: 'profile',
+            icon: <UserOutlined />,
+            label: <Link to="/profile">Hồ sơ cá nhân</Link>,
+        },
+        {
+            key: 'change-password',
+            icon: <LockOutlined />,
+            label: <Link to="/change-password">Đổi mật khẩu</Link>,
+        },
+        {
+            key: 'logout',
+            icon: <LogoutOutlined />,
+            label: <span onClick={showLogoutModal}>Đăng xuất</span>,
+        },
+    ];
 
-              <div
-                className="d-flex align-items-center text-white text-decoration-none position-relative"
-                onClick={handleNotificationClick}
-                style={{ cursor: "pointer" }}
-              >
-                <FaBell size={24} />
-                {unreadCount > 0 && (
-                  <Badge
-                    bg="danger"
-                    className="position-absolute top-0 start-100 translate-middle rounded-circle"
-                    style={{ fontSize: "0.6rem", padding: "0.3em 0.5em" }}
-                  >
-                    {unreadCount}
-                  </Badge>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div className="d-flex align-items-center gap-2">
-              <Button
-                variant="outline-light"
-                className="btn-custom btn-login"
-                onClick={() => setShowLogin(true)}
-              >
-                Đăng nhập
-              </Button>
-              <Button
-                variant="primary"
-                className="btn-custom btn-register"
-                onClick={() => setShowRegister(true)}
-              >
-                Đăng ký
-              </Button>
-              <Button
-                variant="warning"
-                className="btn-custom btn-post-ad"
-                onClick={handlePostAd}
-              >
-                Đăng tin
-              </Button>
-            </div>
-          )}
-        </Navbar.Collapse>
-      </Navbar>
+    const userMenuItems = user?.role === 'ADMIN'
+        ? [
+            ...baseUserMenuItems.slice(0, 0),
+            {
+                key: 'admin',
+                icon: <SettingOutlined />,
+                label: <Link to="/admin">Quản trị</Link>,
+            },
+            ...baseUserMenuItems.slice(0),
+        ]
+        : baseUserMenuItems;
 
-      {showLogoutConfirm && (
-        <div className="logout-confirm-overlay">
-          <div className="logout-confirm-container">
-            <div className="logout-confirm-header">
-              <h3>Xác nhận đăng xuất</h3>
-              <button className="btn-close-custom" onClick={handleCloseLogoutConfirm}>
-                <i className="fas fa-times"></i>
-              </button>
-            </div>
-            <div className="logout-confirm-body">
-              <p>Bạn có chắc chắn muốn đăng xuất không?</p>
-              <div className="logout-confirm-buttons">
-                <button className="btn-cancel" onClick={handleCloseLogoutConfirm}>
-                  Hủy
-                </button>
-                <button className="btn-confirm" onClick={handleLogout}>
-                  Đăng xuất
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+    const handleMenuClick = () => {
+        onClose();
+    };
 
-      {showLogin && (
-        <LoginForm
-          onLogin={handleLoginSuccess}
-          onClose={() => setShowLogin(false)}
-        />
-      )}
-      {showRegister && (
-        <RegisterForm
-          onClose={() => setShowRegister(false)}
-          onRegisterSuccess={handleRegisterSuccess}
-        />
-      )}
-    </>
-  );
+    const avatarUrl = user?.avatar ? `${UPLOADS_URL}/${user.avatar}` : null;
+
+    return (
+        <>
+            <Header
+                style={{
+                    backgroundColor: '#fff',
+                    boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03),0 1px 6px -1px rgba(0, 0, 0, 0.02),0 2px 4px 0 rgba(0, 0, 0, 0.02)',
+                    padding: '0 24px',
+                    position: 'sticky',
+                    top: 0,
+                    zIndex: 1000,
+                }}
+            >
+                <div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <Link to="/" style={{ fontSize: '20px', fontWeight: 'bold' }}>
+                                BĐS360
+                            </Link>
+                            {!isMobile && (
+                                <Menu
+                                    selectedKeys={[getSelectedKey(location.pathname)]}
+                                    mode="horizontal"
+                                    theme="light"
+                                    items={navItems}
+                                    style={{ marginLeft: 0, borderBottom: 'none' }}
+                                />
+                            )}
+                        </div>
+
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            {isMobile ? (
+                                <>
+                                    <NotificationBadge />
+                                    <Button
+                                        type="link"
+                                        icon={<MenuOutlined />}
+                                        onClick={showDrawer}
+                                        style={{ marginRight: 0 }}
+                                    />
+                                    <Drawer
+                                        title="Menu"
+                                        placement="right"
+                                        onClose={onClose}
+                                        open={drawerVisible}
+                                    >
+                                        <Menu
+                                            selectedKeys={[getSelectedKey(location.pathname)]}
+                                            mode="inline"
+                                            theme="light"
+                                            items={navItems}
+                                            onClick={handleMenuClick}
+                                        />
+                                        <Menu
+                                            selectedKeys={[getSelectedKey(location.pathname)]}
+                                            mode="inline"
+                                            theme="light"
+                                            items={
+                                                isAuthenticated
+                                                    ? userMenuItems
+                                                    : [
+                                                        {
+                                                            key: 'login',
+                                                            label: <span onClick={showLoginModal}>Đăng nhập</span>,
+                                                        },
+                                                        {
+                                                            key: 'register',
+                                                            label: <Link to="/register">Đăng ký</Link>,
+                                                        },
+                                                    ]
+                                            }
+                                            onClick={handleMenuClick}
+                                        />
+                                    </Drawer>
+                                </>
+                            ) : isAuthenticated ? (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                                    <NotificationBadge />
+                                    <span>{user?.name || 'User'}</span>
+                                    <Dropdown menu={{ items: userMenuItems }} trigger={['click']}>
+                                        <Avatar
+                                            src={avatarUrl}
+                                            icon={!avatarUrl && <UserOutlined />}
+                                            className="cursor-pointer"
+                                        />
+                                    </Dropdown>
+                                </div>
+                            ) : (
+                                <>
+                                    <Button type="primary" onClick={showLoginModal} style={{ marginRight: 16 }}>
+                                        Đăng nhập
+                                    </Button>
+                                    <Link to="/register">
+                                        <Button>Đăng ký</Button>
+                                    </Link>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </Header>
+
+            <Modal
+                title={
+                    <div>
+                        <ExclamationCircleOutlined style={{ color: '#faad14', marginRight: 8 }} />
+                        Xác nhận đăng xuất
+                    </div>
+                }
+                open={modalVisible}
+                onOk={handleLogout}
+                onCancel={handleCancel}
+                okText="Đăng xuất"
+                cancelText="Hủy"
+                okButtonProps={{ danger: true }}
+            >
+                <p>Bạn có chắc chắn muốn đăng xuất không?</p>
+            </Modal>
+
+            <LoginModal
+                visible={loginModalVisible}
+                onCancel={handleLoginCancel}
+                onSuccess={handleLoginSuccess}
+            />
+        </>
+    );
 };
 
-export default Header;
+export default HeaderComponent;

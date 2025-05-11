@@ -1,189 +1,269 @@
-/* eslint-disable no-unused-vars */
-import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { Spinner } from "react-bootstrap";
-import Header from "./components/Header";
-import HomePage from "./pages/HomePage";
-import SellPage from "./pages/SellPage";
-import RentPage from "./pages/RentPage";
-import PostAd from "./pages/PostAd";
-import ProjectDetail from "./pages/ProjectDetail";
-import Footer from "./components/Footer";
-import UserProfile from "./pages/UserProfile";
-import PaymentPage from "./pages/PaymentPage";
-import AdminUsers from "./pages/AdminUsers";
-import HistoryNew from "./pages/HistoryNew";
-import AdminPayments from "./pages/AdminPayments";
-import AdminVips from "./components/AdminVips";
-import AdminPostsPage from "./pages/AdminPostsPage";
-import ProtectedRoute from "./components/ProtectedRoute";
-import apiServices from "./services/apiServices";
-import NotificationsPage from "./pages/NotificationsPage";
-import PaymentResult from "./components/PaymentResult";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap-icons/font/bootstrap-icons.css";
-import "@fortawesome/fontawesome-free/css/all.min.css";
+import { Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
+import { Layout } from 'antd';
+import Header from './components/Header';
+import Footer from './components/Footer';
+import Sidebar from './components/Sidebar';
+import AdminHeader from './components/AdminHeader';
+import AdminSidebar from './components/AdminSidebar';
+import ProtectedRoute from './components/ProtectedRoute';
+import Home from './pages/user/Home';
+import Profile from './pages/user/Profile';
+import Login from './pages/user/Login';
+import Dashboard from './pages/admin/Dashboard';
+import UserManagement from './pages/admin/UserManagement';
+import ProductManagement from './pages/admin/VipManagement';
 
-const App = () => {
-  const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState(undefined);
-  const [isLoading, setIsLoading] = useState(true);
+import Register from './pages/user/Register';
+import ChangePassword from './pages/user/ChangePassword';
+import ForgotPassword from './pages/user/ForgotPassword';
+import { AuthProvider } from './contexts/AuthContext';
+import SellPage from './pages/SellPage';
+import RentPage from './pages/RentPage';
+import PostDetail from './pages/PostDetail';
+import CreatePost from './pages/user/CreatePost';
+import Posts from './pages/user/Posts';
+import Notifications from './pages/user/Notifications';
+import Payments from './pages/user/Payments';
+import PaymentResult from './pages/user/PaymentResult';
+import EditPost from './pages/user/EditPost';
+import VipManagement from './pages/admin/VipManagement';
+import CategoryManagement from './pages/admin/categoryManagement';
+import PostManagement from './pages/admin/PostManagement';
+import PaymentManagement from './pages/admin/PaymentManagement';
+import NotFound from './pages/NotFound';
+import Forbidden from './pages/Forbidden';
+import Vips from './pages/user/Vips';
+
+
+const { Content, Header: AntHeader, Footer: AntFooter } = Layout;
+
+// Layout chính để quản lý header động
+const MainLayout = () => {
   const location = useLocation();
-  const isAdminPage = location.pathname.startsWith("/admin");
-
-  useEffect(() => {
-    const verifyToken = async () => {
-      setIsLoading(true);
-      const token = localStorage.getItem("accessToken");
-      const userId = localStorage.getItem("userId");
-      if (token && userId) {
-        try {
-          const response = await apiServices.get(`/api/users/${userId}`);
-
-          if (response.data.statusCode === 200) {
-            setUser({
-              id: response.data.data.id,
-              name: response.data.data.name,
-              email: response.data.data.email,
-              avatar: response.data.data.avatar || "https://i.pravatar.cc/150?u=" + response.data.data.email,
-              role: response.data.data.role,
-              accessToken: token,
-            });
-          } else {
-            console.error("API /api/users/:id trả về lỗi:", response.data);
-            localStorage.removeItem("accessToken");
-            localStorage.removeItem("userId");
-            setUser(null);
-          }
-        } catch (error) {
-          console.error("Token verification failed:", {
-            message: error.message,
-            response: error.response?.data,
-            status: error.response?.status,
-            config: error.config?.url,
-          });
-          localStorage.removeItem("accessToken");
-          localStorage.removeItem("userId");
-          setUser(null);
-        }
-      } else {
-        setUser(null);
-      }
-      setIsLoading(false);
-    };
-    verifyToken();
-  }, []);
-
-  const handleLogin = (userData) => {
-    console.log("User data nhận được từ LoginForm:", userData);
-    setUser(userData);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("userId");
-    setUser(null);
-    Navigate("/");
-  };
-
-  if (isLoading) {
-    return (
-      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "100vh" }}>
-        <Spinner animation="border" variant="primary" />
-        <span className="ms-3">Đang tải...</span>
-      </div>
-    );
-  }
+  const isAdminRoute = location.pathname.startsWith('/admin');
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-      {/* Bọc Header trong div và ẩn toàn bộ vùng nếu là trang admin */}
-      {!isAdminPage && (
-        <div className="header-wrapper">
-          <Header user={user} setUser={setUser} handleLogin={handleLogin} handleLogout={handleLogout} />
-        </div>
-      )}
-      <main style={{ flex: "1 0 auto", paddingTop: "20px" }}>
-        <Routes>
-          <Route path="/" element={<HomePage setLoading={setLoading} />} />
-          <Route path="/sell" element={<SellPage setLoading={setLoading} />} />
-          <Route path="/rent" element={<RentPage setLoading={setLoading} />} />
-          <Route path="/post/:id" element={<ProjectDetail />} />
-          <Route path="/post-ad" element={<PostAd />} />
-          <Route path="/notifications" element={<NotificationsPage user={user} handleLogout={handleLogout} />} />
+    <Layout>
+      <AntHeader style={{ padding: 0 }}>
+        {isAdminRoute ? <AdminHeader /> : <Header />}
+      </AntHeader>
+      <Layout>
+        <Outlet />
+      </Layout>
+      <AntFooter style={{ textAlign: 'center' }}>
+        <Footer />
+      </AntFooter>
+    </Layout>
+  );
+};
+
+// Layout cho các trang user không có Sidebar
+const HomeLayout = ({ children }) => (
+  <Layout>
+    {/* <div style={{ width: 200 }} /> Placeholder cho Sidebar */}
+    <Content style={{ minHeight: 'calc(100vh - 64px - 70px)' }}>
+      {children}
+    </Content>
+  </Layout>
+);
+
+// Layout cho các trang user có Sidebar
+const UserLayout = ({ children }) => (
+  <Layout hasSider>
+    <Sidebar />
+    <Content style={{ padding: 24, minHeight: 'calc(100vh - 64px - 70px)' }}>
+      {children}
+    </Content>
+  </Layout>
+);
+
+// Layout cho các trang admin
+const AdminLayout = ({ children }) => (
+  <Layout hasSider>
+    <AdminSidebar />
+    <Content style={{ padding: 24, minHeight: 'calc(100vh - 64px - 70px)' }}>
+      {children}
+    </Content>
+  </Layout>
+);
+
+function App() {
+  return (
+    <AuthProvider>
+
+      <Routes>
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<HomeLayout><Home /></HomeLayout>} />
+          <Route path="/sell" element={<HomeLayout><SellPage /></HomeLayout>} />
+          <Route path="/rent" element={<HomeLayout><RentPage /></HomeLayout>} />
+          <Route path="/posts/:id" element={<HomeLayout><PostDetail /></HomeLayout>} />
+
+          <Route
+            path="/create-post"
+            element={
+              <ProtectedRoute>
+                <UserLayout>
+                  <CreatePost />
+                </UserLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/edit-post/:id"
+            element={
+              <ProtectedRoute>
+                <UserLayout>
+                  <EditPost />
+                </UserLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/posts"
+            element={
+              <ProtectedRoute>
+                <UserLayout>
+                  <Posts />
+                </UserLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/notifications"
+            element={
+              <ProtectedRoute>
+                <UserLayout>
+                  <Notifications />
+                </UserLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/payments"
+            element={
+              <ProtectedRoute>
+                <UserLayout>
+                  <Payments />
+                </UserLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/payment/payment-result"
+            element={
+              <ProtectedRoute>
+                <UserLayout>
+                  <PaymentResult />
+                </UserLayout>
+              </ProtectedRoute>
+            }
+          />
 
           <Route
             path="/profile"
             element={
-              <ProtectedRoute user={user}>
-                <UserProfile user={user} setUser={setUser} />
+              <ProtectedRoute>
+                <UserLayout>
+                  <Profile />
+                </UserLayout>
               </ProtectedRoute>
             }
           />
           <Route
-            path="/payment"
+            path="/vips"
             element={
-              <ProtectedRoute user={user}>
-                <PaymentPage user={user} handleLogout={handleLogout} />
+              <ProtectedRoute>
+                <UserLayout>
+                  <Vips />
+                </UserLayout>
               </ProtectedRoute>
             }
           />
-          <Route path="/payment/payment-result" element={<PaymentResult user={user} handleLogout={handleLogout} />} />
           <Route
-            path="/post-history"
+            path="/change-password"
             element={
-              <ProtectedRoute user={user}>
-                <HistoryNew user={user} />
+              <ProtectedRoute>
+                <UserLayout>
+                  <ChangePassword />
+                </UserLayout>
               </ProtectedRoute>
             }
           />
-
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute requiredRole="ADMIN">
+                <AdminLayout>
+                  <Dashboard />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/admin/users"
             element={
-              <ProtectedRoute user={user}>
-                <AdminUsers user={user} setUser={setUser} handleLogin={handleLogin} handleLogout={handleLogout} />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/payments"
-            element={
-              <ProtectedRoute user={user}>
-                <AdminPayments user={user} handleLogout={handleLogout} />
+              <ProtectedRoute requiredRole="ADMIN">
+                <AdminLayout>
+                  <UserManagement />
+                </AdminLayout>
               </ProtectedRoute>
             }
           />
           <Route
             path="/admin/vips"
             element={
-              <ProtectedRoute user={user}>
-                <AdminVips user={user} handleLogout={handleLogout} />
+              <ProtectedRoute requiredRole="ADMIN">
+                <AdminLayout>
+                  <VipManagement />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/categories"
+            element={
+              <ProtectedRoute requiredRole="ADMIN">
+                <AdminLayout>
+                  <CategoryManagement />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/payments"
+            element={
+              <ProtectedRoute requiredRole="ADMIN">
+                <AdminLayout>
+                  <PaymentManagement />
+                </AdminLayout>
               </ProtectedRoute>
             }
           />
           <Route
             path="/admin/posts"
             element={
-              <ProtectedRoute user={user}>
-                <AdminPostsPage user={user} handleLogout={handleLogout} />
+              <ProtectedRoute requiredRole="ADMIN">
+                <AdminLayout>
+                  <PostManagement />
+                </AdminLayout>
               </ProtectedRoute>
             }
           />
-        </Routes>
-      </main>
-      {!loading && !isAdminPage && <Footer />}
-      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
-    </div>
-  );
-};
 
-export default function AppWrapper() {
-  return (
-    <Router>
-      <App />
-    </Router>
+        </Route>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/forbidden" element={<Forbidden />} />
+        <Route path="*" element={<NotFound />} /> {/* Xử lý tất cả các route không khớp */}
+      </Routes>
+    </AuthProvider>
   );
 }
+
+export default App;

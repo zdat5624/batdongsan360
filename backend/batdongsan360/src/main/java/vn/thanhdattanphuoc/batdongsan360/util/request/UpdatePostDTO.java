@@ -16,7 +16,7 @@ import java.util.List;
 @Setter
 public class UpdatePostDTO {
 
-    @NotNull(message = "ID bài đăng không được để trống")
+    @NotNull(message = "ID tin đăng không được để trống")
     private Long id;
 
     @Size(max = 255, message = "Tiêu đề không được quá 255 ký tự")

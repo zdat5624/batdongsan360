@@ -33,7 +33,7 @@ public class GlobalException {
 
     @ExceptionHandler(value = {
             UsernameNotFoundException.class,
-            BadCredentialsException.class,
+           
             InputInvalidException.class,
             RuntimeException.class
 
@@ -55,7 +55,7 @@ public class GlobalException {
         res.setStatusCode(HttpStatus.NOT_FOUND.value());
         res.setMessage(ex.getMessage());
         res.setError("Resource Not Found ...");
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -84,6 +84,16 @@ public class GlobalException {
         res.setError("Forbidden");
         res.setMessage(ex.getMessage());
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(res);
+    }
+    
+ // Handle BadCredentialsException with 401 Unauthorized
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<RestResponse<Object>> handleBadCredentialsException(BadCredentialsException ex) {
+        RestResponse<Object> res = new RestResponse<>();
+        res.setStatusCode(HttpStatus.UNAUTHORIZED.value());
+        res.setError("Unauthorized");
+        res.setMessage("Tên đăng nhập hoặc mật khẩu không hợp lệ");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(res);
     }
 
     @ExceptionHandler(value = {

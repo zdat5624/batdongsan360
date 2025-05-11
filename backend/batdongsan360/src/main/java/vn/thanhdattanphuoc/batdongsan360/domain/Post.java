@@ -34,7 +34,7 @@ public class Post {
     private boolean notifyOnView;
 
     @Enumerated(EnumType.STRING)
-    @NotNull(message = "Loại bài đăng không được để trống")
+    @NotNull(message = "Loại tin đăng không được để trống")
     private PostTypeEnum type;
 
     @NotNull(message = "Giá không được để trống")

@@ -27,15 +27,17 @@ public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificat
         List<Post> findByUser(User user);
 
         @Query("SELECT p FROM Post p WHERE p.user.email = :userEmail " +
-                        "AND (:status IS NULL OR p.status = :status) " +
-                        "AND (:type IS NULL OR p.type = :type) " +
-                        "AND ( p.deletedByUser = false) " +
-                        "AND (:provinceCode IS NULL OR p.province.code = :provinceCode) ")
-        Page<Post> findMyPosts(@Param("userEmail") String userEmail,
-                        @Param("status") PostStatusEnum status,
-                        @Param("type") PostTypeEnum type,
-                        @Param("provinceCode") Long provinceCode,
-                        Pageable pageable);
+                "AND (:status IS NULL OR p.status = :status) " +
+                "AND (:type IS NULL OR p.type = :type) " +
+                "AND (p.deletedByUser = false) " +
+                "AND (:provinceCode IS NULL OR p.province.code = :provinceCode) " +
+                "AND (:postId IS NULL OR p.id = :postId)")
+         Page<Post> findMyPosts(@Param("userEmail") String userEmail,
+                                @Param("status") PostStatusEnum status,
+                                @Param("type") PostTypeEnum type,
+                                @Param("provinceCode") Long provinceCode,
+                                @Param("postId") Long postId,
+                                Pageable pageable);
 
         @Query("SELECT " +
                         "p.latitude, " +

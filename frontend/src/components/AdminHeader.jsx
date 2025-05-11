@@ -1,145 +1,134 @@
-/* eslint-disable react/prop-types */
-/* eslint-disable no-unused-vars */
-import React from "react";
-import { NavLink } from "react-router-dom";
-import { Navbar, Dropdown, Image, Nav, Button } from "react-bootstrap";
-import logo from "../assets/img/logo.png";
-import "../assets/styles/Header.css";
+import { Layout, Dropdown, Avatar, Drawer, Button, Menu, Modal } from 'antd';
+import { UserOutlined, MenuOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
-const AdminHeader = ({ user, handleLogout, toggleSidebar }) => {
-  return (
-    <>
-      <style>
-        {`
-          .navbar-custom {
-            padding-left: 0 !important;
-            padding-right: 0 !important;
-            background-color: #1a252f !important;
-          }
-          .navbar-content {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 15px;
-          }
-          .navbar-brand {
-            font-size: 1.5rem;
-            transition: font-size 0.3s ease;
-          }
-          .navbar-toggler {
-            border: none;
-            padding: 8px;
-          }
-          .navbar-toggler-icon {
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 255, 255, 0.8)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
-          }
-          .sidebar-toggle-btn {
-            background: none;
-            border: none;
-            color: #fff;
-            font-size: 1.2rem;
-            padding: 8px;
-            display: none;
-          }
-          .dropdown-menu-custom {
-            min-width: 200px;
-            transform: translateX(-80%) !important;
-          }
-          @media (max-width: 768px) {
-            .navbar-brand {
-              font-size: 1.2rem;
-            }
-            .navbar-content {
-              padding: 0 10px;
-            }
-            .navbar-collapse {
-              background-color: #1a252f;
-              padding: 10px;
-              border-radius: 8px;
-              margin-top: 5px;
-            }
-            .sidebar-toggle-btn {
-              display: block;
-            }
-            .dropdown-menu-custom {
-              transform: none !important;
-              width: 100%;
-              left: 0 !important;
-              right: 0 !important;
-            }
-          }
-          @media (max-width: 576px) {
-            .navbar-brand {
-              font-size: 1rem;
-            }
-            .navbar-content {
-              padding: 0 5px;
-            }
-            .dropdown-toggle-custom img {
-              width: 32px !important;
-              height: 32px !important;
-            }
-            .dropdown-menu-custom {
-              min-width: 100%;
-            }
-          }
-        `}
-      </style>
+const { Header } = Layout;
 
-      <Navbar
-        expand="lg"
-        className="header navbar-custom py-2"
-        style={{ position: "fixed", top: 0, width: "100%", zIndex: 1000 }}
-      >
-        <div className="navbar-content">
-          <Button className="sidebar-toggle-btn" onClick={toggleSidebar}>
-            <i className="fas fa-bars"></i>
-          </Button>
-          <Navbar.Brand as={NavLink} to="/">
-            <span className="fw-bold text-light">ADMIN</span>
-          </Navbar.Brand>
-          <Navbar.Toggle aria-controls="navbar-nav" />
-          <Navbar.Collapse id="navbar-nav">
-            <Nav className="me-auto"></Nav>
+const UPLOADS_URL = import.meta.env.VITE_UPLOADS_URL;
 
-            {user ? (
-              <div className="d-flex align-items-center gap-3">
-                <Dropdown>
-                  <Dropdown.Toggle
-                    variant="dark"
-                    id="dropdown-user"
-                    className="dropdown-toggle-custom d-flex align-items-center text-white text-decoration-none"
-                  >
-                    <Image
-                      src={`${import.meta.env.VITE_IMAGE_URL}/${user.avatar}`}
-                      alt="Avatar"
-                      roundedCircle
-                      className="border border-light me-2"
-                      style={{ width: "40px", height: "40px" }}
-                    />
-                    <span className="fw-bold">{user.name}</span>
-                  </Dropdown.Toggle>
+const AdminHeader = () => {
+    const navigate = useNavigate();
+    const { user, logout } = useAuth();
+    const [drawerVisible, setDrawerVisible] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    const [modalVisible, setModalVisible] = useState(false);
 
-                  <Dropdown.Menu align="end" className="dropdown-menu-custom user-dropdown">
-                    <Dropdown.Item as={NavLink} to="/">
-                      <i className="fas fa-home me-2"></i> Trang chủ
-                    </Dropdown.Item>
-                    <Dropdown.Divider />
-                    <Dropdown.Item onClick={handleLogout} className="text-danger">
-                      <i className="fas fa-sign-out-alt me-2"></i> Đăng xuất
-                    </Dropdown.Item>
-                  </Dropdown.Menu>
-                </Dropdown>
-              </div>
-            ) : (
-              <div className="d-flex align-items-center gap-2"></div>
-            )}
-          </Navbar.Collapse>
-        </div>
-      </Navbar>
-    </>
-  );
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    const showDrawer = () => {
+        setDrawerVisible(true);
+    };
+
+    const onClose = () => {
+        setDrawerVisible(false);
+    };
+
+    const showLogoutModal = () => {
+        setModalVisible(true);
+    };
+
+    const handleLogout = () => {
+        logout(); // Gọi logout từ AuthContext
+        setModalVisible(false);
+        navigate('/');
+    };
+
+    const handleCancel = () => {
+        setModalVisible(false);
+    };
+
+    const adminMenuItems = [
+        {
+            key: '1',
+            label: <Link to="/">Đến trang chủ</Link>,
+        },
+        {
+            key: '2',
+            label: <span onClick={showLogoutModal}>Đăng xuất</span>,
+        },
+    ];
+
+    const avatarUrl = user?.avatar ? `${UPLOADS_URL}/${user.avatar}` : null;
+
+    return (
+        <>
+            <Header
+                style={{
+                    backgroundColor: '#fff',
+                    boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03),0 1px 6px -1px rgba(0, 0, 0, 0.02),0 2px 4px 0 rgba(0, 0, 0, 0.02)',
+                    padding: '0 24px',
+                    position: 'sticky',
+                    top: 0,
+                    zIndex: 1000,
+                }}
+            >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Link to="/admin" style={{ fontSize: '20px', fontWeight: 'bold' }}>
+                        Dashboard
+                    </Link>
+
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+
+                        {isMobile ? (
+                            <>
+                                <Button
+                                    type="link"
+                                    icon={<MenuOutlined />}
+                                    onClick={showDrawer}
+                                    style={{ marginRight: 8 }}
+                                />
+                                <Drawer
+                                    title="Menu"
+                                    placement="right"
+                                    onClose={onClose}
+                                    open={drawerVisible}
+                                    bodyStyle={{ padding: 0 }}
+                                >
+                                    <Menu mode="inline" theme="light" items={adminMenuItems} />
+                                </Drawer>
+                            </>
+                        ) : (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <span>{user?.name || 'Admin'}</span>
+                                <Dropdown menu={{ items: adminMenuItems }} trigger={['click']}>
+                                    <Avatar
+                                        src={avatarUrl}
+                                        icon={!avatarUrl && <UserOutlined />}
+                                        className="cursor-pointer"
+                                    />
+                                </Dropdown>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </Header>
+
+            <Modal
+                title={
+                    <div>
+                        <ExclamationCircleOutlined style={{ color: '#faad14', marginRight: 8 }} />
+                        Xác nhận đăng xuất
+                    </div>
+                }
+                open={modalVisible}
+                onOk={handleLogout}
+                onCancel={handleCancel}
+                okText="Đăng xuất"
+                cancelText="Hủy"
+                okButtonProps={{ danger: true }}
+            >
+                <p>Bạn có chắc chắn muốn đăng xuất không?</p>
+            </Modal>
+        </>
+    );
 };
 
 export default AdminHeader;
