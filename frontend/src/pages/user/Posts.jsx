@@ -201,7 +201,7 @@ const Posts = () => {
             title: 'Giá',
             dataIndex: 'price',
             sorter: true,
-            width: 120,
+            width: 140,
             responsive: ['md'],
             render: (price, record) => {
                 const formattedPrice = formatPrice(price);
