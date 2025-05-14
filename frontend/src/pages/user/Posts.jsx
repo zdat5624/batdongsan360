@@ -289,21 +289,23 @@ const Posts = () => {
                             onClick={() => handleViewDetail(record)}
                         />
                     </Tooltip>
-                    <Link to={`/edit-post/${record.id}`}>
-                        <Tooltip title={record.status === 'REJECTED' ? 'Chỉnh sửa để đăng lại tin' : 'Chỉnh sửa tin đăng'}>
-                            <Button
-                                type="link"
-                                icon={
-                                    record.status === 'REJECTED' ? (
-                                        <QuestionCircleOutlined className="text-orange-500" />
-                                    ) : (
-                                        <EditOutlined className="text-blue-500" />
-                                    )
-                                }
-                                className="p-0"
-                            />
-                        </Tooltip>
-                    </Link>
+                    {record.status !== 'EXPIRED' && (
+                        <Link to={`/edit-post/${record.id}`}>
+                            <Tooltip title={record.status === 'REJECTED' ? 'Chỉnh sửa để đăng lại tin' : 'Chỉnh sửa tin đăng'}>
+                                <Button
+                                    type="link"
+                                    icon={
+                                        record.status === 'REJECTED' ? (
+                                            <QuestionCircleOutlined className="text-orange-500" />
+                                        ) : (
+                                            <EditOutlined className="text-blue-500" />
+                                        )
+                                    }
+                                    className="p-0"
+                                />
+                            </Tooltip>
+                        </Link>
+                    )}
                     <DeletePostButton postId={record.id} onDeleteSuccess={handleDeleteSuccess} />
                 </Space>
             ),

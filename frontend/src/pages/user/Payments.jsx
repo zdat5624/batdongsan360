@@ -6,7 +6,8 @@ import moment from 'moment';
 import 'moment/locale/vi';
 import DepositModal from '../../components/payments/DepositModal';
 import TransactionDetailModal from '../../components/payments/TransactionDetailModal';
-
+import { useAuth } from '../../contexts/AuthContext';
+const { Text } = Typography;
 moment.locale('vi');
 
 const { Title } = Typography;
@@ -14,6 +15,7 @@ const { TabPane } = Tabs;
 const { Option } = Select;
 
 const Payments = () => {
+    const { user } = useAuth();
     const [activeTab, setActiveTab] = useState('ALL');
     const [status, setStatus] = useState('SUCCESS');
     const [transactions, setTransactions] = useState([]);
@@ -244,6 +246,11 @@ const Payments = () => {
         },
     ];
 
+    const formatPrice = (price) => {
+        if (!price || isNaN(price)) return '0 VNĐ';
+        return `${Number(price).toLocaleString('vi-VN')} VNĐ`;
+    };
+
     return (
         <div className="min-h-screen">
             <div className="max-w-7xl mx-auto">
@@ -252,7 +259,7 @@ const Payments = () => {
                         <CreditCardOutlined className="mr-2" />
                         Thanh toán
                     </Title>
-                    <Button
+                    {/* <Button
                         type="primary"
                         size="large"
                         onClick={handleDeposit}
@@ -260,10 +267,27 @@ const Payments = () => {
                     >
                         <WalletOutlined className="" />
                         Nạp tiền
-                    </Button>
+                    </Button> */}
+                    <div className="flex items-center gap-2 mb-4 sm:mb-0">
+                        <div className="flex items-center gap-1">
+                            <Text className="text-base text-blue-500 font-medium">
+                                Số dư: {user?.balance ? formatPrice(user.balance) : '0 VNĐ'}
+                            </Text>
+                        </div>
+                        <Button
+                            type="primary"
+                            size="large"
+                            onClick={handleDeposit}
+                            className="bg-blue-600 hover:bg-blue-700 transition-colors duration-300 flex items-center gap-2 px-6 py-3 rounded-lg shadow-md"
+                        >
+                            <WalletOutlined />
+                            Nạp tiền
+                        </Button>
+                    </div>
                 </div>
+
                 <div>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-4 ">
                         <Tabs
                             type="card"
                             activeKey={activeTab}

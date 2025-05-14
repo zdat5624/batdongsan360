@@ -1,4 +1,4 @@
-import { Layout, Menu, Avatar, Typography, Space } from 'antd';
+import { Layout, Menu, Avatar, Typography, Space, Tooltip } from 'antd';
 import {
     PlusCircleOutlined,
     FileTextOutlined,
@@ -9,6 +9,8 @@ import {
     LeftOutlined,
     RightOutlined,
     StarOutlined,
+    WalletOutlined,
+    WalletTwoTone,
 } from '@ant-design/icons';
 import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
@@ -48,13 +50,17 @@ const menuItems = [
         icon: <UserOutlined />,
         label: <Link to="/profile">Thông tin cá nhân</Link>,
     },
-
     {
         key: 'change-password',
         icon: <LockOutlined />,
         label: <Link to="/change-password">Đổi mật khẩu</Link>,
     },
 ];
+
+const formatPrice = (price) => {
+    if (!price || isNaN(price)) return '0 VNĐ';
+    return `${Number(price).toLocaleString('vi-VN')} VNĐ`;
+};
 
 const Sidebar = () => {
     const [collapsed, setCollapsed] = useState(window.innerWidth < 768);
@@ -91,28 +97,33 @@ const Sidebar = () => {
             collapsedWidth={80}
             theme="light"
             trigger={
-                <div style={{ textAlign: 'center', padding: 4 }}>
+                <div className="text-center py-1">
                     {collapsed ? <RightOutlined /> : <LeftOutlined />}
                 </div>
             }
         >
-            {/* Phần hiển thị tên và avatar của user */}
-            <div style={{ padding: collapsed ? '16px 8px' : '16px', textAlign: 'center' }}>
-                <Space direction="vertical" align="center">
+            <div className={collapsed ? 'p-2 text-center' : 'p-4 text-center'}>
+                <Space direction="vertical" align="center" className="w-full">
                     <Avatar
                         size={collapsed ? 40 : 64}
                         src={avatarUrl}
                         icon={<UserOutlined />}
-                        style={{ marginBottom: 8 }}
+                        className="mb-2"
                     />
                     {!collapsed && (
-                        <Text strong style={{ fontSize: 16 }}>
-                            {user?.name || 'User'}
-                        </Text>
+                        <Tooltip title="Nạp tiền ngay!">
+                            <Link to="/payments">
+                                <div className="flex items-center gap-1 hover:text-blue-600 transition-colors">
+                                    <WalletTwoTone twoToneColor="#3b82f6" className="text-sm" />
+                                    <Text className="text-sm text-blue-500 font-medium">
+                                        {user?.balance ? formatPrice(user.balance) : '0 VNĐ'}
+                                    </Text>
+                                </div>
+                            </Link>
+                        </Tooltip>
                     )}
                 </Space>
             </div>
-
             <Menu
                 mode="inline"
                 theme="light"

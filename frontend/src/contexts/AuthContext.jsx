@@ -55,6 +55,8 @@ export const AuthProvider = ({ children }) => {
     const login = async (userData, token) => {
         localStorage.setItem('user', JSON.stringify(userData));
         localStorage.setItem('accessToken', token);
+        setUser(userData); // Cập nhật user ngay lập tức
+        setIsAuthenticated(true); // Cập nhật isAuthenticated ngay lập tức
         await fetchUserData(token); // Gọi API để lấy thông tin người dùng mới nhất
     };
 

@@ -81,7 +81,8 @@ const PostPopup = ({ post, onClose }) => {
             closeOnClick={false} // Đặt thành false để không đóng popup khi nhấp vào nội dung
             anchor="bottom"
         >
-            <NavLink to={`/posts/${postDetails.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+            <NavLink to={`/posts/${postDetails.id}`} style={{ textDecoration: 'none', color: 'inherit' }} target="_blank"
+                rel="noopener noreferrer">
                 <div style={{ padding: '2px', maxWidth: '300px' }}>
                     {/* Container cho hình ảnh và nhãn VIP */}
                     <div style={{ position: 'relative', marginBottom: '5px' }}>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { PhoneOutlined } from '@ant-design/icons';
 import { useAuth } from '../../contexts/AuthContext';
 import LoginModal from '../LoginModal';
@@ -10,6 +10,14 @@ const ContactButton = ({ projectId, recipientId, revealedPhones, hiddenPhone, fu
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [loading, setLoading] = useState(false);
 
+    useEffect(() => {
+        if (isAuthenticated && isModalVisible) {
+            console.log('>>> isAuthenticated changed to true, closing modal and calling handleViewPhone');
+            setIsModalVisible(false);
+            handleViewPhone();
+        }
+    }, [isAuthenticated, isModalVisible]);
+
     const showModal = () => {
         setIsModalVisible(true);
     };
@@ -19,11 +27,17 @@ const ContactButton = ({ projectId, recipientId, revealedPhones, hiddenPhone, fu
     };
 
     const handleSuccess = () => {
-        setIsModalVisible(false);
-        handleViewPhone(); // Gọi sau khi đăng nhập thành công
+        setIsModalVisible(false); // Đóng modal
+        console.log(">>> isAuthenticated: ", isAuthenticated);
+        // if (isAuthenticated) {
+        //     console.log(">>> handleViewPhone();")
+        console.log(">> cal handleViewPhone() from handleSuccess()");
+        handleViewPhone(); // Chỉ gọi nếu đã xác thực
+        // }
     };
 
     const handleViewPhone = async () => {
+        console.log(">>> isAuthenticated handleViewPhone(): ", isAuthenticated);
         if (!isAuthenticated) {
             showModal();
             return;
@@ -31,6 +45,7 @@ const ContactButton = ({ projectId, recipientId, revealedPhones, hiddenPhone, fu
 
         setLoading(true);
         try {
+            console.log(">>> call api: /api/notifications/view-phone");
             const response = await axiosInstance.post('/api/notifications/view-phone', {
                 postId: projectId,
                 recipientId: recipientId,
