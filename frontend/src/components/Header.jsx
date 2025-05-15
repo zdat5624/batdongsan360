@@ -14,6 +14,8 @@ import {
     LogoutOutlined,
     CrownOutlined,
     StarOutlined,
+    LoginOutlined,
+    UserAddOutlined,
 } from '@ant-design/icons';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
@@ -33,6 +35,8 @@ const HeaderComponent = () => {
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [modalVisible, setModalVisible] = useState(false);
     const [loginModalVisible, setLoginModalVisible] = useState(false);
+
+
 
     useEffect(() => {
         const handleResize = () => {
@@ -143,7 +147,8 @@ const HeaderComponent = () => {
         {
             key: 'logout',
             icon: <LogoutOutlined />,
-            label: <span onClick={showLogoutModal}>Đăng xuất</span>,
+            label: 'Đăng xuất',
+            onClick: showLogoutModal,
         },
     ];
 
@@ -197,7 +202,7 @@ const HeaderComponent = () => {
                         <div style={{ display: 'flex', alignItems: 'center' }}>
                             {isMobile ? (
                                 <>
-                                    <NotificationBadge />
+                                    <div style={{ marginRight: '10px' }}><NotificationBadge /></div>
                                     <Button
                                         type="link"
                                         icon={<MenuOutlined />}
@@ -227,10 +232,13 @@ const HeaderComponent = () => {
                                                     : [
                                                         {
                                                             key: 'login',
-                                                            label: <span onClick={showLoginModal}>Đăng nhập</span>,
+                                                            icon: <LoginOutlined />,
+                                                            label: <span>Đăng nhập</span>,
+                                                            onClick: showLoginModal,
                                                         },
                                                         {
                                                             key: 'register',
+                                                            icon: <UserAddOutlined />,
                                                             label: <Link to="/register">Đăng ký</Link>,
                                                         },
                                                     ]
@@ -243,21 +251,30 @@ const HeaderComponent = () => {
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                                     <NotificationBadge />
                                     <span>{user?.name || 'User'}</span>
-                                    <Dropdown menu={{ items: userMenuItems }} trigger={['click']}>
+                                    <Dropdown
+                                        menu={{
+                                            items: userMenuItems,
+                                            onClick: ({ key }) => {
+                                                if (key === 'logout') showLogoutModal();
+                                            },
+                                        }}
+                                        trigger={['click']}
+                                    >
                                         <Avatar
                                             src={avatarUrl}
                                             icon={!avatarUrl && <UserOutlined />}
                                             className="cursor-pointer"
                                         />
                                     </Dropdown>
+
                                 </div>
                             ) : (
                                 <>
-                                    <Button type="primary" onClick={showLoginModal} style={{ marginRight: 16 }}>
+                                    <Button icon={<LoginOutlined />} type="primary" onClick={showLoginModal} style={{ marginRight: 16 }}>
                                         Đăng nhập
                                     </Button>
                                     <Link to="/register">
-                                        <Button>Đăng ký</Button>
+                                        <Button icon={<UserAddOutlined />}>Đăng ký</Button>
                                     </Link>
                                 </>
                             )}

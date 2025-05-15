@@ -33,6 +33,7 @@ import { motion } from "framer-motion";
 import axios from "axios";
 import ContactButton from "../components/notifications/ContactButton";
 import PropertyMap from "../components/maps/PropertyMap"; // Import PropertyMap
+import { useAuth } from "../contexts/AuthContext";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -92,6 +93,8 @@ const PostDetail = () => {
     const [isDragging, setIsDragging] = useState(false);
     const [startX, setStartX] = useState(0);
     const [scrollLeft, setScrollLeft] = useState(0);
+
+    const { isAuthenticated } = useAuth();
 
     const fetchPostDetail = async () => {
         try {
@@ -189,9 +192,8 @@ const PostDetail = () => {
     };
 
     useEffect(() => {
-        setLoading(true);
         fetchPostDetail();
-    }, [id]);
+    }, [id, isAuthenticated]);
 
     const handleTogglePhone = (projectId) => {
         setRevealedPhones(prev => {
