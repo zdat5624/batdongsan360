@@ -11,9 +11,9 @@ import { u } from 'framer-motion/client';
 // Hàm chuyển đổi giá từ số sang chuỗi (triệu VNĐ hoặc tỷ VNĐ)
 const formatPrice = (price) => {
     if (price >= 1000000000) {
-        return `${(price / 1000000000).toLocaleString('vi-VN')} tỷ`;
+        return `${(price / 1000000000).toLocaleString('vi-VN')} tỷ/tháng`;
     }
-    return `${(price / 1000000).toLocaleString('vi-VN')} triệu`;
+    return `${(price / 1000000).toLocaleString('vi-VN')} triệu/tháng`;
 };
 
 // Hàm tính thời gian đã đăng (phút, giờ, ngày trước)

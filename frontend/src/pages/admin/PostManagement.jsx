@@ -342,14 +342,24 @@ const PostManagement = () => {
                             onClick={() => handleViewDetail(record)}
                         />
                     </Tooltip>
-                    <Tooltip title="Duyệt tin đăng">
+                    {/* <Tooltip title="Duyệt tin đăng">
                         <Button
                             type="link"
                             icon={<CheckCircleOutlined />}
                             className="text-green-500"
                             onClick={() => handleApprovalClick(record)}
                         />
-                    </Tooltip>
+                    </Tooltip> */}
+                    {['PENDING', 'REVIEW_LATER', 'APPROVED'].includes(record.status) && (
+                        <Tooltip title="Duyệt tin đăng">
+                            <Button
+                                type="link"
+                                icon={<CheckCircleOutlined />}
+                                className="text-green-500"
+                                onClick={() => handleApprovalClick(record)}
+                            />
+                        </Tooltip>
+                    )}
                     {['APPROVED', 'REJECTED'].includes(record.status) && (
                         <Tooltip title="Hoàn tác duyệt">
                             <Button

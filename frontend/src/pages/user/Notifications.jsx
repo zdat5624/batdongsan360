@@ -267,7 +267,7 @@ const Notifications = () => {
             <div className=" mx-auto">
                 <Title level={2} className="m-0 text-gray-800">
                     <BellOutlined className="mr-2" />
-                    Thanh toán
+                    Thông báo
                 </Title>
 
                 <div className="  mb-0 flex flex-col md:flex-row md:justify-between md:items-center">

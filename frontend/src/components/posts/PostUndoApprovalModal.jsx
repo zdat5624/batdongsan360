@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Switch, Button, message, Typography, Tag } from 'antd';
+import { Modal, Switch, Button, message, Typography, Tag, Input } from 'antd';
 import axiosInstance from '../../api/axiosConfig';
 
 const { Text } = Typography;
@@ -49,7 +49,8 @@ const PostUndoApprovalModal = ({ visible, onCancel, post, onSuccess }) => {
     useEffect(() => {
         if (visible) {
             // Set selectedAction based on vip.vipLevel
-            const defaultAction = post?.vip?.vipLevel === 1 ? 'PENDING' : 'REVIEW_LATER';
+            const defaultAction = post?.vipLevel === 0 ? 'PENDING' : 'REVIEW_LATER';
+            // console.log(">>> post", post);
             setSelectedAction(defaultAction);
             setSendNotification(false);
             setCustomMessageEnabled(false);

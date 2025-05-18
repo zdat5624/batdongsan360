@@ -5,6 +5,7 @@ import axiosInstance from '../../api/axiosConfig';
 import { motion } from 'framer-motion';
 import { formatPrice } from '../../utils';
 import MapSelector from '../../components/maps/MapSelector';
+import { useAuth } from '../../contexts/AuthContext';
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -25,6 +26,7 @@ const CreatePost = () => {
     const [fullAddress, setFullAddress] = useState('');
     const [coordinates, setCoordinates] = useState({ latitude: 10.775844, longitude: 106.701756 });
     const [isUserModified, setIsUserModified] = useState(false);
+    const { refreshUserData } = useAuth();
 
     const province = Form.useWatch('province', form);
     const district = Form.useWatch('district', form);
@@ -294,6 +296,7 @@ const CreatePost = () => {
                         form.resetFields(); // Reset form sau khi đăng tin thành công
                         setImageUrls([]); // Xóa danh sách ảnh
                         setFileList([]); // Xóa danh sách file upload
+                        await refreshUserData(); // Gọi để làm mới thông tin người dùng
                     } else {
                         message.error(response.data.message || 'Lỗi khi đăng tin');
                     }

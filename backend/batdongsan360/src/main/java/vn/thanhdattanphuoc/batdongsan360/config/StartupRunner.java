@@ -846,7 +846,7 @@ public class StartupRunner implements CommandLineRunner {
                     Post viewedPost = posts.get(random.nextInt(posts.size()));
                     User viewer = users.get(random.nextInt(users.size()));
                     message = "Người dùng '" + viewer.getName() + " - " + viewer.getPhone() +
-                            " đã xem tin đăng mã " + viewedPost.getId() + " của bạn.";
+                            " đã xem tin đăng mã " + viewedPost.getId() + " của  bạn.";
                     type = NotificationType.POST;
                     notification.setUser(viewedPost.getUser());
                     break;
@@ -855,7 +855,7 @@ public class StartupRunner implements CommandLineRunner {
                     if (posts.isEmpty())
                         continue;
                     Post approvedPost = posts.get(random.nextInt(posts.size()));
-                    message = "Tin đăng mã '" + approvedPost.getId() + "' của bạn đã được kiểm duyệt viên chấp nhận.";
+                    message = "Tin đăng mã '" + approvedPost.getId() + "' của bạn đã được kiểm  duyệt viên chấp nhận.";
                     type = NotificationType.SYSTEM_ALERT;
                     notification.setUser(approvedPost.getUser());
                     break;
@@ -864,7 +864,7 @@ public class StartupRunner implements CommandLineRunner {
                     if (posts.isEmpty())
                         continue;
                     Post rejectedPost = posts.get(random.nextInt(posts.size()));
-                    message = "Tin đăng mã '" + rejectedPost.getId() + "' của bạn đã bị kiểm duyệt viên từ chối.";
+                    message = "Tin đăng mã '" + rejectedPost.getId() + "' của bạn đã bị kiểm  duyệt viên từ chối.";
                     type = NotificationType.SYSTEM_ALERT;
                     notification.setUser(rejectedPost.getUser());
                     break;
@@ -878,7 +878,7 @@ public class StartupRunner implements CommandLineRunner {
                             .orElse(null);
                     if (successfulTransaction == null)
                         continue;
-                    message = "Giao dịch nạp tiền thành công, tài khoản của bạn cộng "
+                    message = "Giao dịch nạp tiền thành công, tài khoản  của bạn cộng "
                             + successfulTransaction.getAmount() + " VNĐ";
                     type = NotificationType.TRANSACTION;
                     notification.setUser(successfulTransaction.getUser());

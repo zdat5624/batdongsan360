@@ -197,6 +197,7 @@ const SearchForm = ({ onSearch, hideTransactionType, projects = [] }) => {
       type: isSellPage ? "SALE" : isRentPage ? "RENT" : "SALE",
     };
     onSearch(searchData);
+    setShowModal(false);
   };
 
   const handleReset = () => {

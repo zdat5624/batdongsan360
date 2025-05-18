@@ -46,6 +46,7 @@ const ContactButton = ({ projectId, recipientId, revealedPhones, hiddenPhone, fu
         setLoading(true);
         try {
             console.log(">>> call api: /api/notifications/view-phone");
+            await new Promise(resolve => setTimeout(resolve, 1000));
             const response = await axiosInstance.post('/api/notifications/view-phone', {
                 postId: projectId,
                 recipientId: recipientId,
